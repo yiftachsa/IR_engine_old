@@ -1,4 +1,4 @@
-package MyView;
+package View;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -54,9 +54,6 @@ public class ExitConfirmBox {
 
         Scene scene = new Scene(root);
         window.setScene(scene);
-        //css
-        scene.getStylesheets().add(ExitConfirmBox.class.getResource("ExitConfirmBox.css").toExternalForm());
-
         window.showAndWait();
 
         return answer;

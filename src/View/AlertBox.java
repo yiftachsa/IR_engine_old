@@ -1,4 +1,4 @@
-package MyView;
+package View;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,7 +25,7 @@ public class AlertBox {
         window.setTitle(title);
         Parent root = null;
         try {
-            root = FXMLLoader.load(AlertBox.class.getResource("MyView/AlertBox.fxml"));
+            root = FXMLLoader.load(AlertBox.class.getResource("AlertBox.fxml"));
         } catch (
                 IOException e) {
             System.out.println("Couldn't open the \"ExitConfirmBox.fxml\" fxml file");
@@ -50,10 +50,6 @@ public class AlertBox {
         
         Scene scene = new Scene(root);
         window.setScene(scene);
-
-        scene.getStylesheets().add(AlertBox.class.getResource("AlertBox.css").toExternalForm());
-
-
         window.showAndWait();
     }
 }
