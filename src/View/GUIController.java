@@ -46,7 +46,10 @@ public class GUIController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o == viewModel) {
-
+            //FIXME: in accordance to the object delivered from the Model
+            if (((String)arg).equals("Bad input")){
+                AlertBox.display("Wrong Input","Wrong Input", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
+            }
         }
     }
 
@@ -127,6 +130,7 @@ public class GUIController implements Observer {
     {
         if (!corpusText.getText().equals("") && !resultText.getText().equals("")){
             //Do something - send paths to viewModel, THE MODEL should know if a dictionary was loaded already
+            viewModel.start(corpusText.getText(), resultText.getText());
         }else {
             AlertBox.display("Wrong Inputs","Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n","Back to menu" , "default background" );
         }

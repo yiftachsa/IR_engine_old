@@ -1,13 +1,24 @@
 package Model;
+import CorpusProcessing.Document;
+import CorpusProcessing.Parse;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
+
+//import IR_engine.CorpusProcessing;
 
 public class MyModel extends Observable implements IModel{
 
     private boolean stemming;
 
-    private Object dictionary;
+    private static Map<String , String> dictionary;
 
-
+    private static int postingCount;
 
 
 /*  setChanged();
@@ -18,6 +29,8 @@ public class MyModel extends Observable implements IModel{
      */
     public MyModel() {
         stemming=false;
+        this.dictionary = new HashMap<String,String>();
+        this.postingCount = 0;
     }
 
     @Override
@@ -49,12 +62,64 @@ public class MyModel extends Observable implements IModel{
     }
 
     @Override
-    public Object getDictionary() {
-        return dictionary;
+    public Map<String, String> getDictionary() {
+        if (dictionary != null){
+            return dictionary;
+        }
+        return null;
+    }
+
+    @Override
+    public void start(String corpusPath, String resultPath) {
+
+        if(!testPath(corpusPath) || !testPath(resultPath))
+        {
+            setChanged();
+            notifyObservers("Bad input"); //TODO: Maybe replace with enum
+        }
+        //From now on the paths are assumed to be valid
+        File Corpus = new File(corpusPath);
+        File[] directories = Corpus.listFiles();
+        for (File directory : directories){
+            String filePath = directory.listFiles()[0].getAbsolutePath();
+            if(Files.isReadable(Paths.get(filePath))){
+                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+
+                for(Document document : documents){
+                    Parse.parseDocument(document);
+                }
+            }
+
+        }
+
+    }
+
+    private boolean testPath(String corpusPath) {
+        boolean isDirectory;
+        try{
+            File directory = new File(corpusPath);
+            isDirectory = directory.isDirectory();
+
+        }catch (Exception e){
+            isDirectory = false;
+        }
+        return  isDirectory;
+    }
+
+    public boolean isStemming() {
+        return stemming;
+    }
+
+    public static boolean doesDictionaryContains(String key){
+        return dictionary.containsKey(key);
+    }
+
+    public static void addToDictionary(String key, String value){
+        dictionary.put(key, value);
     }
 
 
-    /*
+/*
     @Override
     public void saveGame(File file)
     {

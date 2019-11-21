@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.Map;
+
 public interface IModel {
 
     void setStemming(boolean selected);
@@ -10,5 +12,7 @@ public interface IModel {
 
     boolean getDictionaryStatus();
 
-    Object getDictionary();
+    Map<String , String> getDictionary();
+
+    void start(String corpusPath, String resultPath);
 }

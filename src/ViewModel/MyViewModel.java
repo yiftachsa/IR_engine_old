@@ -24,7 +24,7 @@ public class MyViewModel extends Observable implements Observer {
     public void update(Observable o, Object arg) {
         if (o==model){
             setChanged();
-            notifyObservers();
+            notifyObservers(arg);
         }
     }
 
@@ -53,5 +53,12 @@ public class MyViewModel extends Observable implements Observer {
     public String getDictionary() {
 
         return (String)model.getDictionary();
+    }
+
+    public void start(String corpusPath, String resultPath) {
+
+        model.start(corpusPath , resultPath);
+
+
     }
 }
