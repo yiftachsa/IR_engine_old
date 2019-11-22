@@ -52,7 +52,7 @@ public class MyViewModel extends Observable implements Observer {
 
     public String getDictionary() {
 
-        return (String)model.getDictionary();
+        return "";//(String)model.getDictionary();
     }
 
     public void start(String corpusPath, String resultPath) {

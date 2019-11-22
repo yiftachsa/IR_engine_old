@@ -12,7 +12,5 @@ public interface IModel {
 
     boolean getDictionaryStatus();
 
-    Map<String , String> getDictionary();
-
     void start(String corpusPath, String resultPath);
 }

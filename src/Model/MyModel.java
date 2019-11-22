@@ -1,5 +1,6 @@
 package Model;
 import CorpusProcessing.Document;
+import CorpusProcessing.Indexer;
 import CorpusProcessing.Parse;
 
 import java.io.File;
@@ -16,10 +17,7 @@ public class MyModel extends Observable implements IModel{
 
     private boolean stemming;
 
-    private static Map<String , String> dictionary;
-
-    private static int postingCount;
-
+    private Indexer indexer;
 
 /*  setChanged();
     notifyObservers();*/
@@ -29,8 +27,7 @@ public class MyModel extends Observable implements IModel{
      */
     public MyModel() {
         stemming=false;
-        this.dictionary = new HashMap<String,String>();
-        this.postingCount = 0;
+        indexer = new Indexer();
     }
 
     @Override
@@ -51,23 +48,9 @@ public class MyModel extends Observable implements IModel{
 
     @Override
     public boolean getDictionaryStatus() {
-        if(dictionary == null)
-        {
-            return  false;
-        }
-        else
-        {
-            return  true;
-        }
+        return indexer.getDictionaryStatus();
     }
 
-    @Override
-    public Map<String, String> getDictionary() {
-        if (dictionary != null){
-            return dictionary;
-        }
-        return null;
-    }
 
     @Override
     public void start(String corpusPath, String resultPath) {
@@ -86,7 +69,8 @@ public class MyModel extends Observable implements IModel{
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
                 for(Document document : documents){
-                    Parse.parseDocument(document);
+                    ArrayList<String> bagOfWords = Parse.parseDocument(document);
+
                 }
             }
 
@@ -109,15 +93,6 @@ public class MyModel extends Observable implements IModel{
     public boolean isStemming() {
         return stemming;
     }
-
-    public static boolean doesDictionaryContains(String key){
-        return dictionary.containsKey(key);
-    }
-
-    public static void addToDictionary(String key, String value){
-        dictionary.put(key, value);
-    }
-
 
 /*
     @Override
