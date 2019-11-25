@@ -1,4 +1,7 @@
 package CorpusProcessing;
+import java.beans.PropertyEditorSupport;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,26 +56,36 @@ public class Parse {
         dec
     }
 */
-    private static final HashMap<String, Integer> MonthMap = new HashMap() {{
-        put("January",1); put("JANUARY",1); put("january",1); put("Jan",1);
-        put("February",2); put("FEBRUARY",2); put("february",2); put("Feb",2);
-        put("March",3); put("MARCH",3); put("march",3); put("Mar",3);
-        put("April",4); put("APRIL",4); put("april",4); put("Apr",4);
-        put("May",5); put("MAY",5); put("may",5);
-        put("June",6); put("JUNE",6); put("june",6);
-        put("July",7); put("JULY",7); put("july",7);
-        put("August",8); put("AUGUST",8); put("august",8); put("Aug",8);
-        put("September",9); put("SEPTEMBER",9); put("september",9); put("Sept",9);
-        put("October",10); put("OCTOBER",10); put("october",10); put("Oct",10);
-        put("November",11); put("NOVEMBER",11); put("november",11); put("Nov",11);
-        put("December",12); put("DECEMBER",12); put("december",12); put("Dec",12);
+
+    /**
+     * Mapping between months names and their numbers.
+     */
+    private static final HashMap<String, String> MonthMap = new HashMap() {{
+        put("January","01"); put("JANUARY","01"); put("january","01"); put("Jan","01");
+        put("February","02"); put("FEBRUARY","02"); put("february","02"); put("Feb","02");
+        put("March","03"); put("MARCH","03"); put("march","03"); put("Mar","03");
+        put("April","04"); put("APRIL","04"); put("april","04"); put("Apr","04");
+        put("May","05"); put("MAY","05"); put("may","05");
+        put("June","06"); put("JUNE","06"); put("june","06");
+        put("July","07"); put("JULY","07"); put("july","07");
+        put("August","08"); put("AUGUST","08"); put("august","08"); put("Aug","08");
+        put("September","09"); put("SEPTEMBER","09"); put("september","09"); put("Sept","09");
+        put("October","10"); put("OCTOBER","10"); put("october","10"); put("Oct","10");
+        put("November","11"); put("NOVEMBER","11"); put("november","11"); put("Nov","11");
+        put("December","12"); put("DECEMBER","12"); put("december","12"); put("Dec","12");
     }};
 
     public Parse() {
 
     }
 
-    public static ArrayList<String> parseDocument(Document document) {
+    /**
+     * Receives a document and parses it, removes stop words and applies stemmer if directed to.
+     * @param document - Document - a document to be parsed
+     * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
+     * @return - ArrayList<String> - all the words from the text of the document after parsing
+     */
+    public static ArrayList<String> parseDocument(Document document, boolean useStemmer) {
         String [] tokens = document.getText().split(" ");
         ArrayList<String> terms = new ArrayList<>();
 
@@ -95,8 +108,10 @@ public class Parse {
             if(token.isEmpty()) {
                 continue;
             }
+            //Striping irrelevant symbols
+            token = Parse.strip(token);
             //Numbers
-            if(token.matches(".*\\d.*")){ //Token contains numbers
+            if(token.matches(".*\\d.*")){ //Token contains numbers //TODO: Check the regular expression
                 //Dollar Detection
                 if(Parse.containsDollar(token)){
                     String nextToken = "";
@@ -119,12 +134,21 @@ public class Parse {
                 //Numbers dependent on next token -   nightmare!!!!!!! help me :'(
                 else
                 {
-                    String nextToken = "";
+                    String firstNextToken = "";
                     if(i<tokens.length-1) {
-                        nextToken = tokens[i + 1];
+                        firstNextToken = tokens[i + 1];
+                    }
+                    //Fractions
+                    if(Parse.isFraction(token)){
+                        if (firstNextToken.equals("dollars") ||firstNextToken.equals("Dollars")){ //<<<Fraction Dollars>>>
+                            terms.add(token+" Dollars");
+                            i++;
+                        }else{ // <<<Fraction>>>
+                            terms.add(token);
+                        }
                     }
                     //Percentage
-                    if(nextToken.equals("percent") || nextToken.equals("percentage"))
+                    else if(firstNextToken.equals("percent") || firstNextToken.equals("percentage"))
                     {
                         token=token+"%";
                         terms.add(token);
@@ -134,34 +158,218 @@ public class Parse {
                         lastProcessed[2]="percentage";
                     }
                     //Date
-                    if(MonthMap.containsKey(nextToken))
+                    else if(MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
-                        token="0"+MonthMap.get(nextToken)+"-"+token;
+                        token=MonthMap.get(firstNextToken)+"-"+token;
                         terms.add(token);
                         i++;
                     }
+                    //Simple numbers and Prices
+                    else if(firstNextToken.equals("thousand") ||firstNextToken.equals("Thousand") ){ // <<<Number Thousand>>>
+                        token  = token +"K";
+                        terms.add(token);
+                        i++;
+                    }else if (firstNextToken.equals("dollars") ||firstNextToken.equals("Dollars")){
+                        lastProcessed = Parse.generateTokenDollar(token,firstNextToken);
+                        terms.add(lastProcessed[0]);
+                    }
+                    else if (firstNextToken.equals("Trillion") ||firstNextToken.equals("trillion")){
+                        token = token + "000000 M Dollars";
+                        terms.add(token);
+                        i = i+3;
+                    }
+                    else if(firstNextToken.equals("Million") ||firstNextToken.equals("million") ||firstNextToken.equals("Billion") ||firstNextToken.equals("billion")) {
+                        String secondNextToken = "";
+                        if(i<tokens.length-2) {
+                            secondNextToken = tokens[i + 2];
+                        }
+                        String thirdNextToken = "";
+                        if(i<tokens.length-3) {
+                            thirdNextToken = tokens[i + 3];
+                        }
+                        lastProcessed = Parse.generateTokenLargeNumbers(token,firstNextToken,secondNextToken,thirdNextToken);
+                        terms.add(lastProcessed[0]);
+                    } else if(Parse.isFraction(firstNextToken)){
+                        String secondNextToken = "";
+                        if(i<tokens.length-2) {
+                            secondNextToken = tokens[i + 2];
+                        }
+                        if(secondNextToken.equals("dollars") ||secondNextToken.equals("Dollars")){ //<<<Price Fraction Dollars>>>
+                            terms.add(token+" "+firstNextToken+" Dollars");
+                            i = i+2;
+                        }else{
+                            terms.add(token+" "+firstNextToken); // <<<Number Fraction>>>
+                            i++;
+                        }
+                    }
+                    else //<<<Simple Number>>>
+                    {
+                        while (token.indexOf(',') >= 0) { //Delete all the ,
+                            token = token.substring(0, token.indexOf(',')) + token.substring(token.indexOf(',') + 1);
+                        }
+                        double numberToken= Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+                        if(numberToken >= 1000 && numberToken < Math.pow(10,6)) //token between 1000 to 10^6
+                        {
+                            numberToken=numberToken/1000;
+                            token=Parse.doubleDecimalFormat(numberToken)+"K";
+                            terms.add(token);
+                        }
+                        else if (numberToken >= Math.pow(10,6) && numberToken < Math.pow(10,9)) //token between 10^6 to 10^9
+                        {
+                            numberToken=numberToken/Math.pow(10,6);
+                            token=Parse.doubleDecimalFormat(numberToken)+"M";
+                            terms.add(token);
+                        }
+                        else if (numberToken >= Math.pow(10,9)) //token up to 10^9
+                        {
+                            numberToken=numberToken/Math.pow(10,9);
+                            token=Parse.doubleDecimalFormat(numberToken)+"B";
+                            terms.add(token);
+                        }
+                        else //token lower to 1000
+                        {
+                            terms.add(token);
+                        }
 
 
+                    }
+                }
+            }
+            //DATE
+            else if(Parse.MonthMap.containsKey(token))
+            {
+                String firstNextToken = "";
+                if(i<tokens.length-1) {
+                    firstNextToken = tokens[i + 1];
+                }
+                if(firstNextToken.matches("\\d+")) //<<<Month DD and Month year>>>
+                {
+                    int firstNextTokenValue = Integer.parseInt(firstNextToken);
+                    if(firstNextTokenValue <10 && firstNextTokenValue > 0)
+                    {
+                        token=Parse.MonthMap.get(token)+"-0"+firstNextTokenValue;
+                        i++;
+                    }
+                    else if(firstNextTokenValue <32 && firstNextTokenValue > 9)
+                    {
+                        token=Parse.MonthMap.get(token)+"-"+firstNextTokenValue;
+                        i++;
+                    }
+                    else
+                    {
+                        token=firstNextToken+"-"+Parse.MonthMap.get(token);
+                        i++;
+                    }
+                    terms.add(token);
+                }
+                else
+                {
+                    terms.add(token);
                 }
 
 
+
+            }
+            //Between number and number
+            else if(token.equals("Between") || token.equals("between"))
+            {
+                String firstNextToken = "";
+                if(i<tokens.length-1) {
+                    firstNextToken = tokens[i + 1];
+                }
+                if(firstNextToken.matches("\\d+"))
+                {
+                    String secondNextToken = "";
+                    if(i<tokens.length-2) {
+                        secondNextToken = tokens[i + 2];
+                    }
+                    if(secondNextToken.equals("and"))
+                    {
+                        String thirdNextToken = "";
+                        if(i<tokens.length-3) {
+                            thirdNextToken = tokens[i + 3];
+                        }
+                        if(thirdNextToken.matches("\\d+"))
+                        {
+                            token = firstNextToken+"-"+thirdNextToken;
+                            terms.add(token);
+                            terms.add(firstNextToken);
+                            terms.add(thirdNextToken);
+                            i=i+3;
+                        }
+                        else
+                        {
+                            terms.add(token);
+                        }
+                    }
+                    else
+                    {
+                        terms.add(token);
+                    }
+                }
+                else
+                {
+                    terms.add(token);
+                }
+            }
+            //First custom addition <<<Word / word>>>
+            else if(token.contains("/")){
+                while (token.indexOf('/') > 0){
+                    String term = token.substring(0,token.indexOf('/'));
+                    token = token.substring(token.indexOf('/')+1);
+                    terms.add(term);
+                }
+                terms.add(token);
+            }
+            else
+            {
+                terms.add(token);
             }
         }
-        //MyModel.addToDictionary("token","posting file number");
+
+        //STOPWORDS
+        //TODO: Remove stop words
+
+        //STEMMER
+        if(useStemmer){
+            //TODO:Stemmer
+        }
+
+
         return terms;
     }
 
-    private static boolean containsHyphen(String token) {
-        if(token.indexOf('-')>=0)
-        {
-            return true;
+    /**
+     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
+     * @param token - String - a word with irrelevant symbols
+     * @return - String -a word without irrelevant symbols
+     */
+    private static String strip(String token) {
+        String result = "";
+        char[] charArray = token.toCharArray();
+        for (char character: charArray) {
+            //Parenthesis
+            if(character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']'){
+                continue;
+            }
+            //Symbols
+            else if(character == ':' || character == '"' || character == '*' || character == '#'){
+                continue;
+            } else {
+                result = result + character;
+            }
         }
-        return false;
+        //Removing dot in the end of the token
+        if(result.indexOf('.')==result.length()-1 || result.indexOf(',')==result.length()-1 || result.indexOf('!')==result.length()-1 || result.indexOf('?')==result.length()-1)
+        {
+            result=result.substring(0,result.length()-1);
+        }
+        return result;
     }
 
     private static String[] generateTokenDollar(String token , String nextToken) {
         String[] newTokenWithLastTokenProcessed = {"",""};
-        String newToken = "";
+        String newToken = token;
         if(token.indexOf('$') >= 0) {
             newToken = token.substring(1); //removing the $ sign
             if (nextToken.equals("million")){ // <<<$price million>>>
@@ -175,12 +383,12 @@ public class Parse {
                 while (newToken.indexOf(',') >= 0) {
                     newToken = newToken.substring(0, newToken.indexOf(',')) + newToken.substring(newToken.indexOf(',')+1);
                 }
-                int value = Integer.parseInt(newToken);
+                double value = Double.parseDouble(newToken); //TODO: Write more tests in order of avoiding try\catch
                 if (value >= 1000000) {
                     value = value / 1000000;
-                    newToken = value + " M Dollars";
+                    newToken = Parse.doubleDecimalFormat(value) + " M Dollars";
                 } else {
-                    newToken = value + " Dollars";
+                    newToken = Parse.doubleDecimalFormat(value) + " Dollars";
                 }
             }
         } else if (token.indexOf('m') >= 0){ // <<<Price m Dollars>>>
@@ -193,23 +401,115 @@ public class Parse {
                 newToken = token.substring(0,token.length()-2) + "000 M Dollars";
                 newTokenWithLastTokenProcessed[1]=nextToken;
             }
+        } else{ // <<<Price Dollars>>>
+            while (newToken.indexOf(',') >= 0) {
+                newToken = newToken.substring(0, newToken.indexOf(',')) + newToken.substring(newToken.indexOf(',')+1);
+            }
+            double value = Double.parseDouble(newToken); //TODO: Write more tests in order of avoiding try\catch
+            if (value >= 1000000) {
+                value = value / 1000000;
+                newToken = Parse.doubleDecimalFormat(value) + " M Dollars";
+            } else {
+                newToken = Parse.doubleDecimalFormat(value) + " Dollars";
+            }
+            newTokenWithLastTokenProcessed[1]=nextToken;
         }
+
         newTokenWithLastTokenProcessed[0]=newToken;
         return newTokenWithLastTokenProcessed;
     }
 
 
-    private static boolean containsDollar(String token) {
-        if(token.indexOf('$') >= 0 || token.indexOf('m') >= 0 || (token.indexOf('b') >= 0 && token.indexOf('n') >= 0)){
+    private static String[] generateTokenLargeNumbers(String token , String firstNextToken, String secondNextToken,String thirdNextToken) {
+        String[] newTokenWithLastTokenProcessed = new String[0];
+        if(firstNextToken.equals("Million") ||firstNextToken.equals("million")){
+            if(secondNextToken.equals("U.S.")) {
+                if(thirdNextToken.equals("Dollars") || thirdNextToken.equals("dollars")){ // <<<Price million U.S. dollars>>>
+                    token= token + " M Dollars";
+                    newTokenWithLastTokenProcessed = new String[]{token,firstNextToken,secondNextToken,thirdNextToken};
+                }
+            }else{
+                token = token+"M";
+                newTokenWithLastTokenProcessed = new String[]{token,firstNextToken};
+            }
+        } else if(firstNextToken.equals("Billion") ||firstNextToken.equals("billion")) {
+            if (secondNextToken.equals("U.S.")) {
+                if (thirdNextToken.equals("Dollars") || thirdNextToken.equals("dollars")) { // <<<Price million U.S. dollars>>>
+                    token = token + "000 M Dollars";
+                    newTokenWithLastTokenProcessed = new String[]{token, firstNextToken, secondNextToken, thirdNextToken};
+                }
+            } else {
+                token = token + "B";
+                newTokenWithLastTokenProcessed = new String[]{token, firstNextToken};
+            }
+        }
+        return newTokenWithLastTokenProcessed;
+    }
+
+    /**
+     * Checks if the token given contains '$','m','b','n'
+     * @param token - String - a token
+     * @return - boolean - true if the token given contains '$','m','b','n'
+     */
+    private static boolean containsDollar(String token) { //TODO: Check me Merav!!! (Replaced "indexof" with regex)
+        if(token.matches(".*[$mbn].*")){
+            return true;
+        }
+        /*if(token.indexOf('$') >= 0 || token.indexOf('m') >= 0 || (token.indexOf('b') >= 0 && token.indexOf('n') >= 0)){
+            return true;
+        }
+        */
+
+        return false;
+    }
+
+    /**
+     * Checks if the token given contains '%'
+     * @param token - String - a token
+     * @return - boolean - true if the token contains '%'
+     */
+    private static boolean containsPercentage(String token) { //TODO: Check me Merav!!! (Replaced "indexof" with regex)
+        if(token.matches(".*%.*")){
             return true;
         }
         return false;
     }
 
-    private static boolean containsPercentage(String token) {
-        if(token.indexOf('%') >= 0){
+    /**
+     * Checks if the token given is a fraction.
+     * @param token - String - a token
+     * @return - boolean - true if the token is a fraction
+     */
+    private static boolean isFraction(String token) {
+        return token.matches("\\d+/\\d+");
+    }
+
+    /**
+     * Checks if the token given contains '-'
+     * @param token - String - a token
+     * @return - boolean - true if the token contains '-'
+     */
+    private static boolean containsHyphen(String token) { //TODO: Check me Merav!!! (Replaced "indexof" with regex)
+        if(token.matches(".*-.*")){
             return true;
         }
+
+        /*if(token.indexOf('-')>=0)
+        {
+            return true;
+        }*/
         return false;
+    }
+
+    /**
+     * https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
+     * @param number
+     * @return
+     */
+    private static String doubleDecimalFormat(double number){
+        DecimalFormat df = new DecimalFormat("#.###");
+        df.setRoundingMode(RoundingMode.FLOOR);
+        String result = df.format(number);
+        return result;
     }
 }
