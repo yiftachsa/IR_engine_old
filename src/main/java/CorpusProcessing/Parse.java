@@ -424,6 +424,7 @@ public class Parse {
         while (token.indexOf(',') >= 0) {
             token = token.substring(0, token.indexOf(',')) + token.substring(token.indexOf(',')+1);
         }
+        
         */
         double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
         if (value >= Million) {
