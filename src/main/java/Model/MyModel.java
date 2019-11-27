@@ -7,8 +7,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Observable;
 
 //import IR_engine.CorpusProcessing;
@@ -67,9 +65,9 @@ public class MyModel extends Observable implements IModel{
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if(Files.isReadable(Paths.get(filePath))){
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
-
+                Parse.loadStopWords(corpusPath);
                 for(Document document : documents){
-                    ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);
+                    ArrayList<String> bagOfWords = Parse.parseText(document, stemming);
 
 
                 }
