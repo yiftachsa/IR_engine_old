@@ -1,7 +1,7 @@
-package Model;
-import CorpusProcessing.Document;
-import CorpusProcessing.Indexer;
-import CorpusProcessing.Parse;
+package  main.java.Model;
+import  main.java.CorpusProcessing.Document;
+import  main.java.CorpusProcessing.Indexer;
+import  main.java.CorpusProcessing.Parse;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import java.util.Observable;
 
 //import IR_engine.CorpusProcessing;
 
-public class MyModel extends Observable implements IModel{
+public class MyModel extends Observable implements Model.IModel {
 
     private boolean stemming;
 
@@ -66,7 +66,7 @@ public class MyModel extends Observable implements IModel{
         for (File directory : directories){
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if(Files.isReadable(Paths.get(filePath))){
-                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+                ArrayList<Document> documents =  main.java.CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
                 for(Document document : documents){
                     ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);

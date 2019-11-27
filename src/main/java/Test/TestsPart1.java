@@ -1,8 +1,8 @@
-package Test;
+package  main.java.Test;
 
-import CorpusProcessing.Document;
-import CorpusProcessing.Parse;
-import CorpusProcessing.ReadFile;
+import  main.java.CorpusProcessing.Document;
+import  main.java.CorpusProcessing.Parse;
+import  main.java.CorpusProcessing.ReadFile;
 
 import java.util.ArrayList;
 

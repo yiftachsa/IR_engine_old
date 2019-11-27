@@ -1,4 +1,4 @@
-package CorpusProcessing;
+package  main.java.CorpusProcessing;
 
 import java.util.HashMap;
 import java.util.Map;

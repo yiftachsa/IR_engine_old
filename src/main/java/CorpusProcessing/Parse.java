@@ -1,4 +1,4 @@
-package CorpusProcessing;
+package main.java.CorpusProcessing;
 import javafx.util.Pair;
 
 import java.beans.PropertyEditorSupport;
