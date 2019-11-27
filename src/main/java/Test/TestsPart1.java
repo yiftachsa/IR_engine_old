@@ -40,7 +40,7 @@ public class TestsPart1 {
 
 
     private static void parse_parseDocument_Test1_Dollars() {
-/*
+
         System.out.println("\ntestDollars");
         ArrayList<String> testDollars= Parse.parseDocument(new Document("0","","$100 billion $100 million $450,000,000 $100 20.6m Dollars 391bn Dollars"), false);
         for (int i = 0; i < testDollars.size(); i++) {
@@ -85,12 +85,12 @@ public class TestsPart1 {
         ArrayList<String> testSimpleNumbers = Parse.parseDocument(new Document("0","","98 10,123 1010.56 10,123,000 10,123,000,000"), false);
         for (int i = 0; i < testSimpleNumbers.size(); i++) {
             System.out.println(testSimpleNumbers.get(i));
-        }*/
+        }
         System.out.println("\ntestMonthDate");
         ArrayList<String> testMonthDate = Parse.parseDocument(new Document("0","","June 4 4 Aug"), false);
         for (int i = 0; i < testMonthDate.size(); i++) {
             System.out.println(testMonthDate.get(i));
-        }/*
+        }
         System.out.println("\nbetweenTest");
         ArrayList<String> betweenTest = Parse.parseDocument(new Document("0","","22-23  Between 10 and 50 between 70 and 50 between 60 and merav between 40 to 30 between to ty between"), false);
         for (int i = 0; i < betweenTest.size(); i++) {
@@ -103,7 +103,7 @@ public class TestsPart1 {
             System.out.println(sentenceTest.get(i));
         }
 
- */
+
     }
 
     private static boolean Parse_parseDocument_Test2_parseDocument() {

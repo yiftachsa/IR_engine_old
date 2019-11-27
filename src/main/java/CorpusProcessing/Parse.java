@@ -1,13 +1,10 @@
 package CorpusProcessing;
 import javafx.util.Pair;
 
-import java.beans.PropertyEditorSupport;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Parse {
@@ -50,7 +47,7 @@ public class Parse {
         ArrayList<String> terms = new ArrayList<>();
 
         //Start of parsing
-        String [] lastProcessed={""}; // array of strings in which the first ia always the latest generated term and the others entries are the next tokens that were processed to generate that term
+        //String [] lastProcessed={""}; // array of strings in which the first ia always the latest generated term and the others entries are the next tokens that were processed to generate that term
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
             Pair<String,Integer> result = new Pair<>("",0);
@@ -76,7 +73,7 @@ public class Parse {
             //Numbers
             if(token.matches(".*\\d.*")){ //Token contains numbers //TODO: Check the regular expression
                 //Dollar Detection
-                if(token.matches(".*[$mbn].*")){ //checks for $ m b n
+                if(token.matches(".*[$mbn].*")){ //checks for $ m b n FIXME: change to recognise bn and not b or n
                     String firstNextToken = "";
                     if(i<tokens.length-1) {
                         firstNextToken = tokens[i + 1];
@@ -98,7 +95,7 @@ public class Parse {
                     terms.add(token.substring(token.indexOf("-")+1));
 
                 }
-                //Numbers dependent on next token -   nightmare!!!!!!! help me :'(
+                //Numbers dependent on next token
                 else
                 {
                     String firstNextToken = "";
@@ -119,10 +116,7 @@ public class Parse {
                     {
                         token=token+"%";
                         terms.add(token);
-                        lastProcessed=new String[3];
-                        lastProcessed[0]=token;
-                        lastProcessed[1]="percent";
-                        lastProcessed[2]="percentage";
+                        i++;
                     }
                     //Date
                     else if(MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
@@ -137,7 +131,9 @@ public class Parse {
                         terms.add(token);
                         i++;
                     }else if (firstNextToken.equals("dollars") ||firstNextToken.equals("Dollars")){
+
                         result = Parse.generateTokenPrice(token);
+
                         terms.add(result.getKey());
                         i=i+result.getValue();
                     }
@@ -155,8 +151,11 @@ public class Parse {
                         if(i<tokens.length-3) {
                             thirdNextToken = tokens[i + 3];
                         }
-                        lastProcessed = Parse.generateTokenLargeNumbers(token,firstNextToken,secondNextToken,thirdNextToken);
-                        terms.add(lastProcessed[0]);
+
+                        result = Parse.generateTokenLargeNumbers(token,firstNextToken,secondNextToken,thirdNextToken);
+                        terms.add(result.getKey());
+                        i=i+result.getValue();
+
                     } else if((firstNextToken.matches("\\d+/\\d+"))){
                         String secondNextToken = "";
                         if(i<tokens.length-2) {
@@ -211,7 +210,7 @@ public class Parse {
                 if(i<tokens.length-1) {
                     firstNextToken = Parse.strip(tokens[i + 1]);
                 }
-                result = generateTokenDate(token, firstNextToken);
+                result = generateTokenMonth(token, firstNextToken);
                 terms.add(result.getKey());
                 i=i+result.getValue();
             }
@@ -306,7 +305,7 @@ public class Parse {
      * @param firstNextToken - String - the following token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String,Integer> generateTokenDate(String token, String firstNextToken) {
+    private static Pair<String,Integer> generateTokenMonth(String token, String firstNextToken) {
         //String[] newTokenWithLastTokenProcessed = {"",""};
         int additionalTokensProcessed = 0;
 
@@ -361,16 +360,17 @@ public class Parse {
     }
 
     /**
-     *
-     * @param token
-     * @param firstNextToken
+     * Receives a token that contains a number and a symbol indicates a price and formats it.
+     * Recognizes the patterns: <<<$price>>> <<<$price million>>> <<<$price billion>>> <<<Price'm' Dollars>>>  <<<Price'bn' Dollars>>>
+     * @param token - String - token containing a number and [$mbn]
+     * @param firstNextToken - String - the following token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
     private static Pair<String,Integer> generateTokenDollar(String token , String firstNextToken) {
         //String[] newTokenWithLastTokenProcessed = {"",""};
         int additionalTokensProcessed = 0;
 
-        if(token.indexOf('$') == 0) { // <<<$price>>>
+        if(token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
             if (firstNextToken.equals("million")){ // <<<$price million>>>
                 token = token+ " M Dollars";
@@ -412,9 +412,9 @@ public class Parse {
     }
 
     /**
-     *
-     * @param token
-     * @return
+     * Receives a token that contains a number which already had been recognized as part of a price and formats it.
+     * @param token - String - price
+     * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
     private static Pair<String,Integer> generateTokenPrice(String token){
         // <<<Price Dollars>>>
@@ -424,7 +424,6 @@ public class Parse {
         while (token.indexOf(',') >= 0) {
             token = token.substring(0, token.indexOf(',')) + token.substring(token.indexOf(',')+1);
         }
-        
         */
         double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
         if (value >= Million) {
@@ -440,31 +439,46 @@ public class Parse {
         return result;
     }
 
+    /**
+     * Receives a token with either "million" or "billion" following it and formats it as a large number or large price.
+     * @param token - String - number
+     * @param firstNextToken - String - the next token, containing million or billion
+     * @param secondNextToken - String - the second next token
+     * @param thirdNextToken - String - the third next token
+     * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
+     */
+    private static Pair<String, Integer> generateTokenLargeNumbers(String token , String firstNextToken, String secondNextToken, String thirdNextToken) {
+        //String[] newTokenWithLastTokenProcessed = new String[0];
+        int additionalTokensProcessed = 0;
 
-    private static String[] generateTokenLargeNumbers(String token , String firstNextToken, String secondNextToken,String thirdNextToken) {
-        String[] newTokenWithLastTokenProcessed = new String[0];
         if(firstNextToken.equals("Million") ||firstNextToken.equals("million")){
             if(secondNextToken.equals("U.S.")) {
                 if(thirdNextToken.equals("Dollars") || thirdNextToken.equals("dollars")){ // <<<Price million U.S. dollars>>>
                     token= token + " M Dollars";
-                    newTokenWithLastTokenProcessed = new String[]{token,firstNextToken,secondNextToken,thirdNextToken};
+                    //newTokenWithLastTokenProcessed = new String[]{token,firstNextToken,secondNextToken,thirdNextToken};
+                    additionalTokensProcessed = 3;
                 }
             }else{
                 token = token+"M";
-                newTokenWithLastTokenProcessed = new String[]{token,firstNextToken};
+                //newTokenWithLastTokenProcessed = new String[]{token,firstNextToken};
+                additionalTokensProcessed = 1;
             }
         } else if(firstNextToken.equals("Billion") ||firstNextToken.equals("billion")) {
             if (secondNextToken.equals("U.S.")) {
                 if (thirdNextToken.equals("Dollars") || thirdNextToken.equals("dollars")) { // <<<Price million U.S. dollars>>>
                     token = token + "000 M Dollars";
-                    newTokenWithLastTokenProcessed = new String[]{token, firstNextToken, secondNextToken, thirdNextToken};
+                    //newTokenWithLastTokenProcessed = new String[]{token, firstNextToken, secondNextToken, thirdNextToken};
+                    additionalTokensProcessed = 3;
                 }
             } else {
                 token = token + "B";
-                newTokenWithLastTokenProcessed = new String[]{token, firstNextToken};
+                //newTokenWithLastTokenProcessed = new String[]{token, firstNextToken};
+                additionalTokensProcessed = 1;
             }
         }
-        return newTokenWithLastTokenProcessed;
+
+        Pair<String,Integer> result = new Pair<>(token,additionalTokensProcessed);
+        return result;
     }
 
     /**
