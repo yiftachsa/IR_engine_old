@@ -67,7 +67,7 @@ public class MyModel extends Observable implements IModel{
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
                 Parse.loadStopWords(corpusPath);
                 for(Document document : documents){
-                    ArrayList<String> bagOfWords = Parse.parseText(document, stemming);
+                    ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);
 
 
                 }

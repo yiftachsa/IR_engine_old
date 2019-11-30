@@ -147,9 +147,9 @@ public class Parse {
                     //Date
                     else if(MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
-                        token=MonthMap.get(firstNextToken)+"-"+token;
-                        terms.add(token);
-                        i++;
+                        result = Parse.generateTokenDayMonth(token,firstNextToken);
+                        terms.add(result.getKey());
+                        i=i+result.getValue();
                     }
 
                     //Simple numbers and Prices
@@ -167,6 +167,7 @@ public class Parse {
                         i = i+3;
                     }
 
+                    //Prices - Dollars
                     else if (firstNextToken.equals("dollars") ||firstNextToken.equals("Dollars")){
 
                         result = Parse.generateTokenPrice(token);
@@ -174,6 +175,8 @@ public class Parse {
                         terms.add(result.getKey());
                         i=i+result.getValue();
                     }
+
+                    //Large number dependent on next token
                     else if(firstNextToken.equals("Million") ||firstNextToken.equals("million") ||firstNextToken.equals("Billion") ||firstNextToken.equals("billion")) {
                         String secondNextToken = "";
                         if(i<tokens.length-2) {
@@ -207,7 +210,7 @@ public class Parse {
                     }
                     else //<<<Simple Number>>>
                     {
-                        terms.add(generateTokenNumber(token));
+                        terms.add(generateTokenSimpleNumber(token));
                     }
                 }
             }
@@ -226,7 +229,7 @@ public class Parse {
                 i=i+result.getValue();
             }
 
-            //Between number and number
+            //Between number and number - less memory complexity if left here instead of in a separate function.
             else if(token.equals("Between") || token.equals("between"))
             {
                 String firstNextToken = "";
@@ -280,7 +283,7 @@ public class Parse {
                 }
                 terms.add(token);
             }
-            // Second custom addition <<<Word-Word-Word>>>
+            // Hyphens <<<Word-Word-Word>>>
             else if (token.matches(".*-.*-.*"))
             {
                 terms.add(token);
@@ -289,13 +292,15 @@ public class Parse {
                 terms.add(token.substring(token.lastIndexOf("-")+1));
 
             }
-            //Third custom addition <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
+            //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
             else if (token.matches(".*-.*"))
             {
                 terms.add(token);
                 terms.add(token.substring(0,token.indexOf("-")));
                 terms.add(token.substring(token.indexOf("-")+1));
             }
+
+            //Entity Recognition
             else if(token.matches("^[A-Z].*"))
             {
                 String entity=token;
@@ -303,12 +308,14 @@ public class Parse {
                 if(i<tokens.length-1) {
                     nextToken = Parse.strip(tokens[i + 1]);
                 }
-                for (int j = 0; j < tokens.length && nextToken.matches("^[A-Z].*"); j++) {
+                //FIXME: Check!!
+                for (int j = 0; j < tokens.length-i && nextToken.matches("^[A-Z].*"); j++) { //"minus i" is to account for the i words that were already processed
                     if(!Parse.isStopWord(entity))
                     {
                         terms.add(entity);
                     }
                     entity = entity + " " +nextToken;
+                    nextToken = Parse.strip(tokens[i + j + 2]); //FIXME: Check!!
                     i++;
                 }
                 if(!Parse.isStopWord(entity)) //TODO:CHECK!!!
@@ -319,7 +326,7 @@ public class Parse {
             else
             {
                 if(!Parse.isStopWord(token))
-                terms.add(token);
+                    terms.add(token);
             }
         }
 
@@ -328,7 +335,7 @@ public class Parse {
         if(useStemmer){
             //TODO:Stemmer
             for (String term : terms) {
-                term = Parse.stemm(term);
+                term = Parse.stem(term);
             }
         }
 
@@ -336,14 +343,33 @@ public class Parse {
         return terms;
     }
 
-    //TODO:fill function!!!
-    private static String stemm(String term) {
-        return term;
-    }
 
-    private static boolean isStopWord(String entity) {
-
-        return false;
+    /**
+     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
+     * @param token - String - a word with irrelevant symbols
+     * @return - String -a word without irrelevant symbols
+     */
+    private static String strip(String token) {
+        String result = "";
+        char[] charArray = token.toCharArray();
+        for (char character: charArray) {
+            //Parenthesis
+            if(character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']'){
+                continue;
+            }
+            //Symbols
+            else if(character == ':' || character == '"' || character == '*' || character == '#'|| character == '\t'|| character == '\n'){
+                continue;
+            } else {
+                result = result + character;
+            }
+        }
+        //Removing dot in the end of the token
+        if((result.indexOf('.')==result.length()-1 || result.indexOf(',')==result.length()-1 || result.indexOf('!')==result.length()-1 || result.indexOf('?')==result.length()-1) && !token.isEmpty() && !token.equals(""))
+        {
+            result=result.substring(0,result.length()-1); //FIXME:!!! Check what's happening here
+        }
+        return result;
     }
 
     /**
@@ -351,7 +377,7 @@ public class Parse {
      * @param token - String - number token
      * @return - String - formatted token
      */
-    private static String generateTokenNumber(String token) {
+    private static String generateTokenSimpleNumber(String token) {
         token = token.replaceAll(",",""); //remove commas 1,000 -> 1000
 
         if(token.matches("\\d+.?\\d*")) {
@@ -368,7 +394,7 @@ public class Parse {
             {
                 numberToken = numberToken / Billion;
                 token = Parse.doubleDecimalFormat(numberToken) + "B";
-            } 
+            }
         }
 
         return token;
@@ -408,30 +434,26 @@ public class Parse {
     }
 
     /**
-     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
-     * @param token - String - a word with irrelevant symbols
-     * @return - String -a word without irrelevant symbols
+     * Receives a number token and the following token which matches a month and formats them.
+     * Recognizes the patterns: <<<DD Month>>>
+     * @param token - String - number token
+     * @param firstNextToken - String - the following token
+     * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static String strip(String token) {
-        String result = "";
-        char[] charArray = token.toCharArray();
-        for (char character: charArray) {
-            //Parenthesis
-            if(character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']'){
-                continue;
-            }
-            //Symbols
-            else if(character == ':' || character == '"' || character == '*' || character == '#'|| character == '\t'|| character == '\n'){
-                continue;
-            } else {
-                result = result + character;
-            }
-        }
-        //Removing dot in the end of the token
-        if(result.indexOf('.')==result.length()-1 || result.indexOf(',')==result.length()-1 || result.indexOf('!')==result.length()-1 || result.indexOf('?')==result.length()-1)
+    private static Pair<String,Integer> generateTokenDayMonth(String token, String firstNextToken) {
+        int additionalTokensProcessed = 0;
+        int tokenValue = Integer.parseInt(token);
+        if(tokenValue <10 && tokenValue > 0) //single digit days {1-9}
         {
-            result=result.substring(0,result.length()-1);
+            token= Parse.MonthMap.get(firstNextToken)+"-0"+tokenValue;
         }
+        else if(tokenValue <32 && tokenValue > 9) //double digit days {10-31}
+        {
+            token=Parse.MonthMap.get(firstNextToken)+"-"+tokenValue;
+        }
+        additionalTokensProcessed++;
+
+        Pair<String,Integer> result = new Pair<>(token,additionalTokensProcessed);
         return result;
     }
 
@@ -489,11 +511,7 @@ public class Parse {
         // <<<Price Dollars>>>
         int additionalTokensProcessed = 0;
         token = token.replaceAll(",","");
-        /*
-        while (token.indexOf(',') >= 0) {
-            token = token.substring(0, token.indexOf(',')) + token.substring(token.indexOf(',')+1);
-        }
-        */
+
         double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
         if (value >= Million) {
             value = value / Million;
@@ -586,5 +604,25 @@ public class Parse {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Receives a token and checks if it's a stop word against the "stopwords" set
+     * @param token - String - a word to check
+     * @return - boolean - true if "stopwords" contains the token, else false
+     */
+    private static boolean isStopWord(String token) {
+        boolean isStopWord = false;
+        if (stopwords != null){
+            if (stopwords.contains(token)){
+                isStopWord = true;
+            }
+        }
+        return isStopWord;
+    }
+
+    private static String stem(String term) {
+        //TODO:fill function!!!
+        return term;
     }
 }
