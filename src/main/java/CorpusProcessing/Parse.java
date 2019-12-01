@@ -365,7 +365,7 @@ public class Parse {
             }
         }
         //Removing dot in the end of the token
-        if((result.indexOf('.')==result.length()-1 || result.indexOf(',')==result.length()-1 || result.indexOf('!')==result.length()-1 || result.indexOf('?')==result.length()-1) && !token.isEmpty() && !token.equals(""))
+        if((result.indexOf('.')==result.length()-1 || result.indexOf(',')==result.length()-1 || result.indexOf('!')==result.length()-1 || result.indexOf('?')==result.length()-1) && !result.isEmpty() )
         {
             result=result.substring(0,result.length()-1); //FIXME:!!! Check what's happening here
         }
