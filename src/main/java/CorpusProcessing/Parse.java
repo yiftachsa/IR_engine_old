@@ -14,6 +14,9 @@ public class Parse {
     private static final double Kilo = 1000;
     private static final double Million = 1000000;
     private static final double Billion = 1000000000;
+    private static final int MAXENTITYLENGTH=3;
+
+
 
 
     /**
@@ -303,24 +306,43 @@ public class Parse {
             //Entity Recognition
             else if(token.matches("^[A-Z].*"))
             {
-                String entity=token;
+                ArrayList<String> entityTokensCandidates = new ArrayList<>();
+                entityTokensCandidates.add(token);
+
                 String nextToken = "";
                 if(i<tokens.length-1) {
                     nextToken = Parse.strip(tokens[i + 1]);
                 }
-                //FIXME: Check!!
-                for (int j = 0; j < tokens.length-i && nextToken.matches("^[A-Z].*"); j++) { //"minus i" is to account for the i words that were already processed
-                    if(!Parse.isStopWord(entity))
-                    {
-                        terms.add(entity);
-                    }
-                    entity = entity + " " +nextToken;
-                    nextToken = Parse.strip(tokens[i + j + 2]); //FIXME: Check!!
-                    i++;
+
+                //Get all the following words which begins with a capital letter
+                for (int j = 1; j < tokens.length-i && nextToken.matches("^[A-Z].*"); j++) {
+                    entityTokensCandidates.add(nextToken);
+                    //if(i+j<tokens.length-1) {
+                    nextToken = Parse.strip(tokens[i+j+1]);
+                    //}
                 }
-                if(!Parse.isStopWord(entity)) //TODO:CHECK!!!
-                {
-                    terms.add(entity);
+
+                boolean isCapsSequence = isAllCapsSequence(entityTokensCandidates);
+
+                if(!isCapsSequence) { //at least a single word entity
+                    Pair<ArrayList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
+
+                    ArrayList<String> entityTokens = resultList.getKey();
+                    for (String entityToken : entityTokens) {
+                        if(!isStopWord(entityToken.toLowerCase())){
+                            terms.add(entityToken);
+                            //TODO: ADD TO ENTITIES
+                        }
+                    }
+                    i = i + result.getValue();
+                } else {
+                    for (String candidate : entityTokensCandidates) {
+                        candidate = candidate.toLowerCase();//Not an entity
+                        if(!isStopWord(candidate)){
+                            terms.add(candidate);
+                        }
+                    }
+                    i = i+entityTokensCandidates.size()-1;
                 }
             }
             else
@@ -341,6 +363,64 @@ public class Parse {
 
 
         return terms;
+    }
+
+    /**
+     * Receives a list and check if all the words in the list are all constructed only from capital letters
+     * @param wordList - ArrayList<String> - list of words
+     * @return - boolean - true if all the words are all capital letters
+     */
+    private static boolean isAllCapsSequence(ArrayList<String> wordList) {
+        boolean areAllCaps = true;
+        for (String word : wordList){
+            if(!word.matches("[A-Z]+")){
+                areAllCaps = false;
+            }
+        }
+        return areAllCaps;
+    }
+
+    /**
+     * Receives a list of words which start with a capital letter,
+     * decides if they are a part of an entity and if so
+     * extracts the entity and the individual tokens which construct it.
+     * @param entityCandidates - ArrayList<String> - a list of tokens with all capital letters
+     * @return - Pair<ArrayList<String>,Integer> - <entity and individual tokens, additionalTokensProcessed>
+     */
+    private static Pair<ArrayList<String>, Integer> generateTokensEntity(ArrayList<String> entityCandidates) {
+        int additionalTokensProcessed = 0;
+        ArrayList<String> resultList = new ArrayList<>();
+        String entity = " ";
+        int countConsecutiveAllCaps = 0;
+
+        for (int i = 0; i < entityCandidates.size(); i++) {
+            String candidate = entityCandidates.get(i);
+            entity = entity+ " " + candidate;
+
+            if (!isStopWord(candidate.toLowerCase())){
+                resultList.add(candidate);
+            }
+
+            if (candidate.matches("[A-Z]+")){
+                countConsecutiveAllCaps++;
+            }else{
+                countConsecutiveAllCaps = 0;
+            }
+        }
+
+        if (countConsecutiveAllCaps >MAXENTITYLENGTH){
+            resultList = new ArrayList<>();
+            if(!isStopWord(entityCandidates.get(0).toLowerCase())){
+                resultList.add(entityCandidates.get(0)); //TODO: Check!!!
+            }
+        }
+
+        if (resultList.size()>0){
+            additionalTokensProcessed = resultList.size()-1; //TODO: Check!!!
+        }
+
+        Pair<ArrayList<String>,Integer> result = new Pair<>(resultList,additionalTokensProcessed);
+        return result;
     }
 
 
