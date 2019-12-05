@@ -183,6 +183,19 @@ public class TestsPart1 {
         passed = passed && testResults.get(2).equals("interested");
         System.out.println("passed: "+ passed);
     }
+    /**
+     * Tests generateTokensEntity
+     */
+    private static void parse_parseQuery_Test2_generateTokensEntity(){
+        System.out.println("\ntestGenerateTokensEntity");
+        boolean passed = true;
+        ArrayList<String> testResults = Parse.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky bamba", false);
+        passed = passed && testResults.get(0).equals("06-04");
+        passed = passed && testResults.get(1).equals("08-04");
+        passed = passed && testResults.get(2).equals("08-24");
+        passed = passed && testResults.get(3).equals("11-02");
+        System.out.println("passed: "+ passed);
+    }
 
     /*
     System.out.println("\nsentenceTest");
