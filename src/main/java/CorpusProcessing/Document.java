@@ -1,4 +1,4 @@
-package  main.java.CorpusProcessing;
+package  CorpusProcessing;
 
 public class Document {
 

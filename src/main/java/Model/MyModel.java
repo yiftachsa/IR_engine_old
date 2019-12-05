@@ -1,7 +1,6 @@
-package  main.java.Model;
-import  main.java.CorpusProcessing.Document;
-import  main.java.CorpusProcessing.Indexer;
-import  main.java.CorpusProcessing.Parse;
+package  Model;
+import  CorpusProcessing.Document;
+import  CorpusProcessing.Indexer;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -66,10 +65,10 @@ public class MyModel extends Observable implements Model.IModel {
         for (File directory : directories){
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if(Files.isReadable(Paths.get(filePath))){
-                ArrayList<Document> documents =  main.java.CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+                ArrayList<Document> documents =  CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
                 for(Document document : documents){
-                    ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);
+                    ArrayList<String> bagOfWords = CorpusProcessing.Parse.parseDocument(document, stemming);
 
 
                 }

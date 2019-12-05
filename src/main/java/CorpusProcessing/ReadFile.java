@@ -1,4 +1,4 @@
-package  main.java.CorpusProcessing;
+package  CorpusProcessing;
 
 import java.io.IOException;
 import java.nio.file.Files;
