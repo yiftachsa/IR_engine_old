@@ -11,8 +11,8 @@ public class TestsPart1 {
     public static void main(String[] args) {
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        //parseTest();
-        Parse_parseDocument_Test1_parseDocument();
+        parseTest();
+        //Parse_parseDocument_Test1_parseDocument();
 
     }
 
@@ -49,6 +49,8 @@ public class TestsPart1 {
         parse_parseQuery_Test8_generateTokenSimpleNumber();
         parse_parseQuery_Test9_Between();
         parse_parseQuery_Test10_FirstCustomAdd();
+        parse_parseQuery_Test11_generateTokensEntity();
+        parse_parseQuery_Test12_stemmer();
     }
     /**
      * Tests generateTokenDollar
@@ -186,15 +188,62 @@ public class TestsPart1 {
     /**
      * Tests generateTokensEntity
      */
-    private static void parse_parseQuery_Test2_generateTokensEntity(){
+    private static void parse_parseQuery_Test11_generateTokensEntity(){
         System.out.println("\ntestGenerateTokensEntity");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky bamba", false);
-        passed = passed && testResults.get(0).equals("06-04");
-        passed = passed && testResults.get(1).equals("08-04");
-        passed = passed && testResults.get(2).equals("08-24");
-        passed = passed && testResults.get(3).equals("11-02");
+
+        ArrayList<String> testResults = Parse.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky", false);
+        passed = passed && testResults.get(0).equals("MERAV");
+        passed = passed && testResults.get(1).equals("bamba");
+        passed = passed && testResults.get(2).equals("MERAV SHAKED");
+        passed = passed && testResults.get(3).equals("MERAV");
+        passed = passed && testResults.get(4).equals("SHAKED");
+        passed = passed && testResults.get(5).equals("bamba");
+        passed = passed && testResults.get(6).equals("MERAV SHAKED YIFTACH");
+        passed = passed && testResults.get(7).equals("MERAV");
+        passed = passed && testResults.get(8).equals("SHAKED");
+        passed = passed && testResults.get(9).equals("YIFTACH");
+        passed = passed && testResults.get(10).equals("bamba");
+        passed = passed && testResults.get(11).equals("MERAV SHAKED YIFTACH SAVRANSKY");
+        passed = passed && testResults.get(12).equals("MERAV");
+        passed = passed && testResults.get(13).equals("SHAKED");
+        passed = passed && testResults.get(14).equals("YIFTACH");
+        passed = passed && testResults.get(15).equals("SAVRANSKY");
         System.out.println("passed: "+ passed);
+        //TODO: add tests for AllCAps
+
+        ArrayList<String> testResultsCaptial = Parse.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY", false);
+        passed = passed && testResultsCaptial.get(0).equals("MERAV");
+        passed = passed && testResultsCaptial.get(1).equals("bamba");
+        passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
+        passed = passed && testResultsCaptial.get(3).equals("MERAV");
+        passed = passed && testResultsCaptial.get(4).equals("SHAKED");
+        passed = passed && testResultsCaptial.get(5).equals("bamba");
+        passed = passed && testResultsCaptial.get(6).equals("MERAV SHAKED YIFTACH");
+        passed = passed && testResultsCaptial.get(7).equals("MERAV");
+        passed = passed && testResultsCaptial.get(8).equals("SHAKED");
+        passed = passed && testResultsCaptial.get(9).equals("YIFTACH");
+        passed = passed && testResultsCaptial.get(10).equals("bamba");
+        passed = passed && testResultsCaptial.get(11).equals("merav");
+        passed = passed && testResultsCaptial.get(12).equals("shaked");
+        passed = passed && testResultsCaptial.get(13).equals("yiftach");
+        passed = passed && testResultsCaptial.get(14).equals("savransky");
+        System.out.println("passed: "+ passed);
+    }
+
+    private static void parse_parseQuery_Test12_stemmer()
+    {
+        System.out.println("\ntestStemmer");
+        boolean passed = true;
+
+        ArrayList<String> testResults = Parse.parseQuery("sky banana studies students devastation", true);
+        passed = passed && testResults.get(0).equals("sky");
+        passed = passed && testResults.get(1).equals("banana");
+        passed = passed && testResults.get(2).equals("studi");
+        passed = passed && testResults.get(3).equals("student");
+        passed = passed && testResults.get(4).equals("devast");
+        System.out.println("passed: "+ passed);
+
     }
 
     /*
