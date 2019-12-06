@@ -267,7 +267,8 @@ public class TestsPart1 {
 
     private static boolean Mapper_Test1(){
         boolean result = false;
-        ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B","B","a","b","c","a","A"));
+        ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B","c","B","a","b","c","a","A"));
+        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries = Mapper.proceesBagOfWords("Doc1", bagOfWords);
         for (Trio trio : postingsEntries) {
             System.out.println(trio);

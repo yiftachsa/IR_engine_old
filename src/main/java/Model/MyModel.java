@@ -1,7 +1,6 @@
 package Model;
-import CorpusProcessing.Document;
-import CorpusProcessing.Indexer;
-import CorpusProcessing.Parse;
+
+import CorpusProcessing.*;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -11,10 +10,9 @@ import java.util.Observable;
 
 //import IR_engine.CorpusProcessing;
 
-public class MyModel extends Observable implements IModel{
+public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
-
     private Indexer indexer;
 
 /*  setChanged();
@@ -24,13 +22,13 @@ public class MyModel extends Observable implements IModel{
      * Constructor
      */
     public MyModel() {
-        stemming=false;
+        stemming = false;
         indexer = new Indexer();
     }
 
     @Override
     public void setStemming(boolean selected) {
-        stemming=selected;
+        stemming = selected;
 
     }
 
@@ -53,21 +51,22 @@ public class MyModel extends Observable implements IModel{
     @Override
     public void start(String corpusPath, String resultPath) {
 
-        if(!testPath(corpusPath) || !testPath(resultPath))
-        {
+        if (!testPath(corpusPath) || !testPath(resultPath)) {
             setChanged();
             notifyObservers("Bad input"); //TODO: Maybe replace with enum
         }
         //From now on the paths are assumed to be valid
+        Documenter.setPath(resultPath);
         File Corpus = new File(corpusPath);
         File[] directories = Corpus.listFiles();
-        for (File directory : directories){
+        for (File directory : directories) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
-            if(Files.isReadable(Paths.get(filePath))){
+            if (Files.isReadable(Paths.get(filePath))) {
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
                 Parse.loadStopWords(corpusPath);
-                for(Document document : documents){
+                for (Document document : documents) {
                     ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);
+                    ArrayList<Trio> postingsEntries = Mapper.proceesBagOfWords(document.getId(), bagOfWords);
 
 
                 }
@@ -79,19 +78,20 @@ public class MyModel extends Observable implements IModel{
 
     /**
      * Verifies that the path is of a reachable directory.
+     *
      * @param folderPath - String - an absolute path
      * @return - boolean - true if the solderPath is of a reachable directory, else false
      */
     private boolean testPath(String folderPath) {
         boolean isDirectory;
-        try{
+        try {
             File directory = new File(folderPath);
             isDirectory = directory.isDirectory();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             isDirectory = false;
         }
-        return  isDirectory;
+        return isDirectory;
     }
 
 
