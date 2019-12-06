@@ -1,4 +1,4 @@
-package CorpusProcessing;
+package  CorpusProcessing;
 
 public class Document {
 

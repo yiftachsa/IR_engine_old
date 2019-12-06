@@ -11,6 +11,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: gov.sandia.foundry:porter-stemmer:1.4" level="project" />
   </component>
 </module>
