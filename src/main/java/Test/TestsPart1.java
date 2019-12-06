@@ -1,19 +1,19 @@
 package Test;
 
-import CorpusProcessing.Document;
-import CorpusProcessing.Parse;
-import CorpusProcessing.ReadFile;
+import CorpusProcessing.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TestsPart1 {
 
     public static void main(String[] args) {
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        parseTest();
+        //parseTest();
         //Parse_parseDocument_Test1_parseDocument();
-
+        Mapper_Test1();
     }
 
 
@@ -262,6 +262,17 @@ public class TestsPart1 {
         for (String term: bagOfWords) {
             System.out.println(term);
         }
+        return result;
+    }
+
+    private static boolean Mapper_Test1(){
+        boolean result = false;
+        ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B","B","a","b","c","a","A"));
+        ArrayList<Trio> postingsEntries = Mapper.proceesBagOfWords("Doc1", bagOfWords);
+        for (Trio trio : postingsEntries) {
+            System.out.println(trio);
+        }
+
         return result;
     }
 

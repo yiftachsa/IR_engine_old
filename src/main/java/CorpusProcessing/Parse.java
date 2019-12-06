@@ -69,6 +69,9 @@ public class Parse {
         put("Dec", "12");
     }};
     private static HashSet<String> stopwords;
+    private static HashSet<String> entities = new HashSet<>();
+    private static HashSet<String> singleAppearanceEntities = new HashSet<>();
+
 
     public Parse() {
 
@@ -131,7 +134,7 @@ public class Parse {
             if (token.matches(".*\\d.*")) { //Token contains numbers
 
                 //Dollar Detection
-                if (token.matches(".*[$mbn].*")) { //checks for $ m b n FIXME: change to recognise bn and not b or n
+                if (token.matches(".*[$m].*|.*bn.*")) { //checks for $ m b n FIXME: change to recognise bn and not b or n
                     String firstNextToken = "";
                     if (i < tokens.length - 1) {
                         firstNextToken = Parse.strip(tokens[i + 1]);
@@ -141,7 +144,6 @@ public class Parse {
                     terms.add(result.getKey());
                     i = i + result.getValue();
                 }
-
                 //Percentage
                 else if (token.matches(".*%.*")) {
                     terms.add(token);
@@ -153,14 +155,12 @@ public class Parse {
                     terms.add(token.substring(0, token.indexOf("-")));
                     terms.add(token.substring(token.indexOf("-") + 1));
                 }
-
                 //Numbers dependent on next token
                 else {
                     String firstNextToken = "";
                     if (i < tokens.length - 1) {
                         firstNextToken = Parse.strip(tokens[i + 1]);
                     }
-
                     //Fractions
                     if (token.matches("\\d+/\\d+")) {
                         if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) { //<<<Fraction Dollars>>>
@@ -170,14 +170,12 @@ public class Parse {
                             terms.add(token);
                         }
                     }
-
                     //Percentage
                     else if (firstNextToken.equals("percent") || firstNextToken.equals("percentage")) {
                         token = token + "%";
                         terms.add(token);
                         i++;
                     }
-
                     //Date
                     else if (MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
@@ -185,7 +183,6 @@ public class Parse {
                         terms.add(result.getKey());
                         i = i + result.getValue();
                     }
-
                     //Simple numbers and Prices
                     //Thousand
                     else if (firstNextToken.equals("thousand") || firstNextToken.equals("Thousand")) { // <<<Number Thousand>>>
@@ -193,14 +190,12 @@ public class Parse {
                         terms.add(token);
                         i++;
                     }
-
                     //Trillion Dollars
                     else if (firstNextToken.equals("Trillion") || firstNextToken.equals("trillion")) { // <<<Price trillion U.S. Dollars>>>
                         token = token + "000000 M Dollars";
                         terms.add(token);
                         i = i + 3;
                     }
-
                     //Prices - Dollars
                     else if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) {
 
@@ -209,7 +204,6 @@ public class Parse {
                         terms.add(result.getKey());
                         i = i + result.getValue();
                     }
-
                     //Large number dependent on next token
                     else if (firstNextToken.equals("Million") || firstNextToken.equals("million") || firstNextToken.equals("Billion") || firstNextToken.equals("billion")) {
                         String secondNextToken = "";
@@ -220,20 +214,16 @@ public class Parse {
                         if (i < tokens.length - 3) {
                             thirdNextToken = Parse.strip(tokens[i + 3]);
                         }
-
                         result = Parse.generateTokenLargeNumbers(token, firstNextToken, secondNextToken, thirdNextToken);
                         terms.add(result.getKey());
                         i = i + result.getValue();
-
                     }
-
                     //Number Fraction
                     else if ((firstNextToken.matches("\\d+/\\d+"))) {
                         String secondNextToken = "";
                         if (i < tokens.length - 2) {
                             secondNextToken = Parse.strip(tokens[i + 2]);
                         }
-
                         if (secondNextToken.equals("dollars") || secondNextToken.equals("Dollars")) { //<<<Price Fraction Dollars>>>
                             terms.add(token + " " + firstNextToken + " Dollars");
                             i = i + 2;
@@ -247,20 +237,16 @@ public class Parse {
                     }
                 }
             }
-
-
             //DATE
             else if (Parse.MonthMap.containsKey(token)) {
                 String firstNextToken = "";
                 if (i < tokens.length - 1) {
                     firstNextToken = Parse.strip(tokens[i + 1]);
                 }
-
                 result = generateTokenMonth(token, firstNextToken);
                 terms.add(result.getKey());
                 i = i + result.getValue();
             }
-
             //Between number and number - less memory complexity if left here instead of in a separate function.
             else if (token.equals("Between") || token.equals("between")) {
                 String firstNextToken = "";
@@ -275,7 +261,6 @@ public class Parse {
                 if (i < tokens.length - 3) {
                     thirdNextToken = Parse.strip(tokens[i + 3]);
                 }
-
                 if (firstNextToken.matches("\\d+")) {
 
                     if (secondNextToken.equals("and")) {
@@ -286,14 +271,10 @@ public class Parse {
                             terms.add(firstNextToken);
                             terms.add(thirdNextToken);
                             i = i + 3;
-                        } else {
-                            terms.add(token); //FIXME:: BETWEEN IS STOPWORD NEED TO CHECK IF ITS PART OF A TERM
                         }
-                    } else {
-                        terms.add(token); //FIXME:: BETWEEN IS STOPWORD NEED TO CHECK IF ITS PART OF A TERM
                     }
                 } else {
-                    terms.add(token); //FIXME:: BETWEEN IS STOPWORD NEED TO CHECK IF ITS PART OF A TERM
+                    //BETWEEN IS STOPWORD NO NEED TO ADD TO TERMS
                 }
             }
             //First custom addition <<<Word / word>>>
@@ -301,25 +282,31 @@ public class Parse {
                 while (token.indexOf('/') > 0) {
                     String term = token.substring(0, token.indexOf('/'));
                     token = token.substring(token.indexOf('/') + 1);
-                    terms.add(term);
+                    if (useStemmer) {
+                        terms.add(Stemmer.stem(term));
+                    } else {
+                        terms.add(term);
+                    }
                 }
-                terms.add(token);
+                if (useStemmer) {
+                    terms.add(Stemmer.stem(token.toLowerCase()));
+                } else {
+                    terms.add(token);
+                }
             }
             // Hyphens <<<Word-Word-Word>>>
-            else if (token.matches(".*-.*-.*")) {
-                terms.add(token);
-                terms.add(token.substring(0, token.indexOf("-")));
-                terms.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")));
-                terms.add(token.substring(token.lastIndexOf("-") + 1));
-
+            else if (token.matches(".*-.*-.*") || token.matches(".*-.*")) {
+                ArrayList<String> resultHyphenList = generateTokenHyphens(token);
+                for (String term : resultHyphenList) {
+                    if (!isStopWord(term.toLowerCase())) {
+                        if (useStemmer) {
+                            terms.add(Stemmer.stem(term.toLowerCase()));
+                        } else {
+                            terms.add(term);
+                        }
+                    }
+                }
             }
-            //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
-            else if (token.matches(".*-.*")) {
-                terms.add(token);
-                terms.add(token.substring(0, token.indexOf("-")));
-                terms.add(token.substring(token.indexOf("-") + 1));
-            }
-
             //Entity Recognition
             else if (token.matches("^[A-Z].*")) {
                 ArrayList<String> entityTokensCandidates = new ArrayList<>();
@@ -331,70 +318,56 @@ public class Parse {
                 }
 
                 //Get all the following words which begins with a capital letter
-                for (int j = 1; j+i < tokens.length -1 && nextToken.matches("^[A-Z].*"); j++) {
+                for (int j = 1; j + i < tokens.length - 1 && nextToken.matches("^[A-Z].*"); j++) {
                     entityTokensCandidates.add(nextToken);
                     nextToken = Parse.strip(tokens[i + j + 1]);
-                    if (i+j == tokens.length-2) {
+                    if (i + j == tokens.length - 2) {
                         entityTokensCandidates.add(nextToken);
                     }
-
                 }
 
 
                 boolean isCapsSequence = isAllCapsSequence(entityTokensCandidates);
 
-              //  if (!isCapsSequence) { //at least a single word entity
-                    Pair<ArrayList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
+                //  if (!isCapsSequence) { //at least a single word entity
+                Pair<ArrayList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
 
-                    ArrayList<String> entityTokens = resultList.getKey();
-                    if (entityTokens.size() > 0 && (!isCapsSequence || ( isCapsSequence && !resultList.getKey().get(0).matches("^[a-z].*")))) { // Do not add token which contain all caps letters
-                        //TODO: ADD TO ENTITIES the first element
-                        for (String entityToken : entityTokens) {
-                            if (!isStopWord(entityToken.toLowerCase())) {
-                                terms.add(entityToken.toUpperCase());
-                            }
+                ArrayList<String> entityTokens = resultList.getKey();
+                if (entityTokens.size() > 0 && (!isCapsSequence || (isCapsSequence && !resultList.getKey().get(0).matches("^[a-z].*")))) { // Do not add token which contain all caps letters
+                    //Add to entities the first element which is the entity
+                    String entity = entityTokens.get(0);
+                    if (!entities.contains(entity)) {
+                        if (!singleAppearanceEntities.contains(entity)) {
+                            singleAppearanceEntities.add(entity);
+                        } else {
+                            singleAppearanceEntities.remove(entity);
+                            entities.add(entity);
                         }
                     }
-                    else
-                    {
-                        for (String entityToken : entityTokens) {
-                            if (!isStopWord(entityToken.toLowerCase())) {
-                                terms.add(entityToken.toLowerCase());
-                            }
+                    for (String entityToken : entityTokens) {
+                        if (!isStopWord(entityToken.toLowerCase())) {
+                            terms.add(entityToken.toUpperCase());
                         }
                     }
-
-
-                    i = i + resultList.getValue();
-               // }
-            /*else {
-                    for (String candidate : entityTokensCandidates) {
-                        candidate = candidate.toLowerCase();//Not an entity
-                        if (!isStopWord(candidate)) {
-                            terms.add(candidate);
+                } else {
+                    for (String entityToken : entityTokens) {
+                        if (!isStopWord(entityToken.toLowerCase())) {
+                            terms.add(entityToken.toLowerCase());
                         }
                     }
-                    i = i + entityTokensCandidates.size() - 1;
                 }
-                */
+
+
+                i = i + resultList.getValue();
             } else {
-                if (!Parse.isStopWord(token))
-                    terms.add(token);
+                if (!Parse.isStopWord(token.toLowerCase()))
+                    if (useStemmer) {
+                        terms.add(Stemmer.stem(token.toLowerCase()));
+                    } else {
+                        terms.add(token);
+                    }
             }
         }
-
-
-        //STEMMER
-        if (useStemmer) {
-            //TODO:Stemmer
-            for (String term : terms) {
-                if(term.matches("[a-z]+"))
-                term = Stemmer.stem(term);
-                System.out.println(term);
-            }
-        }
-
-
         return terms;
     }
 
@@ -449,13 +422,12 @@ public class Parse {
 
         if (countConsecutiveAllCaps > MAXENTITYLENGTH) {
             ArrayList<String> lowerCaseResultList = new ArrayList<>();
-            for(String token : resultList)
-            {
+            for (String token : resultList) {
                 lowerCaseResultList.add(token.toLowerCase());
             }
-            resultList=lowerCaseResultList;
-        } else if(!entityCandidates.contains(entity)){
-            resultList.add(0,entity);
+            resultList = lowerCaseResultList;
+        } else if (!entityCandidates.contains(entity)) {
+            resultList.add(0, entity);
         }
 
         /*
@@ -693,6 +665,24 @@ public class Parse {
 
         Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
         return result;
+    }
+
+    private static ArrayList<String> generateTokenHyphens(String token) {
+        ArrayList<String> resultList = new ArrayList<>();
+        if (token.matches(".*-.*-.*")) {
+            resultList.add(token);
+            resultList.add(token.substring(0, token.indexOf("-")));
+            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")));
+            resultList.add(token.substring(token.lastIndexOf("-") + 1));
+
+        }
+        //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
+        else if (token.matches(".*-.*")) {
+            resultList.add(token);
+            resultList.add(token.substring(0, token.indexOf("-")));
+            resultList.add(token.substring(token.indexOf("-") + 1));
+        }
+        return resultList;
     }
 
     /**
