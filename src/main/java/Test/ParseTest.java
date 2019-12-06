@@ -1,19 +1,54 @@
 package Test;
 
-import  CorpusProcessing.Document;
-import  CorpusProcessing.Parse;
-import  CorpusProcessing.ReadFile;
+
+import CorpusProcessing.Document;
+import CorpusProcessing.Parse;
+import CorpusProcessing.ReadFile;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 
 import java.util.ArrayList;
 
-public class TestsPart1 {
+public class ParseTest {
+
+    @org.junit.Test
+    public void parseQuery() {
+    }
+
+    @org.junit.Test
+    public void parseDocument() {
+    }
+
+    @org.junit.Test
+    public void parseText() {
+    }
+
+    @org.junit.Test
+    public void loadStopWords() {
+    }
 
     public static void main(String[] args) {
-        //ReadFile_separateFileToDocuments_Test1();
-        //ReadFile_separateFileToDocuments_Test2();
-        //parseTest();
-       // Parse_parseDocument_Test1_parseDocument();
+        ReadFile_separateFileToDocuments_Test1();
+        ReadFile_separateFileToDocuments_Test2();
+        parseTest();
+        Parse_parseDocument_Test1_parseDocument();
 
+    }
+
+
+    @Test
+
+    public void  TestGenerateTokenDollar(){
+        Parse parse = new Parse();
+        System.out.println("\ntestDollars");
+        ArrayList<String> testResults = parse.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars", false);
+        assertEquals("20.6 M Dollars",testResults.get(0) , testResults.get(0));
+        assertEquals("100000 M Dollars",testResults.get(1) , testResults.get(1));
+        assertEquals("100 M Dollars",testResults.get(2) , testResults.get(2));
+        assertEquals("450 M Dollars",testResults.get(3) , testResults.get(3));
+        assertEquals("100 Dollars",testResults.get(4) , testResults.get(4));
+        assertEquals("391000 M Dollars",testResults.get(5) , testResults.get(5));
     }
 
 
@@ -202,7 +237,4 @@ public class TestsPart1 {
         }
         return result;
     }
-
-
-
 }
