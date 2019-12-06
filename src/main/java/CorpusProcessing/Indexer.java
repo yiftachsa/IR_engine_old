@@ -12,7 +12,6 @@ public class Indexer {
 
     private static Map<String , String> entitiesDictionary;
 
-
     private static int postingCount;
 
 

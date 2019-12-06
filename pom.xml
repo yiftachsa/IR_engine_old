@@ -19,6 +19,14 @@
             </plugin>
         </plugins>
     </build>
+<dependencies>
 
+    <dependency>
+        <groupId>gov.sandia.foundry</groupId>
+        <artifactId>porter-stemmer</artifactId>
+        <version>1.4</version>
+    </dependency>
+
+</dependencies>
 
 </project>
