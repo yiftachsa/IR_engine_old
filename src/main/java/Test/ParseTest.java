@@ -42,7 +42,7 @@ public class ParseTest {
     public void  TestGenerateTokenDollar(){
         Parse parse = new Parse();
         System.out.println("\ntestDollars");
-        ArrayList<String> testResults = parse.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars", false);
+        ArrayList<String> testResults = parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars", false);
         assertEquals("20.6 M Dollars",testResults.get(0) , testResults.get(0));
         assertEquals("100000 M Dollars",testResults.get(1) , testResults.get(1));
         assertEquals("100 M Dollars",testResults.get(2) , testResults.get(2));

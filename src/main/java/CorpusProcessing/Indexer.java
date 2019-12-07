@@ -1,84 +1,153 @@
 package  CorpusProcessing;
 
-import java.util.HashMap;
-import java.util.Map;
+import javafx.collections.transformation.SortedList;
+import javafx.util.Pair;
+
+import java.io.*;
+import java.util.*;
 
 public class Indexer {
 
+    /**
+     * Corpus dictionary
+     * entry: term-->{document frequency,posting file index}
+     */
+    private Map<String, Pair<Integer, String>> dictionary;//FIXME: If the dictionary need to be sorted we need to use SortedMap
+    /**
+     * Temporary posting buffer, reinitialized after each save to the secondary memory.
+     * entry: term-->({docId,term frequency},{(docId,term frequency)},...)
+     */
+    private SortedMap<String, ArrayList<Pair<String, Integer>>> posting;
 
-    private static Map<String , String> dictionary;
+    private Map<String, String> uniqueDictionary;
 
-    private static Map<String , String> uniqueDictionary;
+    private Map<String, String> entitiesDictionary;
 
-    private static Map<String , String> entitiesDictionary;
+    private int postingCount;
 
-    private static int postingCount;
+    private String filePath;
 
+    private static final double NUMBEROFTRIOSINPOSTINGFILE = Math.pow(2, 12);
 
-    public Indexer() {
-        this.dictionary = new HashMap<String,String>();
-        this.uniqueDictionary = new HashMap<String, String>();
-        this.entitiesDictionary = new HashMap<String, String>();
+    public Indexer(String filePath) {
+        this.dictionary = new HashMap<>(); //FIXME: If the dictionary need to be sorted we need to use TreeMap
+        this.posting = new TreeMap<>();
+        this.uniqueDictionary = new HashMap<>();
+        this.entitiesDictionary = new HashMap<>();
         this.postingCount = 0;
+        this.filePath = filePath;
     }
 
-
+    public void buildInvertedIndex() {
+        int numberOfPostingPortions = Documenter.getIterationNumber();
+        for (int i = 0; i < numberOfPostingPortions; i++) {
+            int trioCount = 0;
+            //open postingPortion i
+            ArrayList<Trio> sortedPostingPortion = new ArrayList<>();
+            try {
+                FileInputStream fileInputStream = new FileInputStream(this.filePath + "\\postingPortions\\" + i);
+                ObjectInputStream ObjectInputStream = new ObjectInputStream(fileInputStream);
+                sortedPostingPortion = (ArrayList<Trio>) ObjectInputStream.readObject();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //Enter to dictionary
+            if (sortedPostingPortion != null) {
+                for (int j = 0; j < sortedPostingPortion.size(); j++) {
+                    Trio postingEntry = sortedPostingPortion.get(j);
+                    String term = postingEntry.getTerm();
+                    String docId = postingEntry.getDocid();
+                    int termFrequency = postingEntry.getFrequency();
+                    if (dictionary.containsKey(term)) {
+                        int newFrequency = dictionary.get(term).getKey() + 1;
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, postingCount + ""));
+                        posting.get(term).add(new Pair<>(docId, newFrequency));
+                    } else {
+                        dictionary.put(term, new Pair<Integer, String>(1, postingCount + ""));
+                        ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                        postingLine.add(new Pair<>(docId, termFrequency));
+                        posting.put(term, postingLine);
+                    }
+                    trioCount++;
+                    if (trioCount >= NUMBEROFTRIOSINPOSTINGFILE) {
+                        if (sortedPostingPortion.size() < j + 1) {
+                            String nextTerm = sortedPostingPortion.get(j + 1).getTerm();
+                            if (!nextTerm.equals(term)) {
+                                Documenter.saveInvertedIndex(posting, postingCount);
+                                posting = new TreeMap<>();
+                                trioCount = 0;
+                                postingCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
     public boolean getDictionaryStatus() {
-        if(dictionary == null)
-        {
-            return  false;
-        }
-        else
-        {
-            return  true;
+        if (dictionary == null) {
+            return false;
+        } else {
+            return true;
         }
     }
 
 
-    public static boolean doesDictionaryContains(String key){
+    public boolean doesDictionaryContains(String key) {
         return dictionary.containsKey(key);
     }
 
-    public static void addToDictionary(String key, String value){
-        dictionary.put(key, value);
+    public Map<String, Pair<Integer, String>> getDictionary() {
+        return dictionary;
     }
 
-
-
-    public static Map<String, String> getDictionary() {
-        if (dictionary != null){
-            return dictionary;
-        }
-        return null;
+    public void setDictionary(Map<String, Pair<Integer, String>> dictionary) {
+        this.dictionary = dictionary;
     }
 
-    public static void setDictionary(Map<String, String> dictionary) {
-        Indexer.dictionary = dictionary;
+    public SortedMap<String, ArrayList<Pair<String, Integer>>> getPosting() {
+        return posting;
     }
 
-    public static Map<String, String> getUniqueDictionary() {
+    public void setPosting(SortedMap<String, ArrayList<Pair<String, Integer>>> posting) {
+        this.posting = posting;
+    }
+
+    public Map<String, String> getUniqueDictionary() {
         return uniqueDictionary;
     }
 
-    public static void setUniqueDictionary(Map<String, String> uniqueDictionary) {
-        Indexer.uniqueDictionary = uniqueDictionary;
+    public void setUniqueDictionary(Map<String, String> uniqueDictionary) {
+        this.uniqueDictionary = uniqueDictionary;
     }
 
-    public static Map<String, String> getEntitiesDictionary() {
+    public Map<String, String> getEntitiesDictionary() {
         return entitiesDictionary;
     }
 
-    public static void setEntitiesDictionary(Map<String, String> entitiesDictionary) {
-        Indexer.entitiesDictionary = entitiesDictionary;
+    public void setEntitiesDictionary(Map<String, String> entitiesDictionary) {
+        this.entitiesDictionary = entitiesDictionary;
     }
 
-    public static int getPostingCount() {
+    public int getPostingCount() {
         return postingCount;
     }
 
-    public static void setPostingCount(int postingCount) {
-        Indexer.postingCount = postingCount;
+    public void setPostingCount(int postingCount) {
+        this.postingCount = postingCount;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public static double getNUMBEROFTRIOSINPOSTINGFILE() {
+        return NUMBEROFTRIOSINPOSTINGFILE;
     }
 }

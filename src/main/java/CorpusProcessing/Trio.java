@@ -1,6 +1,8 @@
 package CorpusProcessing;
 
-public class Trio {
+import java.io.Serializable;
+
+public class Trio implements Comparable<Trio> , Serializable {
 
     private String term;
     private String docid;
@@ -47,6 +49,19 @@ public class Trio {
                 ", docid='" + docid + '\'' +
                 ", frequency=" + frequency +
                 '}';
+    }
+
+
+    @Override
+    public int compareTo(Trio o) {
+        if(this.getTerm().equals(o.getTerm()))
+        {
+            return this.docid.compareTo(o.docid);
+        }
+        else
+        {
+            return this.term.compareTo(o.term);
+        }
     }
 }
 

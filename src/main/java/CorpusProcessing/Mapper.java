@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class Mapper {
 
-    public static ArrayList<Trio> proceesBagOfWords(String DocNO, ArrayList<String> terms){
+    public static ArrayList<Trio> proceedBagOfWords(String DocNO, ArrayList<String> terms){
         ArrayList<Trio> postingEntries = new ArrayList<Trio>();
         int maxTermFrequency = 1;
 
@@ -36,4 +36,30 @@ public class Mapper {
 
         return postingEntries;
     }
+    public static ArrayList<Trio> mergeAndSortTwoPostingEntriesLists(ArrayList<Trio> list1 , ArrayList<Trio> list2)
+    {
+        //TODO: check time complexity in compression to a simple merge sort geek to geek
+        ArrayList<Trio> mergedList = new ArrayList<>();
+        while (list1.size() > 0 && list2.size() > 0) {
+
+            if(list1.get(0).compareTo(list2.get(0))<0)
+            {
+                mergedList.add(list1.remove(0));
+            }
+            else
+            {
+                mergedList.add(list2.remove(0));
+            }
+        }
+        if(list1.size() == 0)
+        {
+            mergedList.addAll(list2);
+        }
+        else if(list2.size() == 0)
+        {
+            mergedList.addAll(list1);
+        }
+        return  mergedList;
+    }
+
 }
