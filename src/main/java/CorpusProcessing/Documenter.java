@@ -35,34 +35,43 @@ public class Documenter {
         return iterationNumber;
     }
 
+    public static int getDocumentsDetailsSize() {
+        return documentsDetails.size();
+    }
 
     public static String getFilePathToPostingEntries() {
         return filesPath + "\\postingEntries";
     }
 
-    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount) {
+
+
+    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length) {
         if (filesPath != null) {
-            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount);
+            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," +length);
             if (documentsDetails.size() >= NUMBEROFDOCUMENTSPERFILE) {
                 //WRITE TO DISK! 
-                BufferedWriter writer = null;
-                try {
-                    if (fileIndex == 0) {
-                        new File(filesPath + "\\DocumentsDetails").mkdir();
-                    }
-                    writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\" + fileIndex));
-                    for (String documentDetails : documentsDetails) {
-                        writer.write(documentDetails);
-                        writer.newLine();
-                    }
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                fileIndex++;
-                documentsDetails = new ArrayList<>();
+                saveDocumentsDetailsToFile();
             }
         }
+    }
+
+    private static void saveDocumentsDetailsToFile() {
+        BufferedWriter writer = null;
+        try {
+            if (fileIndex == 0) {
+                new File(filesPath + "\\DocumentsDetails").mkdir();
+            }
+            writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\" + fileIndex));
+            for (String documentDetails : documentsDetails) {
+                writer.write(documentDetails);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fileIndex++;
+        documentsDetails = new ArrayList<>();
     }
 
     public static int getNUMBEROFPOSTINGLINES() {
@@ -235,6 +244,17 @@ public class Documenter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void shutdown() {
+        if(documentsDetails.size() > 0){
+            saveDocumentsDetailsToFile();
+        }
+        saveDocumentationFiles();
+    }
+
+    private static void saveDocumentationFiles() {
+        //TODO: save all the counters and the information needed for the reconstruction of the dictionary (if necessary)
     }
 }
 

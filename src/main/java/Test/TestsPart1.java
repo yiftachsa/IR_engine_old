@@ -1,21 +1,27 @@
 package Test;
 
 import CorpusProcessing.*;
+import Model.MyModel;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
 
     public static void main(String[] args) {
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
+
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
         //parseTest();
-        //Parse_parseDocument_Test1_parseDocument();
+        Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
-        Model_MergerThreads_test1();
+        //Model_MergerThreads_test1();
+        //Model_Test2();
     }
 
 
@@ -39,28 +45,28 @@ public class TestsPart1 {
 
     }
 
-    private static void parseTest() {
-        parse_parseQuery_Test1_generateTokenDollar();
-        parse_parseQuery_Test2_generateTokenMonth();
-        parse_parseQuery_Test3_Percentage();
-        parse_parseQuery_Test4_Thousand();
-        parse_parseQuery_Test5_generateTokenLargeNumbers();
-        parse_parseQuery_Test6_generateTokenPrice();
-        parse_parseQuery_Test7_Fractions();
-        parse_parseQuery_Test8_generateTokenSimpleNumber();
-        parse_parseQuery_Test9_Between();
-        parse_parseQuery_Test10_FirstCustomAdd();
-        parse_parseQuery_Test11_generateTokensEntity();
-        parse_parseQuery_Test12_stemmer();
+    private static void parseTest(Parse parser) {
+        parse_parseQuery_Test1_generateTokenDollar(parser);
+        parse_parseQuery_Test2_generateTokenMonth(parser);
+        parse_parseQuery_Test3_Percentage(parser);
+        parse_parseQuery_Test4_Thousand(parser);
+        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+        parse_parseQuery_Test6_generateTokenPrice(parser);
+        parse_parseQuery_Test7_Fractions(parser);
+        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+        parse_parseQuery_Test9_Between(parser);
+        parse_parseQuery_Test10_FirstCustomAdd(parser);
+        parse_parseQuery_Test11_generateTokensEntity(parser);
+        parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
      * Tests generateTokenDollar
      */
-    private static void parse_parseQuery_Test1_generateTokenDollar() {
+    private static void parse_parseQuery_Test1_generateTokenDollar(Parse parser) {
         System.out.println("\ntestDollars");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars", false);
+        ArrayList<String> testResults = parser.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
         passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
@@ -74,10 +80,10 @@ public class TestsPart1 {
     /**
      * Tests generateTokenMonth and generateTokenDayMonth
      */
-    private static void parse_parseQuery_Test2_generateTokenMonth() {
+    private static void parse_parseQuery_Test2_generateTokenMonth(Parse parser) {
         System.out.println("\ntestMonthDate");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("June 4 4 Aug Aug 24 November 2", false);
+        ArrayList<String> testResults = parser.parseQuery("June 4 4 Aug Aug 24 November 2");
         passed = passed && testResults.get(0).equals("06-04");
         passed = passed && testResults.get(1).equals("08-04");
         passed = passed && testResults.get(2).equals("08-24");
@@ -88,10 +94,10 @@ public class TestsPart1 {
     /**
      * Tests Percentage
      */
-    private static void parse_parseQuery_Test3_Percentage() {
+    private static void parse_parseQuery_Test3_Percentage(Parse parser) {
         System.out.println("\ntestPercentage");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("6% 6 percent 7 percentage", false);
+        ArrayList<String> testResults = parser.parseQuery("6% 6 percent 7 percentage");
         passed = passed && testResults.get(0).equals("6%");
         passed = passed && testResults.get(1).equals("6%");
         passed = passed && testResults.get(2).equals("7%");
@@ -101,10 +107,10 @@ public class TestsPart1 {
     /**
      * Tests Thousand
      */
-    private static void parse_parseQuery_Test4_Thousand() {
+    private static void parse_parseQuery_Test4_Thousand(Parse parser) {
         System.out.println("\ntestThousand");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("123 Thousand 125 thousand", false);
+        ArrayList<String> testResults = parser.parseQuery("123 Thousand 125 thousand");
         passed = passed && testResults.get(0).equals("123K");
         passed = passed && testResults.get(1).equals("125K");
         System.out.println("passed: " + passed);
@@ -113,10 +119,10 @@ public class TestsPart1 {
     /**
      * Tests generateTokenLargeNumbers
      */
-    private static void parse_parseQuery_Test5_generateTokenLargeNumbers() {
+    private static void parse_parseQuery_Test5_generateTokenLargeNumbers(Parse parser) {
         System.out.println("\ntestgenerateTokenLargeNumbers");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("55 Million 60 million 70 Billion 80 billion 100 billion U.S. dollars 100 million U.S. dollars 100 trillion U.S. dollars", false);
+        ArrayList<String> testResults = parser.parseQuery("55 Million 60 million 70 Billion 80 billion 100 billion U.S. dollars 100 million U.S. dollars 100 trillion U.S. dollars");
         passed = passed && testResults.get(0).equals("55M");
         passed = passed && testResults.get(1).equals("60M");
         passed = passed && testResults.get(2).equals("70B");
@@ -130,10 +136,10 @@ public class TestsPart1 {
     /**
      * Tests generateTokenPrice
      */
-    private static void parse_parseQuery_Test6_generateTokenPrice() {
+    private static void parse_parseQuery_Test6_generateTokenPrice(Parse parser) {
         System.out.println("\ntestgenerateTokenPrice");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("1.98 Dollars 1,000,000 Dollars 20 Dollars", false);
+        ArrayList<String> testResults = parser.parseQuery("1.98 Dollars 1,000,000 Dollars 20 Dollars");
         passed = passed && testResults.get(0).equals("1.98 Dollars");
         passed = passed && testResults.get(1).equals("1 M Dollars");
         passed = passed && testResults.get(2).equals("20 Dollars");
@@ -143,10 +149,10 @@ public class TestsPart1 {
     /**
      * Tests Fractions
      */
-    private static void parse_parseQuery_Test7_Fractions() {
+    private static void parse_parseQuery_Test7_Fractions(Parse parser) {
         System.out.println("\ntestFractions");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("100 3/4 22 1/2 Dollars 1/2 1/4 Dollars", false);
+        ArrayList<String> testResults = parser.parseQuery("100 3/4 22 1/2 Dollars 1/2 1/4 Dollars");
         passed = passed && testResults.get(0).equals("100 3/4");
         passed = passed && testResults.get(1).equals("22 1/2 Dollars");
         passed = passed && testResults.get(2).equals("1/2");
@@ -157,10 +163,10 @@ public class TestsPart1 {
     /**
      * Tests generateTokenSimpleNumber
      */
-    private static void parse_parseQuery_Test8_generateTokenSimpleNumber() {
+    private static void parse_parseQuery_Test8_generateTokenSimpleNumber(Parse parser) {
         System.out.println("\ntestgenerateTokenSimpleNumber");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("123 1010.56 10,123,000 10,123,000,000", false);
+        ArrayList<String> testResults = parser.parseQuery("123 1010.56 10,123,000 10,123,000,000");
         passed = passed && testResults.get(0).equals("123");
         passed = passed && testResults.get(1).equals("1.01K");
         passed = passed && testResults.get(2).equals("10.123M");
@@ -171,10 +177,10 @@ public class TestsPart1 {
     /**
      * Tests Between
      */
-    private static void parse_parseQuery_Test9_Between() {
+    private static void parse_parseQuery_Test9_Between(Parse parser) {
         System.out.println("\ntestBetween");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("22-23 Between 10 and 50 between 60 and merav between merav to 60 between to", false);
+        ArrayList<String> testResults = parser.parseQuery("22-23 Between 10 and 50 between 60 and merav between merav to 60 between to");
         passed = passed && testResults.get(0).equals("22-23") && testResults.get(1).equals("22") && testResults.get(2).equals("23");
         passed = passed && testResults.get(3).equals("10-50") && testResults.get(4).equals("10") && testResults.get(5).equals("50");
         passed = passed && testResults.get(6).equals("between") && testResults.get(7).equals("60") && testResults.get(8).equals("and") && testResults.get(9).equals("merav");
@@ -187,10 +193,10 @@ public class TestsPart1 {
     /**
      * Tests the first custom addition <<<Word / word>>>
      */
-    private static void parse_parseQuery_Test10_FirstCustomAdd() {
+    private static void parse_parseQuery_Test10_FirstCustomAdd(Parse parser) {
         System.out.println("\ntestFirstCustomAdd");
         boolean passed = true;
-        ArrayList<String> testResults = Parse.parseQuery("amused/invested/interested", false);
+        ArrayList<String> testResults = parser.parseQuery("amused/invested/interested");
         passed = passed && testResults.get(0).equals("amused");
         passed = passed && testResults.get(1).equals("invested");
         passed = passed && testResults.get(2).equals("interested");
@@ -200,11 +206,11 @@ public class TestsPart1 {
     /**
      * Tests generateTokensEntity
      */
-    private static void parse_parseQuery_Test11_generateTokensEntity() {
+    private static void parse_parseQuery_Test11_generateTokensEntity(Parse parser) {
         System.out.println("\ntestGenerateTokensEntity");
         boolean passed = true;
 
-        ArrayList<String> testResults = Parse.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky", false);
+        ArrayList<String> testResults = parser.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky");
         passed = passed && testResults.get(0).equals("MERAV");
         passed = passed && testResults.get(1).equals("bamba");
         passed = passed && testResults.get(2).equals("MERAV SHAKED");
@@ -224,7 +230,7 @@ public class TestsPart1 {
         System.out.println("passed: " + passed);
         //TODO: add tests for AllCAps
 
-        ArrayList<String> testResultsCaptial = Parse.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY", false);
+        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY");
         passed = passed && testResultsCaptial.get(0).equals("MERAV");
         passed = passed && testResultsCaptial.get(1).equals("bamba");
         passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
@@ -243,11 +249,11 @@ public class TestsPart1 {
         System.out.println("passed: " + passed);
     }
 
-    private static void parse_parseQuery_Test12_stemmer() {
+    private static void parse_parseQuery_Test12_stemmer(Parse parser) {
         System.out.println("\ntestStemmer");
         boolean passed = true;
-
-        ArrayList<String> testResults = Parse.parseQuery("sky banana studies students devastation", true);
+        parser.setUseStemmer(true);
+        ArrayList<String> testResults = parser.parseQuery("sky banana studies students devastation");
         passed = passed && testResults.get(0).equals("sky");
         passed = passed && testResults.get(1).equals("banana");
         passed = passed && testResults.get(2).equals("studi");
@@ -257,19 +263,20 @@ public class TestsPart1 {
 
     }
 
+
     /*
     System.out.println("\nsentenceTest");
-    ArrayList<String> sentenceTest = Parse.parseText(new Document("0","","I am (Merav). I am not amused/invested/interested in this code. I would like to pay (10,000) dollars for someone to replace me!"), false);
+    ArrayList<String> sentenceTest = parser.parseText(new Document("0","","I am (Merav). I am not amused/invested/interested in this code. I would like to pay (10,000) dollars for someone to replace me!"), false);
     for (int i = 0; i < sentenceTest.size(); i++) {
         System.out.println(sentenceTest.get(i));
     }
 */
 
-    private static boolean Parse_parseDocument_Test1_parseDocument() {
+    private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396001\\FB396001";
+        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396002\\FB396002";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
-        ArrayList<String> bagOfWords = Parse.parseDocument(documentsList.get(0), false);
+        ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
         for (String term : bagOfWords) {
             System.out.println(term);
         }
@@ -345,6 +352,8 @@ public class TestsPart1 {
             allPostingEntriesLists.add(Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0)));
         }
 
+        Documenter.shutdown();
+
         for (Trio trio : allPostingEntriesLists.get(0)) {
             System.out.println(trio);
         }
@@ -353,4 +362,72 @@ public class TestsPart1 {
         return false;
     }
 
+
+    public static void Model_Test2(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
+        String resultPath = "D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+
+
+        /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
+        final int NUMBEROFDOCUMENTPERPARSER = 5;
+
+
+
+        Documenter.setPath(resultPath);
+        //initializing the stop words set
+        Parse.loadStopWords(corpusPath);
+        File Corpus = new File(corpusPath);
+        File[] directories = Corpus.listFiles();
+        int currentDirectoryIndex = 0;
+
+        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS); //FIXME:MAGIC NUMBER
+        Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
+        RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
+
+        for (int i = 0; i < threads.length; i++) {
+            HashSet<String> entities = new HashSet<>();
+            HashSet<String> singleAppearanceEntities = new HashSet<>();
+
+            RunnableParse runnableParse = new RunnableParse(entities, singleAppearanceEntities, stemming);
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
+            runnableParses[i] = runnableParse;
+            currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
+
+            threads[i] = new Thread(runnableParse);
+            threads[i].start();
+        }
+
+        while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
+            int finishedThreadIndex = getFinishedThreadIndex(threads);
+            RunnableParse runnableParse = runnableParses[finishedThreadIndex];
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
+            threads[finishedThreadIndex] = new Thread(runnableParse);
+            threads[finishedThreadIndex].start();
+            currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
+        }
+        int numberOfDocumentsLeft = NUMBEROFDOCUMENTPERPARSER - currentDirectoryIndex;
+        if(numberOfDocumentsLeft > 0) {
+            int finishedThreadIndex = getFinishedThreadIndex(threads);
+            RunnableParse runnableParse = runnableParses[finishedThreadIndex];
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + numberOfDocumentsLeft));
+            threads[finishedThreadIndex] = new Thread(runnableParse);
+            threads[finishedThreadIndex].start();
+        }
+
+        //merge all the parsers from the RunnableParse
+        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntitiesToFile(threads, runnableParses);
+
+        //merge all the individuals posting entries and sort them
+        Documenter.mergeAllPostingEntries();
+        //now we have sorted posting entries files and we can iterate through them based on term name
+        Indexer indexer = new Indexer(resultPath , allSingleAppearanceEntities);
+        indexer.buildInvertedIndex();
+
+        //Closing all open ends
+        Documenter.shutdown();
+
+         */
+    }
 }

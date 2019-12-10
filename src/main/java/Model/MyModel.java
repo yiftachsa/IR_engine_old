@@ -57,9 +57,10 @@ public class MyModel extends Observable implements IModel {
         //From now on the paths are assumed to be valid
         Documenter.setPath(resultPath);
         //initializing the stop words set
-        Parse.loadStopWords(corpusPath);
-        File Corpus = new File(corpusPath);
+        Parse.loadStopWords(corpusPath+"\\stop-words");
+        File Corpus = new File(corpusPath+"\\corpus");
         File[] directories = Corpus.listFiles();
+
         int currentDirectoryIndex = 0;
 
         //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS); //FIXME:MAGIC NUMBER
@@ -76,9 +77,10 @@ public class MyModel extends Observable implements IModel {
             currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
 
             threads[i] = new Thread(runnableParse);
+        }
+        for (int i = 0; i <threads.length ; i++) {
             threads[i].start();
         }
-
         while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
@@ -104,6 +106,10 @@ public class MyModel extends Observable implements IModel {
         //now we have sorted posting entries files and we can iterate through them based on term name
         this.indexer = new Indexer(resultPath , allSingleAppearanceEntities);
         indexer.buildInvertedIndex();
+
+        //Closing all open ends
+        Documenter.shutdown();
+
 /*
         for (File directory : directories) {
             String filePath = directory.listFiles()[0].getAbsolutePath();

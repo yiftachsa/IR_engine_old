@@ -17,7 +17,6 @@ public class Parse {
     private static final double Billion = 1000000000;
     private static final int MAXENTITYLENGTH = 3;
 
-
     /**
      * Mapping between months names and their numbers.
      */
@@ -69,27 +68,25 @@ public class Parse {
         put("Dec", "12");
     }};
     private static HashSet<String> stopwords;
-    private HashSet<String> entities = new HashSet<>();
-    private HashSet<String> singleAppearanceEntities = new HashSet<>();
+    private HashSet<String> entities;
+    private HashSet<String> singleAppearanceEntities;
+    private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
 
-    public Parse() {
-    }
-
-    public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities) {
+    public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
         this.entities = entities;
         this.singleAppearanceEntities = singleAppearanceEntities;
+        this.useStemmer = useStemmer;
     }
 
     /**
      * Receives Query  , splits it into tokens and parses it.
      * Return ArrayList of Strings after parse
      *
-     * @param query       - String - user Query.
-     * @param useStemmer- boolean - indicate whether to use stemmer. if true stemmer is used.
+     * @param query - String - user Query.
      * @return
      */
-    public  ArrayList<String> parseQuery(String query, boolean useStemmer) {
+    public ArrayList<String> parseQuery(String query) {
         String[] tokens = query.split(" ");
         ArrayList<String> terms = parseText(tokens, useStemmer);
 
@@ -99,11 +96,10 @@ public class Parse {
     /**
      * Receives Document  , splits it into tokens and sends it to parseText function.
      *
-     * @param document   - Document
-     * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
+     * @param document - Document
      * @return ArrayList<String> of all the terms in the document after parse
      */
-    public ArrayList<String> parseDocument(Document document, boolean useStemmer) {
+    public ArrayList<String> parseDocument(Document document) {
         String[] tokens = document.getText().split(" ");
         ArrayList<String> terms = parseText(tokens, useStemmer);
 
@@ -136,6 +132,11 @@ public class Parse {
 
             //Numbers
             if (token.matches(".*\\d.*")) { //Token contains numbers
+
+                if(token.matches("\\d+s"))
+                {
+                    token=token.substring(0,token.length()-1);
+                }
 
                 //Dollar Detection
                 if (token.matches(".*[$m].*|.*bn.*")) { //checks for $ m b n FIXME: change to recognise bn and not b or n
@@ -181,7 +182,7 @@ public class Parse {
                         i++;
                     }
                     //Date
-                    else if (MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
+                    else if (token.matches("\\d+")&&MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
                         result = generateTokenDayMonth(token, firstNextToken);
                         terms.add(result.getKey());
@@ -286,16 +287,20 @@ public class Parse {
                 while (token.indexOf('/') > 0) {
                     String term = token.substring(0, token.indexOf('/'));
                     token = token.substring(token.indexOf('/') + 1);
-                    if (useStemmer) {
-                        terms.add(Stemmer.stem(term));
-                    } else {
-                        terms.add(term);
+                    if(!isStopWord(term.toLowerCase())) {
+                        if (useStemmer) {
+                            terms.add(Stemmer.stem(term));
+                        } else {
+                            terms.add(term);
+                        }
                     }
                 }
-                if (useStemmer) {
-                    terms.add(Stemmer.stem(token.toLowerCase()));
-                } else {
-                    terms.add(token);
+                if(!isStopWord(token.toLowerCase())) {
+                    if (useStemmer) {
+                        terms.add(Stemmer.stem(token.toLowerCase()));
+                    } else {
+                        terms.add(token);
+                    }
                 }
             }
             // Hyphens <<<Word-Word-Word>>>
@@ -459,14 +464,14 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
-                continue;
+            else if (character == '!' ||character == '?' ||character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
+                    continue;
             } else {
                 result = result + character;
             }
         }
         //Removing dot in the end of the token
-        if ((result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
+        if ((result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
         }
         return result;
@@ -481,7 +486,7 @@ public class Parse {
     private String generateTokenSimpleNumber(String token) {
         token = token.replaceAll(",", ""); //remove commas 1,000 -> 1000
 
-        if (token.matches("\\d+.?\\d*")) {
+        if (token.matches("\\d+\\.?\\d*")) {
             double numberToken = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
             if (numberToken >= Kilo && numberToken < Million) //token between Kilo and Million
             {
@@ -570,13 +575,18 @@ public class Parse {
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
+            if(token.matches("\\d+-.*")){
+                firstNextToken = token.substring(token.indexOf("-")+1);
+                token=token.substring(0,token.indexOf("-"));
+            }
             if (firstNextToken.equals("million") || firstNextToken.equals("Million")) { // <<<$price million>>>
                 token = token + " M Dollars";
                 additionalTokensProcessed++;
             } else if (firstNextToken.equals("billion") || firstNextToken.equals("Billion")) { // <<<$price billion>>>
                 token = token + "000 M Dollars";
                 additionalTokensProcessed++;
-            } else { // <<<$price>>>
+            }
+            else if(token.matches("\\$\\d+")) { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
                 if (value >= Million) {
@@ -705,12 +715,12 @@ public class Parse {
     /**
      * Receives a path to directory containing stop-word file and loads it to the "stopwords" Hash-set
      *
-     * @param corpusPath
+     * @param stopWordsPath
      */
-    public static void loadStopWords(String corpusPath) {
-        if (stopwords != null) {
+    public static void loadStopWords(String stopWordsPath) {
+        if (stopwords == null) {
             stopwords = new HashSet<>();
-            File file = new File(corpusPath);
+            File file = new File(stopWordsPath);
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                 String line = "";
@@ -741,4 +751,7 @@ public class Parse {
         return isStopWord;
     }
 
+    public void setUseStemmer(boolean useStemmer) {
+        this.useStemmer = useStemmer;
+    }
 }

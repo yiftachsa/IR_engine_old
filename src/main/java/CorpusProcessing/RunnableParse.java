@@ -15,7 +15,6 @@ public class RunnableParse implements Runnable {
     private HashSet<String> singleAppearanceEntities;
     private File[] filesToParse;
     private Parse parser;
-    private boolean useStemmer;
 
     public HashSet<String> getEntities() {
         return entities;
@@ -28,8 +27,7 @@ public class RunnableParse implements Runnable {
     public RunnableParse(HashSet<String> entities, HashSet<String> singleAppearanceEntities , boolean useStemmer) {
         this.entities = entities;
         this.singleAppearanceEntities = singleAppearanceEntities;
-        this.parser = new Parse(entities, singleAppearanceEntities);
-        this.useStemmer = useStemmer;
+        this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
     }
 
     public void setFilesToParse(File[] filesToParse) {
@@ -49,7 +47,7 @@ public class RunnableParse implements Runnable {
                 ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
 
                 for (Document document : documents) {
-                    ArrayList<String> bagOfWords = parser.parseDocument(document, useStemmer);
+                    ArrayList<String> bagOfWords = parser.parseDocument(document);
                     ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
                     allPostingEntriesLists.add(postingsEntries);
@@ -86,7 +84,5 @@ public class RunnableParse implements Runnable {
             }
 
         }
-
-
     }
 }

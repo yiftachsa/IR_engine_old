@@ -32,10 +32,12 @@ public class Mapper {
         if(termFrequency>maxTermFrequency){
             maxTermFrequency = termFrequency;
         }
-        Documenter.saveDocumentDetails(DocNO, maxTermFrequency,postingEntries.size());
+        Documenter.saveDocumentDetails(DocNO, maxTermFrequency,postingEntries.size(), terms.size());
 
         return postingEntries;
     }
+
+
     public static ArrayList<Trio> mergeAndSortTwoPostingEntriesLists(ArrayList<Trio> list1 , ArrayList<Trio> list2)
     {
         //TODO: check time complexity in compression to a simple merge sort geek to geek
