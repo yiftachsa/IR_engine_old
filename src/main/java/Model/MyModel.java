@@ -3,13 +3,7 @@ package Model;
 import CorpusProcessing.*;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Observable;
-import java.util.concurrent.*;
+import java.util.*;
 
 //import IR_engine.CorpusProcessing;
 
@@ -18,6 +12,8 @@ public class MyModel extends Observable implements IModel {
     private boolean stemming;
     private Indexer indexer;
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 5;
+
 
 /*  setChanged();
     notifyObservers();*/
@@ -59,8 +55,9 @@ public class MyModel extends Observable implements IModel {
             notifyObservers("Bad input"); //TODO: Maybe replace with enum
         }
         //From now on the paths are assumed to be valid
-        indexer = new Indexer(resultPath);
         Documenter.setPath(resultPath);
+        //initializing the stop words set
+        Parse.loadStopWords(corpusPath);
         File Corpus = new File(corpusPath);
         File[] directories = Corpus.listFiles();
         int currentDirectoryIndex = 0;
@@ -72,32 +69,46 @@ public class MyModel extends Observable implements IModel {
         for (int i = 0; i < threads.length; i++) {
             HashSet<String> entities = new HashSet<>();
             HashSet<String> singleAppearanceEntities = new HashSet<>();
-            RunnableParse runnableParse = new RunnableParse(entities, singleAppearanceEntities);
+
+            RunnableParse runnableParse = new RunnableParse(entities, singleAppearanceEntities, stemming);
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
+            runnableParses[i] = runnableParse;
+            currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
+
             threads[i] = new Thread(runnableParse);
-            //threads[i].start();
+            threads[i].start();
         }
 
-        for (int i = 0; i < runnableParses.length; i++) {
-            runnableParses[i].setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + 8));
-            threads[i].start();
-            currentDirectoryIndex = currentDirectoryIndex + 8;
-        }
-        while (currentDirectoryIndex < directories.length - 1) {
+        while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
-            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + 8));
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             threads[finishedThreadIndex] = new Thread(runnableParse);
             threads[finishedThreadIndex].start();
-            currentDirectoryIndex = currentDirectoryIndex + 8;
+            currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
         }
-        //TODO::parse the last docs
+        int numberOfDocumentsLeft = NUMBEROFDOCUMENTPERPARSER - currentDirectoryIndex;
+        if(numberOfDocumentsLeft > 0) {
+            int finishedThreadIndex = getFinishedThreadIndex(threads);
+            RunnableParse runnableParse = runnableParses[finishedThreadIndex];
+            runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + numberOfDocumentsLeft));
+            threads[finishedThreadIndex] = new Thread(runnableParse);
+            threads[finishedThreadIndex].start();
+        }
 
+        //merge all the parsers from the RunnableParse
+        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntitiesToFile(threads, runnableParses);
 
+        //merge all the individuals posting entries and sort them
+        Documenter.mergeAllPostingEntries();
+        //now we have sorted posting entries files and we can iterate through them based on term name
+        this.indexer = new Indexer(resultPath , allSingleAppearanceEntities);
+        indexer.buildInvertedIndex();
+/*
         for (File directory : directories) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
-                Parse.loadStopWords(corpusPath);
 
                 ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
                 ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
@@ -106,7 +117,7 @@ public class MyModel extends Observable implements IModel {
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = Parse.parseDocument(document, stemming);
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
-                    ArrayList<Trio> postingsEntries = Mapper.proceedBagOfWords(document.getId(), bagOfWords);
+                    ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
                     allPostingEntriesLists.add(postingsEntries);
 
                     if (allPostingEntriesLists.size() >= 2) {
@@ -141,17 +152,64 @@ public class MyModel extends Observable implements IModel {
             }
 
         }
+*/
 
-        //merge all the individuals posting entries and sort them
-        Documenter.mergeAllPostingEntries();
-        //now we have sorted posting entries files and we can iterate through them based on term name
-        indexer.buildInvertedIndex();
 
 
     }
 
+    private HashSet<String> getExcludedEntitiesAndSaveEntitiesToFile(Thread[] threads, RunnableParse[] runnableParses) {
+        TreeSet<String> entitiesTreeSet = new TreeSet<>(); //TODO: Check if using a hashset and then sorting us quicker
+        LinkedList<String> singleAppearanceEntitiesList = new LinkedList<>();
+
+        for (int i = 0; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            entitiesTreeSet.addAll(runnableParses[i].getEntities());
+            singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
+        }
+        //merge-sorting single entities
+        HashSet<String> [] multipleAndUniqEntities = getMultipleAppearancesEntities(singleAppearanceEntitiesList);
+        entitiesTreeSet.addAll(multipleAndUniqEntities[0]);
+        //Writing the entities
+        Documenter.saveEntities(entitiesTreeSet);
+        //sorting the entities
+        //TreeSet<String> sortedEntities = new TreeSet<>(entitiesHashSet);
+        /*ArrayList<String> sortedEntities = new ArrayList<>(entitiesHashSet);
+        Collections.sort(sortedEntities);*/
+        return multipleAndUniqEntities[1];
+    }
+
+
+    private HashSet<String>[] getMultipleAppearancesEntities(LinkedList<String> singleAppearanceEntitiesList) {
+        HashSet<String> uniqueEntities = new HashSet<>();
+        HashSet<String> duplicatedEntities = new HashSet<>();
+        for (int i = 0; i < singleAppearanceEntitiesList.size(); i++) {
+            String currentEntity = singleAppearanceEntitiesList.get(i);
+            if(uniqueEntities.contains(currentEntity)){
+                duplicatedEntities.add(currentEntity);
+            }else{
+                uniqueEntities.add(currentEntity);
+            }
+        }
+        uniqueEntities.removeAll(duplicatedEntities);
+        HashSet<String> [] result = new HashSet[2];
+        result[0] = duplicatedEntities;
+        result[1] = uniqueEntities;
+        return result;
+    }
+
     private int getFinishedThreadIndex(Thread[] threads) {
-        return 0; //FIXME
+        while(true){
+            for (int i = 0; i < threads.length; i++) {
+                if(!threads[i].isAlive()){
+                    return i;
+                }
+            }
+        }
     }
 
     /**

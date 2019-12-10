@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class Mapper {
 
-    public static ArrayList<Trio> proceedBagOfWords(String DocNO, ArrayList<String> terms){
+    public static ArrayList<Trio> processBagOfWords(String DocNO, ArrayList<String> terms){
         ArrayList<Trio> postingEntries = new ArrayList<Trio>();
         int maxTermFrequency = 1;
 

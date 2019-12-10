@@ -707,7 +707,7 @@ public class Parse {
      *
      * @param corpusPath
      */
-    public void loadStopWords(String corpusPath) {
+    public static void loadStopWords(String corpusPath) {
         if (stopwords != null) {
             stopwords = new HashSet<>();
             File file = new File(corpusPath);

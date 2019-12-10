@@ -204,14 +204,12 @@ public class Documenter {
                     new File(filesPath + "\\PostingFiles").mkdir();
                 }
                 writer = new BufferedWriter(new FileWriter(filesPath + "\\PostingDetails\\" + index));
-                for(SortedMap.Entry<String, ArrayList<Pair<String,Integer>>> postingLine : posting.entrySet())
-                {
+                for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : posting.entrySet()) {
                     String term = postingLine.getKey();
-                    ArrayList<Pair<String,Integer>> pairs = postingLine.getValue();
-                    String out = term+"~";
-                    for (Pair<String , Integer> pair : pairs)
-                    {
-                        out = out + "<"+pair.getKey()+ ","+pair.getValue()+">";
+                    ArrayList<Pair<String, Integer>> pairs = postingLine.getValue();
+                    String out = term + "~";
+                    for (Pair<String, Integer> pair : pairs) {
+                        out = out + "<" + pair.getKey() + "," + pair.getValue() + ">";
                     }
                     writer.write(out);
                     writer.newLine();
@@ -225,5 +223,18 @@ public class Documenter {
         }
     }
 
+
+    public static void saveEntities(TreeSet<String> entitiesTreeSet) {
+
+        new File(filesPath + "\\entities").mkdir();
+        String filePath = filesPath + "\\entities\\entities";
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            outputStream.writeObject(entitiesTreeSet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 

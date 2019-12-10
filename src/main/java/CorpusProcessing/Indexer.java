@@ -19,9 +19,11 @@ public class Indexer {
      */
     private SortedMap<String, ArrayList<Pair<String, Integer>>> posting;
 
-    private Map<String, String> uniqueDictionary;
+    private Map<String, String> uniqueDictionary; //FIXME: maybe wh should delete it.
 
-    private Map<String, String> entitiesDictionary;
+    private Map<String, String> entitiesDictionary; //FIXME: maybe wh should delete it.
+
+    private HashSet<String> singleAppearances;
 
     private int postingCount;
 
@@ -29,13 +31,14 @@ public class Indexer {
 
     private static final double NUMBEROFTRIOSINPOSTINGFILE = Math.pow(2, 12);
 
-    public Indexer(String filePath) {
+    public Indexer(String filePath , HashSet<String> singleAppearanceEntities) {
         this.dictionary = new HashMap<>(); //FIXME: If the dictionary need to be sorted we need to use TreeMap
         this.posting = new TreeMap<>();
         this.uniqueDictionary = new HashMap<>();
         this.entitiesDictionary = new HashMap<>();
         this.postingCount = 0;
         this.filePath = filePath;
+        this.singleAppearances = singleAppearanceEntities;
     }
 
     public void buildInvertedIndex() {
@@ -58,6 +61,12 @@ public class Indexer {
                     String term = postingEntry.getTerm();
                     String docId = postingEntry.getDocid();
                     int termFrequency = postingEntry.getFrequency();
+                    //appears only one in all corpus
+                    if(singleAppearances.contains(term))
+                    {
+                        continue;
+                    }
+
                     if (dictionary.containsKey(term)) {
                         int newFrequency = dictionary.get(term).getKey() + 1;
                         dictionary.put(term, new Pair<Integer, String>(newFrequency, postingCount + ""));
@@ -150,4 +159,6 @@ public class Indexer {
     public static double getNUMBEROFTRIOSINPOSTINGFILE() {
         return NUMBEROFTRIOSINPOSTINGFILE;
     }
+
+
 }
