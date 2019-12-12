@@ -17,7 +17,6 @@ public class Parse {
     private static final double Billion = 1000000000;
     private static final int MAXENTITYLENGTH = 3;
 
-
     /**
      * Mapping between months names and their numbers.
      */
@@ -69,25 +68,27 @@ public class Parse {
         put("Dec", "12");
     }};
     private static HashSet<String> stopwords;
-    private static HashSet<String> entities = new HashSet<>();
-    private static HashSet<String> singleAppearanceEntities = new HashSet<>();
+    private HashSet<String> entities;
+    private HashSet<String> singleAppearanceEntities;
+    private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
 
-    public Parse() {
-
+    public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
+        this.entities = entities;
+        this.singleAppearanceEntities = singleAppearanceEntities;
+        this.useStemmer = useStemmer;
     }
 
     /**
      * Receives Query  , splits it into tokens and parses it.
      * Return ArrayList of Strings after parse
      *
-     * @param query       - String - user Query.
-     * @param useStemmer- boolean - indicate whether to use stemmer. if true stemmer is used.
+     * @param query - String - user Query.
      * @return
      */
-    public static ArrayList<String> parseQuery(String query, boolean useStemmer) {
+    public ArrayList<String> parseQuery(String query) {
         String[] tokens = query.split(" ");
-        ArrayList<String> terms = Parse.parseText(tokens, useStemmer);
+        ArrayList<String> terms = parseText(tokens, useStemmer);
 
         return terms;
     }
@@ -95,13 +96,12 @@ public class Parse {
     /**
      * Receives Document  , splits it into tokens and sends it to parseText function.
      *
-     * @param document   - Document
-     * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
+     * @param document - Document
      * @return ArrayList<String> of all the terms in the document after parse
      */
-    public static ArrayList<String> parseDocument(Document document, boolean useStemmer) {
+    public ArrayList<String> parseDocument(Document document) {
         String[] tokens = document.getText().split(" ");
-        ArrayList<String> terms = Parse.parseText(tokens, useStemmer);
+        ArrayList<String> terms = parseText(tokens, useStemmer);
 
         return terms;
     }
@@ -113,7 +113,7 @@ public class Parse {
      * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
      * @return - ArrayList<String> - all the words from the text of the document after parsing
      */
-    public static ArrayList<String> parseText(String[] tokens, boolean useStemmer) {
+    public ArrayList<String> parseText(String[] tokens, boolean useStemmer) {
         ArrayList<String> terms = new ArrayList<>();
 
         //Start of parsing
@@ -128,19 +128,24 @@ public class Parse {
             }
 
             //Striping irrelevant symbols
-            token = Parse.strip(token);
+            token = strip(token);
 
             //Numbers
             if (token.matches(".*\\d.*")) { //Token contains numbers
+
+                if(token.matches("\\d+s"))
+                {
+                    token=token.substring(0,token.length()-1);
+                }
 
                 //Dollar Detection
                 if (token.matches(".*[$m].*|.*bn.*")) { //checks for $ m b n FIXME: change to recognise bn and not b or n
                     String firstNextToken = "";
                     if (i < tokens.length - 1) {
-                        firstNextToken = Parse.strip(tokens[i + 1]);
+                        firstNextToken = strip(tokens[i + 1]);
                     }
 
-                    result = Parse.generateTokenDollar(token, firstNextToken);
+                    result = generateTokenDollar(token, firstNextToken);
                     terms.add(result.getKey());
                     i = i + result.getValue();
                 }
@@ -159,7 +164,7 @@ public class Parse {
                 else {
                     String firstNextToken = "";
                     if (i < tokens.length - 1) {
-                        firstNextToken = Parse.strip(tokens[i + 1]);
+                        firstNextToken = strip(tokens[i + 1]);
                     }
                     //Fractions
                     if (token.matches("\\d+/\\d+")) {
@@ -177,9 +182,9 @@ public class Parse {
                         i++;
                     }
                     //Date
-                    else if (MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
+                    else if (token.matches("\\d+")&&MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
-                        result = Parse.generateTokenDayMonth(token, firstNextToken);
+                        result = generateTokenDayMonth(token, firstNextToken);
                         terms.add(result.getKey());
                         i = i + result.getValue();
                     }
@@ -199,7 +204,7 @@ public class Parse {
                     //Prices - Dollars
                     else if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) {
 
-                        result = Parse.generateTokenPrice(token);
+                        result = generateTokenPrice(token);
 
                         terms.add(result.getKey());
                         i = i + result.getValue();
@@ -208,13 +213,13 @@ public class Parse {
                     else if (firstNextToken.equals("Million") || firstNextToken.equals("million") || firstNextToken.equals("Billion") || firstNextToken.equals("billion")) {
                         String secondNextToken = "";
                         if (i < tokens.length - 2) {
-                            secondNextToken = Parse.strip(tokens[i + 2]);
+                            secondNextToken = strip(tokens[i + 2]);
                         }
                         String thirdNextToken = "";
                         if (i < tokens.length - 3) {
-                            thirdNextToken = Parse.strip(tokens[i + 3]);
+                            thirdNextToken = strip(tokens[i + 3]);
                         }
-                        result = Parse.generateTokenLargeNumbers(token, firstNextToken, secondNextToken, thirdNextToken);
+                        result = generateTokenLargeNumbers(token, firstNextToken, secondNextToken, thirdNextToken);
                         terms.add(result.getKey());
                         i = i + result.getValue();
                     }
@@ -222,7 +227,7 @@ public class Parse {
                     else if ((firstNextToken.matches("\\d+/\\d+"))) {
                         String secondNextToken = "";
                         if (i < tokens.length - 2) {
-                            secondNextToken = Parse.strip(tokens[i + 2]);
+                            secondNextToken = strip(tokens[i + 2]);
                         }
                         if (secondNextToken.equals("dollars") || secondNextToken.equals("Dollars")) { //<<<Price Fraction Dollars>>>
                             terms.add(token + " " + firstNextToken + " Dollars");
@@ -238,10 +243,10 @@ public class Parse {
                 }
             }
             //DATE
-            else if (Parse.MonthMap.containsKey(token)) {
+            else if (MonthMap.containsKey(token)) {
                 String firstNextToken = "";
                 if (i < tokens.length - 1) {
-                    firstNextToken = Parse.strip(tokens[i + 1]);
+                    firstNextToken = strip(tokens[i + 1]);
                 }
                 result = generateTokenMonth(token, firstNextToken);
                 terms.add(result.getKey());
@@ -251,15 +256,15 @@ public class Parse {
             else if (token.equals("Between") || token.equals("between")) {
                 String firstNextToken = "";
                 if (i < tokens.length - 1) {
-                    firstNextToken = Parse.strip(tokens[i + 1]);
+                    firstNextToken = strip(tokens[i + 1]);
                 }
                 String secondNextToken = "";
                 if (i < tokens.length - 2) {
-                    secondNextToken = Parse.strip(tokens[i + 2]);
+                    secondNextToken = strip(tokens[i + 2]);
                 }
                 String thirdNextToken = "";
                 if (i < tokens.length - 3) {
-                    thirdNextToken = Parse.strip(tokens[i + 3]);
+                    thirdNextToken = strip(tokens[i + 3]);
                 }
                 if (firstNextToken.matches("\\d+")) {
 
@@ -282,16 +287,20 @@ public class Parse {
                 while (token.indexOf('/') > 0) {
                     String term = token.substring(0, token.indexOf('/'));
                     token = token.substring(token.indexOf('/') + 1);
-                    if (useStemmer) {
-                        terms.add(Stemmer.stem(term));
-                    } else {
-                        terms.add(term);
+                    if(!isStopWord(term.toLowerCase())) {
+                        if (useStemmer) {
+                            terms.add(Stemmer.stem(term));
+                        } else {
+                            terms.add(term);
+                        }
                     }
                 }
-                if (useStemmer) {
-                    terms.add(Stemmer.stem(token.toLowerCase()));
-                } else {
-                    terms.add(token);
+                if(!isStopWord(token.toLowerCase())) {
+                    if (useStemmer) {
+                        terms.add(Stemmer.stem(token.toLowerCase()));
+                    } else {
+                        terms.add(token);
+                    }
                 }
             }
             // Hyphens <<<Word-Word-Word>>>
@@ -314,13 +323,13 @@ public class Parse {
 
                 String nextToken = "";
                 if (i < tokens.length - 1) {
-                    nextToken = Parse.strip(tokens[i + 1]);
+                    nextToken = strip(tokens[i + 1]);
                 }
 
                 //Get all the following words which begins with a capital letter
                 for (int j = 1; j + i < tokens.length - 1 && nextToken.matches("^[A-Z].*"); j++) {
                     entityTokensCandidates.add(nextToken);
-                    nextToken = Parse.strip(tokens[i + j + 1]);
+                    nextToken = strip(tokens[i + j + 1]);
                     if (i + j == tokens.length - 2) {
                         entityTokensCandidates.add(nextToken);
                     }
@@ -360,7 +369,7 @@ public class Parse {
 
                 i = i + resultList.getValue();
             } else {
-                if (!Parse.isStopWord(token.toLowerCase()))
+                if (!isStopWord(token.toLowerCase()))
                     if (useStemmer) {
                         terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
@@ -377,7 +386,7 @@ public class Parse {
      * @param wordList - ArrayList<String> - list of words
      * @return - boolean - true if all the words are all capital letters
      */
-    private static boolean isAllCapsSequence(ArrayList<String> wordList) {
+    private boolean isAllCapsSequence(ArrayList<String> wordList) {
         boolean areAllCaps = true;
         for (String word : wordList) {
             if (!word.matches("[A-Z]+")) {
@@ -395,7 +404,7 @@ public class Parse {
      * @param entityCandidates - ArrayList<String> - a list of tokens with all capital letters
      * @return - Pair<ArrayList<String>,Integer> - <entity and individual tokens, additionalTokensProcessed>
      */
-    private static Pair<ArrayList<String>, Integer> generateTokensEntity(ArrayList<String> entityCandidates) {
+    private Pair<ArrayList<String>, Integer> generateTokensEntity(ArrayList<String> entityCandidates) {
         int additionalTokensProcessed = 0;
         ArrayList<String> resultList = new ArrayList<>();
         String entity = "";
@@ -446,7 +455,7 @@ public class Parse {
      * @param token - String - a word with irrelevant symbols
      * @return - String -a word without irrelevant symbols
      */
-    private static String strip(String token) {
+    private String strip(String token) {
         String result = "";
         char[] charArray = token.toCharArray();
         for (char character : charArray) {
@@ -455,14 +464,14 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
-                continue;
+            else if (character == '!' ||character == '?' ||character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
+                    continue;
             } else {
                 result = result + character;
             }
         }
         //Removing dot in the end of the token
-        if ((result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
+        if ((result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
         }
         return result;
@@ -474,23 +483,23 @@ public class Parse {
      * @param token - String - number token
      * @return - String - formatted token
      */
-    private static String generateTokenSimpleNumber(String token) {
+    private String generateTokenSimpleNumber(String token) {
         token = token.replaceAll(",", ""); //remove commas 1,000 -> 1000
 
-        if (token.matches("\\d+.?\\d*")) {
+        if (token.matches("\\d+\\.?\\d*")) {
             double numberToken = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
             if (numberToken >= Kilo && numberToken < Million) //token between Kilo and Million
             {
                 numberToken = numberToken / Kilo;
-                token = Parse.doubleDecimalFormat(numberToken) + "K";
+                token = doubleDecimalFormat(numberToken) + "K";
             } else if (numberToken >= Million && numberToken < Billion) //token between Million to Trillion
             {
                 numberToken = numberToken / Million;
-                token = Parse.doubleDecimalFormat(numberToken) + "M";
+                token = doubleDecimalFormat(numberToken) + "M";
             } else if (numberToken >= Billion) //token up to Trillion
             {
                 numberToken = numberToken / Billion;
-                token = Parse.doubleDecimalFormat(numberToken) + "B";
+                token = doubleDecimalFormat(numberToken) + "B";
             }
         }
 
@@ -505,7 +514,7 @@ public class Parse {
      * @param firstNextToken - String - the following token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String, Integer> generateTokenMonth(String token, String firstNextToken) {
+    private Pair<String, Integer> generateTokenMonth(String token, String firstNextToken) {
         //String[] newTokenWithLastTokenProcessed = {"",""};
         int additionalTokensProcessed = 0;
 
@@ -514,13 +523,13 @@ public class Parse {
             int firstNextTokenValue = Integer.parseInt(firstNextToken);
             if (firstNextTokenValue < 10 && firstNextTokenValue > 0) //single digit days {1-9}
             {
-                token = Parse.MonthMap.get(token) + "-0" + firstNextTokenValue;
+                token = MonthMap.get(token) + "-0" + firstNextTokenValue;
             } else if (firstNextTokenValue < 32 && firstNextTokenValue > 9) //double digit days {10-31}
             {
-                token = Parse.MonthMap.get(token) + "-" + firstNextTokenValue;
+                token = MonthMap.get(token) + "-" + firstNextTokenValue;
             } else // firstNextToken is a year
             {
-                token = firstNextToken + "-" + Parse.MonthMap.get(token);
+                token = firstNextToken + "-" + MonthMap.get(token);
             }
             additionalTokensProcessed++;
         }
@@ -537,15 +546,15 @@ public class Parse {
      * @param firstNextToken - String - the following token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String, Integer> generateTokenDayMonth(String token, String firstNextToken) {
+    private Pair<String, Integer> generateTokenDayMonth(String token, String firstNextToken) {
         int additionalTokensProcessed = 0;
         int tokenValue = Integer.parseInt(token);
         if (tokenValue < 10 && tokenValue > 0) //single digit days {1-9}
         {
-            token = Parse.MonthMap.get(firstNextToken) + "-0" + tokenValue;
+            token = MonthMap.get(firstNextToken) + "-0" + tokenValue;
         } else if (tokenValue < 32 && tokenValue > 9) //double digit days {10-31}
         {
-            token = Parse.MonthMap.get(firstNextToken) + "-" + tokenValue;
+            token = MonthMap.get(firstNextToken) + "-" + tokenValue;
         }
         additionalTokensProcessed++;
 
@@ -561,25 +570,30 @@ public class Parse {
      * @param firstNextToken - String - the following token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String, Integer> generateTokenDollar(String token, String firstNextToken) {
+    private Pair<String, Integer> generateTokenDollar(String token, String firstNextToken) {
         int additionalTokensProcessed = 0;
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
+            if(token.matches("\\d+-.*")){
+                firstNextToken = token.substring(token.indexOf("-")+1);
+                token=token.substring(0,token.indexOf("-"));
+            }
             if (firstNextToken.equals("million") || firstNextToken.equals("Million")) { // <<<$price million>>>
                 token = token + " M Dollars";
                 additionalTokensProcessed++;
             } else if (firstNextToken.equals("billion") || firstNextToken.equals("Billion")) { // <<<$price billion>>>
                 token = token + "000 M Dollars";
                 additionalTokensProcessed++;
-            } else { // <<<$price>>>
+            }
+            else if(token.matches("\\$\\d+")) { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
                 if (value >= Million) {
                     value = value / Million;
-                    token = Parse.doubleDecimalFormat(value) + " M Dollars";
+                    token = doubleDecimalFormat(value) + " M Dollars";
                 } else {
-                    token = Parse.doubleDecimalFormat(value) + " Dollars";
+                    token = doubleDecimalFormat(value) + " Dollars";
                 }
             }
         } else if (token.matches("\\d+[mM]|\\d+.\\d+[mM]")) { // <<<Price'm' Dollars>>>
@@ -604,7 +618,7 @@ public class Parse {
      * @param token - String - price
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String, Integer> generateTokenPrice(String token) {
+    private Pair<String, Integer> generateTokenPrice(String token) {
         // <<<Price Dollars>>>
         int additionalTokensProcessed = 0;
         token = token.replaceAll(",", "");
@@ -612,9 +626,9 @@ public class Parse {
         double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
         if (value >= Million) {
             value = value / Million;
-            token = Parse.doubleDecimalFormat(value) + " M Dollars";
+            token = doubleDecimalFormat(value) + " M Dollars";
         } else {
-            token = Parse.doubleDecimalFormat(value) + " Dollars";
+            token = doubleDecimalFormat(value) + " Dollars";
         }
 
         additionalTokensProcessed++;
@@ -632,7 +646,7 @@ public class Parse {
      * @param thirdNextToken  - String - the third next token
      * @return - Pair<String,Integer> - <token after processing, additionalTokensProcessed>
      */
-    private static Pair<String, Integer> generateTokenLargeNumbers(String token, String firstNextToken, String secondNextToken, String thirdNextToken) {
+    private Pair<String, Integer> generateTokenLargeNumbers(String token, String firstNextToken, String secondNextToken, String thirdNextToken) {
         int additionalTokensProcessed = 0;
 
         if (firstNextToken.equals("Million") || firstNextToken.equals("million")) {
@@ -667,7 +681,7 @@ public class Parse {
         return result;
     }
 
-    private static ArrayList<String> generateTokenHyphens(String token) {
+    private ArrayList<String> generateTokenHyphens(String token) {
         ArrayList<String> resultList = new ArrayList<>();
         if (token.matches(".*-.*-.*")) {
             resultList.add(token);
@@ -691,7 +705,7 @@ public class Parse {
      * @param number - double
      * @return - a number with three numbers after the point
      */
-    private static String doubleDecimalFormat(double number) {
+    private String doubleDecimalFormat(double number) {
         DecimalFormat df = new DecimalFormat("#.###");
         df.setRoundingMode(RoundingMode.FLOOR);
         String result = df.format(number);
@@ -701,12 +715,12 @@ public class Parse {
     /**
      * Receives a path to directory containing stop-word file and loads it to the "stopwords" Hash-set
      *
-     * @param corpusPath
+     * @param stopWordsPath
      */
-    public static void loadStopWords(String corpusPath) {
-        if (stopwords != null) {
+    public static void loadStopWords(String stopWordsPath) {
+        if (stopwords == null) {
             stopwords = new HashSet<>();
-            File file = new File(corpusPath);
+            File file = new File(stopWordsPath);
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                 String line = "";
@@ -727,7 +741,7 @@ public class Parse {
      * @param token - String - a word to check
      * @return - boolean - true if "stopwords" contains the token, else false
      */
-    private static boolean isStopWord(String token) {
+    private boolean isStopWord(String token) {
         boolean isStopWord = false;
         if (stopwords != null) {
             if (stopwords.contains(token)) {
@@ -737,4 +751,7 @@ public class Parse {
         return isStopWord;
     }
 
+    public void setUseStemmer(boolean useStemmer) {
+        this.useStemmer = useStemmer;
+    }
 }
