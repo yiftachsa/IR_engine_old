@@ -16,8 +16,8 @@ public class TestsPart1 {
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        //parseTest();
-        Parse_parseDocument_Test1_parseDocument(parser);
+        parseTest(parser);
+        //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
@@ -46,18 +46,18 @@ public class TestsPart1 {
     }
 
     private static void parseTest(Parse parser) {
-        parse_parseQuery_Test1_generateTokenDollar(parser);
-        parse_parseQuery_Test2_generateTokenMonth(parser);
-        parse_parseQuery_Test3_Percentage(parser);
-        parse_parseQuery_Test4_Thousand(parser);
-        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
-        parse_parseQuery_Test6_generateTokenPrice(parser);
-        parse_parseQuery_Test7_Fractions(parser);
-        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
-        parse_parseQuery_Test9_Between(parser);
-        parse_parseQuery_Test10_FirstCustomAdd(parser);
+//        parse_parseQuery_Test1_generateTokenDollar(parser);
+//        parse_parseQuery_Test2_generateTokenMonth(parser);
+//        parse_parseQuery_Test3_Percentage(parser);
+//        parse_parseQuery_Test4_Thousand(parser);
+//        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+//        parse_parseQuery_Test6_generateTokenPrice(parser);
+//        parse_parseQuery_Test7_Fractions(parser);
+//        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+//        parse_parseQuery_Test9_Between(parser);
+//        parse_parseQuery_Test10_FirstCustomAdd(parser);
         parse_parseQuery_Test11_generateTokensEntity(parser);
-        parse_parseQuery_Test12_stemmer(parser);
+ //       parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
@@ -210,43 +210,46 @@ public class TestsPart1 {
         System.out.println("\ntestGenerateTokensEntity");
         boolean passed = true;
 
-        ArrayList<String> testResults = parser.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky");
-        passed = passed && testResults.get(0).equals("MERAV");
-        passed = passed && testResults.get(1).equals("bamba");
-        passed = passed && testResults.get(2).equals("MERAV SHAKED");
-        passed = passed && testResults.get(3).equals("MERAV");
-        passed = passed && testResults.get(4).equals("SHAKED");
-        passed = passed && testResults.get(5).equals("bamba");
-        passed = passed && testResults.get(6).equals("MERAV SHAKED YIFTACH");
-        passed = passed && testResults.get(7).equals("MERAV");
-        passed = passed && testResults.get(8).equals("SHAKED");
-        passed = passed && testResults.get(9).equals("YIFTACH");
-        passed = passed && testResults.get(10).equals("bamba");
-        passed = passed && testResults.get(11).equals("MERAV SHAKED YIFTACH SAVRANSKY");
-        passed = passed && testResults.get(12).equals("MERAV");
-        passed = passed && testResults.get(13).equals("SHAKED");
-        passed = passed && testResults.get(14).equals("YIFTACH");
-        passed = passed && testResults.get(15).equals("SAVRANSKY");
-        System.out.println("passed: " + passed);
+//        ArrayList<String> testResults = parser.parseQuery("Merav bamba Merav Shaked bamba Merav Shaked Yiftach bamba Merav Shaked Yiftach Savransky");
+//        passed = passed && testResults.get(0).equals("MERAV");
+//        passed = passed && testResults.get(1).equals("bamba");
+//        passed = passed && testResults.get(2).equals("MERAV SHAKED");
+//        passed = passed && testResults.get(3).equals("MERAV");
+//        passed = passed && testResults.get(4).equals("SHAKED");
+//        passed = passed && testResults.get(5).equals("bamba");
+//        passed = passed && testResults.get(6).equals("MERAV SHAKED YIFTACH");
+//        passed = passed && testResults.get(7).equals("MERAV");
+//        passed = passed && testResults.get(8).equals("SHAKED");
+//        passed = passed && testResults.get(9).equals("YIFTACH");
+//        passed = passed && testResults.get(10).equals("bamba");
+//        passed = passed && testResults.get(11).equals("MERAV SHAKED YIFTACH SAVRANSKY");
+//        passed = passed && testResults.get(12).equals("MERAV");
+//        passed = passed && testResults.get(13).equals("SHAKED");
+//        passed = passed && testResults.get(14).equals("YIFTACH");
+//        passed = passed && testResults.get(15).equals("SAVRANSKY");
+//        System.out.println("passed: " + passed);
         //TODO: add tests for AllCAps
 
-        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY");
-        passed = passed && testResultsCaptial.get(0).equals("MERAV");
-        passed = passed && testResultsCaptial.get(1).equals("bamba");
-        passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
-        passed = passed && testResultsCaptial.get(3).equals("MERAV");
-        passed = passed && testResultsCaptial.get(4).equals("SHAKED");
-        passed = passed && testResultsCaptial.get(5).equals("bamba");
-        passed = passed && testResultsCaptial.get(6).equals("MERAV SHAKED YIFTACH");
-        passed = passed && testResultsCaptial.get(7).equals("MERAV");
-        passed = passed && testResultsCaptial.get(8).equals("SHAKED");
-        passed = passed && testResultsCaptial.get(9).equals("YIFTACH");
-        passed = passed && testResultsCaptial.get(10).equals("bamba");
-        passed = passed && testResultsCaptial.get(11).equals("merav");
-        passed = passed && testResultsCaptial.get(12).equals("shaked");
-        passed = passed && testResultsCaptial.get(13).equals("yiftach");
-        passed = passed && testResultsCaptial.get(14).equals("savransky");
-        System.out.println("passed: " + passed);
+//        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH   bamba MERAV SHAKED YIFTACH SAVRANSKY");
+//        passed = passed && testResultsCaptial.get(0).equals("MERAV");
+//        passed = passed && testResultsCaptial.get(1).equals("bamba");
+//        passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
+//        passed = passed && testResultsCaptial.get(3).equals("MERAV");
+//        passed = passed && testResultsCaptial.get(4).equals("SHAKED");
+//        passed = passed && testResultsCaptial.get(5).equals("bamba");
+//        passed = passed && testResultsCaptial.get(6).equals("MERAV SHAKED YIFTACH");
+//        passed = passed && testResultsCaptial.get(7).equals("MERAV");
+//        passed = passed && testResultsCaptial.get(8).equals("SHAKED");
+//        passed = passed && testResultsCaptial.get(9).equals("YIFTACH");
+//        passed = passed && testResultsCaptial.get(10).equals("bamba");
+//        passed = passed && testResultsCaptial.get(11).equals("merav");
+//        passed = passed && testResultsCaptial.get(12).equals("shaked");
+//        passed = passed && testResultsCaptial.get(13).equals("yiftach");
+//        passed = passed && testResultsCaptial.get(14).equals("savransky");
+//        System.out.println("passed: " + passed);
+
+        ArrayList<String> testResultsMix = parser.parseQuery("I am happy to join with you today in what will go down in history as the Greatest Demonstration For Freedom in the History of our nation. I HAVE A DREAM That one day this NATION WILL RISE Up and live out the true meaning of its creed: WE HOLD THESE TRUTH TO BE SELF-EVIDENT, THAT/ALL MEN ARE CREATED EQUAL.");
+        System.out.println(testResultsMix);
     }
 
     private static void parse_parseQuery_Test12_stemmer(Parse parser) {

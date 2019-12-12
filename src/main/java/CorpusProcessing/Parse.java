@@ -20,7 +20,7 @@ public class Parse {
     /**
      * Mapping between months names and their numbers.
      */
-    private static final HashMap<String, String> MonthMap = new HashMap() {{
+    private static final HashMap<String, String> MONTHMAP = new HashMap() {{
         put("January", "01");
         put("JANUARY", "01");
         put("january", "01");
@@ -117,7 +117,6 @@ public class Parse {
         ArrayList<String> terms = new ArrayList<>();
 
         //Start of parsing
-
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
             Pair<String, Integer> result = new Pair<>("", 0);
@@ -133,9 +132,8 @@ public class Parse {
             //Numbers
             if (token.matches(".*\\d.*")) { //Token contains numbers
 
-                if(token.matches("\\d+s"))
-                {
-                    token=token.substring(0,token.length()-1);
+                if (token.matches("\\d+s")) {
+                    token = token.substring(0, token.length() - 1);
                 }
 
                 //Dollar Detection
@@ -182,7 +180,7 @@ public class Parse {
                         i++;
                     }
                     //Date
-                    else if (token.matches("\\d+")&&MonthMap.containsKey(firstNextToken)) // <<<DD Month>>>
+                    else if (token.matches("\\d+") && MONTHMAP.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
                         result = generateTokenDayMonth(token, firstNextToken);
                         terms.add(result.getKey());
@@ -243,7 +241,7 @@ public class Parse {
                 }
             }
             //DATE
-            else if (MonthMap.containsKey(token)) {
+            else if (MONTHMAP.containsKey(token)) {
                 String firstNextToken = "";
                 if (i < tokens.length - 1) {
                     firstNextToken = strip(tokens[i + 1]);
@@ -287,7 +285,7 @@ public class Parse {
                 while (token.indexOf('/') > 0) {
                     String term = token.substring(0, token.indexOf('/'));
                     token = token.substring(token.indexOf('/') + 1);
-                    if(!isStopWord(term.toLowerCase())) {
+                    if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
                             terms.add(Stemmer.stem(term));
                         } else {
@@ -295,7 +293,7 @@ public class Parse {
                         }
                     }
                 }
-                if(!isStopWord(token.toLowerCase())) {
+                if (!isStopWord(token.toLowerCase())) {
                     if (useStemmer) {
                         terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
@@ -317,32 +315,82 @@ public class Parse {
                 }
             }
             //Entity Recognition
-            else if (token.matches("^[A-Z].*")) {
+            //TOKEN CONTAIN ONLY CAPITAL LETTERS
+            else if (token.matches("^[A-Z]+([-/]?[A-Z]+)*")) {
                 ArrayList<String> entityTokensCandidates = new ArrayList<>();
                 entityTokensCandidates.add(token);
-
                 String nextToken = "";
                 if (i < tokens.length - 1) {
                     nextToken = strip(tokens[i + 1]);
                 }
-
-                //Get all the following words which begins with a capital letter
-                for (int j = 1; j + i < tokens.length - 1 && nextToken.matches("^[A-Z].*"); j++) {
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*"); j++) {
                     entityTokensCandidates.add(nextToken);
-                    nextToken = strip(tokens[i + j + 1]);
-                    if (i + j == tokens.length - 2) {
-                        entityTokensCandidates.add(nextToken);
+                    if (i + j < tokens.length - 1) {
+                        nextToken = strip(tokens[i + j + 1]); //strip the next token
                     }
                 }
+                //MORE THEN MAXENTITYLENGTH.
+                if (entityTokensCandidates.size() > MAXENTITYLENGTH) {
+                    int counter = i;
+                    for (String term : entityTokensCandidates) {
+                        tokens[counter] = term.toLowerCase();
+                        counter++;
+                    }
+                    i--;
+                }
+                else
+                {
+                    String term ="";
+                    for(String string : entityTokensCandidates)
+                    {
+                        if(term.equals(""))
+                        {
+                            term=string;
+                        }
+                        else
+                        {
+                            term = term+" " + string;
+                        }
 
-
-                boolean isCapsSequence = isAllCapsSequence(entityTokensCandidates);
-
-                //  if (!isCapsSequence) { //at least a single word entity
+                    }
+                    terms.add(term);
+                    if (!entities.contains(term)) {
+                        if (!singleAppearanceEntities.contains(term)) {
+                            singleAppearanceEntities.add(term);
+                        } else {
+                            singleAppearanceEntities.remove(term);
+                            entities.add(term);
+                        }
+                    }
+                    if(entityTokensCandidates.size() > 1) {
+                        for (String string : entityTokensCandidates) {
+                            if (!isStopWord(string.toLowerCase()))
+                                if (useStemmer) {
+                                    terms.add(Stemmer.stem(string.toLowerCase()));
+                                } else {
+                                    terms.add(string);
+                                }
+                        }
+                    }
+                    i = i + entityTokensCandidates.size() -1;//TODO:CHECK
+                }
+            } else if (token.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*")) {
+                ArrayList<String> entityTokensCandidates = new ArrayList<>();
+                entityTokensCandidates.add(token);
+                String nextToken = "";
+                if (i < tokens.length - 1) {
+                    nextToken = strip(tokens[i + 1]);
+                }
+                //Get all the following words which begins with a capital letter
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*"); j++) {
+                    entityTokensCandidates.add(nextToken);
+                    if (i + j < tokens.length - 1) {
+                        nextToken = strip(tokens[i + j + 1]); //strip the next token
+                    }
+                }
                 Pair<ArrayList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
-
                 ArrayList<String> entityTokens = resultList.getKey();
-                if (entityTokens.size() > 0 && (!isCapsSequence || (isCapsSequence && !resultList.getKey().get(0).matches("^[a-z].*")))) { // Do not add token which contain all caps letters
+                if (entityTokens.size() > 0) {
                     //Add to entities the first element which is the entity
                     String entity = entityTokens.get(0);
                     if (!entities.contains(entity)) {
@@ -358,15 +406,7 @@ public class Parse {
                             terms.add(entityToken.toUpperCase());
                         }
                     }
-                } else {
-                    for (String entityToken : entityTokens) {
-                        if (!isStopWord(entityToken.toLowerCase())) {
-                            terms.add(entityToken.toLowerCase());
-                        }
-                    }
                 }
-
-
                 i = i + resultList.getValue();
             } else {
                 if (!isStopWord(token.toLowerCase()))
@@ -379,7 +419,6 @@ public class Parse {
         }
         return terms;
     }
-
     /**
      * Receives a list and check if all the words in the list are all constructed only from capital letters
      *
@@ -408,8 +447,6 @@ public class Parse {
         int additionalTokensProcessed = 0;
         ArrayList<String> resultList = new ArrayList<>();
         String entity = "";
-        int countConsecutiveAllCaps = 0;
-
         for (int i = 0; i < entityCandidates.size(); i++) {
             String candidate = entityCandidates.get(i);
             if (i > 0) {
@@ -418,32 +455,14 @@ public class Parse {
             } else {
                 entity = candidate;
             }
+            //IN CASE THE CANDIDATE IS NOT A STOP WORD ADD IT TO RESULT LIST
             if (!isStopWord(candidate.toLowerCase())) {
                 resultList.add(candidate);
             }
-
-            if (candidate.matches("[A-Z]+")) {
-                countConsecutiveAllCaps++;
-            } else {
-                countConsecutiveAllCaps = 0;
-            }
         }
-
-        if (countConsecutiveAllCaps > MAXENTITYLENGTH) {
-            ArrayList<String> lowerCaseResultList = new ArrayList<>();
-            for (String token : resultList) {
-                lowerCaseResultList.add(token.toLowerCase());
-            }
-            resultList = lowerCaseResultList;
-        } else if (!entityCandidates.contains(entity)) {
+        if (!entityCandidates.contains(entity)) {
             resultList.add(0, entity);
         }
-
-        /*
-        if (additionalTokensProcessed > 0) {
-            additionalTokensProcessed = additionalTokensProcessed - 1; //TODO: Check!!!
-        }
-*/
         Pair<ArrayList<String>, Integer> result = new Pair<>(resultList, additionalTokensProcessed);
         return result;
     }
@@ -464,8 +483,8 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == '!' ||character == '?' ||character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
-                    continue;
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
+                continue;
             } else {
                 result = result + character;
             }
@@ -523,13 +542,13 @@ public class Parse {
             int firstNextTokenValue = Integer.parseInt(firstNextToken);
             if (firstNextTokenValue < 10 && firstNextTokenValue > 0) //single digit days {1-9}
             {
-                token = MonthMap.get(token) + "-0" + firstNextTokenValue;
+                token = MONTHMAP.get(token) + "-0" + firstNextTokenValue;
             } else if (firstNextTokenValue < 32 && firstNextTokenValue > 9) //double digit days {10-31}
             {
-                token = MonthMap.get(token) + "-" + firstNextTokenValue;
+                token = MONTHMAP.get(token) + "-" + firstNextTokenValue;
             } else // firstNextToken is a year
             {
-                token = firstNextToken + "-" + MonthMap.get(token);
+                token = firstNextToken + "-" + MONTHMAP.get(token);
             }
             additionalTokensProcessed++;
         }
@@ -551,10 +570,10 @@ public class Parse {
         int tokenValue = Integer.parseInt(token);
         if (tokenValue < 10 && tokenValue > 0) //single digit days {1-9}
         {
-            token = MonthMap.get(firstNextToken) + "-0" + tokenValue;
+            token = MONTHMAP.get(firstNextToken) + "-0" + tokenValue;
         } else if (tokenValue < 32 && tokenValue > 9) //double digit days {10-31}
         {
-            token = MonthMap.get(firstNextToken) + "-" + tokenValue;
+            token = MONTHMAP.get(firstNextToken) + "-" + tokenValue;
         }
         additionalTokensProcessed++;
 
@@ -575,9 +594,9 @@ public class Parse {
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
-            if(token.matches("\\d+-.*")){
-                firstNextToken = token.substring(token.indexOf("-")+1);
-                token=token.substring(0,token.indexOf("-"));
+            if (token.matches("\\d+-.*")) {
+                firstNextToken = token.substring(token.indexOf("-") + 1);
+                token = token.substring(0, token.indexOf("-"));
             }
             if (firstNextToken.equals("million") || firstNextToken.equals("Million")) { // <<<$price million>>>
                 token = token + " M Dollars";
@@ -585,8 +604,7 @@ public class Parse {
             } else if (firstNextToken.equals("billion") || firstNextToken.equals("Billion")) { // <<<$price billion>>>
                 token = token + "000 M Dollars";
                 additionalTokensProcessed++;
-            }
-            else if(token.matches("\\$\\d+")) { // <<<$price>>>
+            } else if (token.matches("\\$\\d+")) { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
                 if (value >= Million) {
