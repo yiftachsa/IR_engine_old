@@ -12,16 +12,16 @@ import java.util.concurrent.*;
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        Parse parser = new Parse(new HashSet<>(), new HashSet<>(), false);
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        parseTest(parser);
-        // Parse_parseDocument_Test1_parseDocument(parser);
+//        parseTest(parser);
+        //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-       // Model_Test2();
+        Model_Test2();
     }
 
 
@@ -47,17 +47,17 @@ public class TestsPart1 {
 
     private static void parseTest(Parse parser) {
         parse_parseQuery_Test1_generateTokenDollar(parser);
-//        parse_parseQuery_Test2_generateTokenMonth(parser);
-//        parse_parseQuery_Test3_Percentage(parser);
-//        parse_parseQuery_Test4_Thousand(parser);
-//        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
-//        parse_parseQuery_Test6_generateTokenPrice(parser);
-//        parse_parseQuery_Test7_Fractions(parser);
-//        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
-//        parse_parseQuery_Test9_Between(parser);
-//        parse_parseQuery_Test10_FirstCustomAdd(parser);
-//        parse_parseQuery_Test11_generateTokensEntity(parser);
-//        parse_parseQuery_Test12_stemmer(parser);
+         parse_parseQuery_Test2_generateTokenMonth(parser);
+        parse_parseQuery_Test3_Percentage(parser);
+        parse_parseQuery_Test4_Thousand(parser);
+        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+        parse_parseQuery_Test6_generateTokenPrice(parser);
+        parse_parseQuery_Test7_Fractions(parser);
+        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+        parse_parseQuery_Test9_Between(parser);
+        parse_parseQuery_Test10_FirstCustomAdd(parser);
+        parse_parseQuery_Test11_generateTokensEntity(parser);
+        parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
@@ -66,7 +66,7 @@ public class TestsPart1 {
     private static void parse_parseQuery_Test1_generateTokenDollar(Parse parser) {
         System.out.println("\ntestDollars");
         boolean passed = true;
-        ArrayList<String> testResults = parser.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
+        ArrayList<String> testResults = parser.parseQuery("$20-Million 20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
         passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
@@ -228,9 +228,8 @@ public class TestsPart1 {
         passed = passed && testResults.get(14).equals("YIFTACH");
         passed = passed && testResults.get(15).equals("SAVRANSKY");
         System.out.println("passed: " + passed);
-        //TODO: add tests for AllCAps
 
-        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY");
+        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH   bamba MERAV SHAKED YIFTACH SAVRANSKY");
         passed = passed && testResultsCaptial.get(0).equals("MERAV");
         passed = passed && testResultsCaptial.get(1).equals("bamba");
         passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
@@ -247,6 +246,9 @@ public class TestsPart1 {
         passed = passed && testResultsCaptial.get(13).equals("yiftach");
         passed = passed && testResultsCaptial.get(14).equals("savransky");
         System.out.println("passed: " + passed);
+
+        ArrayList<String> testResultsMix = parser.parseQuery("I am happy to join with you today in what will go down in history as the Greatest Demonstration For Freedom in the history Of-Our nation. I HAVE A DREAM That one day this NATION WILL RISE Up and live out the true meaning of its creed: WE HOLD THESE TRUTH TO BE SELF-EVIDENT, THAT/ALL MEN ARE CREATED EQUAL.");
+        System.out.println(testResultsMix);
     }
 
     private static void parse_parseQuery_Test12_stemmer(Parse parser) {
@@ -291,7 +293,7 @@ public class TestsPart1 {
         for (Trio trio : postingsEntries) {
             System.out.println(trio);
         }
-        Documenter.shutdown();
+
         return result;
     }
 
@@ -326,7 +328,7 @@ public class TestsPart1 {
         allPostingEntriesLists.add(postingsEntries3);
 
         if (allPostingEntriesLists.size() >= 2) {
-            Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists));
+            Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists.remove(0),allPostingEntriesLists.remove(0)));
             futures.add(future);
         }
         if (futures.size() > 0) {
@@ -363,11 +365,11 @@ public class TestsPart1 {
     }
 
 
-    public static void Model_Test2() {
+    public static void Model_Test2(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
         String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath, resultPath);
+        myModel.start(corpusPath,resultPath);
 
 
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
@@ -375,7 +377,7 @@ public class TestsPart1 {
 
 
 
-        Documenter.setPath(resultPath);
+        Documenter.start(resultPath);
         //initializing the stop words set
         Parse.loadStopWords(corpusPath);
         File Corpus = new File(corpusPath);

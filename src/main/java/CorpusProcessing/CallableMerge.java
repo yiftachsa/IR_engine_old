@@ -5,14 +5,17 @@ import java.util.concurrent.Callable;
 
 
 public class CallableMerge implements Callable<ArrayList<Trio>> {
-    private final ArrayList<ArrayList<Trio>> allPostingEntriesLists;
+    private ArrayList<Trio> postingEntriesList1;
+    private ArrayList<Trio> postingEntriesList2;
 
-    public CallableMerge(ArrayList<ArrayList<Trio>> allPostingEntriesLists) {
-        this.allPostingEntriesLists = allPostingEntriesLists;
+    public CallableMerge(ArrayList<Trio> postingEntriesList1,ArrayList<Trio> postingEntriesList2) {
+        this.postingEntriesList1 = postingEntriesList1;
+        this.postingEntriesList2 = postingEntriesList2;
+
     }
     @Override
     public ArrayList<Trio> call() throws Exception {
-        return Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0));
+        return Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesList1,postingEntriesList2);//allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0));
     }
 
 }
