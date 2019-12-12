@@ -16,12 +16,12 @@ public class TestsPart1 {
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        //parseTest();
+        parseTest(parser);
         // Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2();
+       // Model_Test2();
     }
 
 
@@ -47,17 +47,17 @@ public class TestsPart1 {
 
     private static void parseTest(Parse parser) {
         parse_parseQuery_Test1_generateTokenDollar(parser);
-        parse_parseQuery_Test2_generateTokenMonth(parser);
-        parse_parseQuery_Test3_Percentage(parser);
-        parse_parseQuery_Test4_Thousand(parser);
-        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
-        parse_parseQuery_Test6_generateTokenPrice(parser);
-        parse_parseQuery_Test7_Fractions(parser);
-        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
-        parse_parseQuery_Test9_Between(parser);
-        parse_parseQuery_Test10_FirstCustomAdd(parser);
-        parse_parseQuery_Test11_generateTokensEntity(parser);
-        parse_parseQuery_Test12_stemmer(parser);
+//        parse_parseQuery_Test2_generateTokenMonth(parser);
+//        parse_parseQuery_Test3_Percentage(parser);
+//        parse_parseQuery_Test4_Thousand(parser);
+//        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+//        parse_parseQuery_Test6_generateTokenPrice(parser);
+//        parse_parseQuery_Test7_Fractions(parser);
+//        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+//        parse_parseQuery_Test9_Between(parser);
+//        parse_parseQuery_Test10_FirstCustomAdd(parser);
+//        parse_parseQuery_Test11_generateTokensEntity(parser);
+//        parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
