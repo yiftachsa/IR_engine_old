@@ -309,7 +309,10 @@ public class Parse {
                         if (useStemmer) {
                             terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
-                            terms.add(term);
+                            if(term.matches("^[A-Z].*"))
+                                terms.add(term.toUpperCase());
+                            else
+                                terms.add(term);
                         }
                     }
                 }
