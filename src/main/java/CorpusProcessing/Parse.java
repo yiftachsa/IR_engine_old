@@ -283,7 +283,7 @@ public class Parse {
                 }
             }
             //First custom addition <<<Word / word>>>
-            else if (token.contains("/")) {
+            else if (token.matches(".+/.+")) {
                 while (token.indexOf('/') > 0) {
                     String term = token.substring(0, token.indexOf('/'));
                     token = token.substring(token.indexOf('/') + 1);

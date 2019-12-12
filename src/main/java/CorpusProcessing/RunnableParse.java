@@ -24,7 +24,7 @@ public class RunnableParse implements Runnable {
         return singleAppearanceEntities;
     }
 
-    public RunnableParse(HashSet<String> entities, HashSet<String> singleAppearanceEntities , boolean useStemmer) {
+    public RunnableParse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
         this.entities = entities;
         this.singleAppearanceEntities = singleAppearanceEntities;
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
@@ -43,15 +43,20 @@ public class RunnableParse implements Runnable {
 
                 ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
 
-                ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
-                ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
+                //ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
+                //ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
 
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
                     ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
                     allPostingEntriesLists.add(postingsEntries);
-
+                }
+                while (allPostingEntriesLists.size() > 1) {
+                    allPostingEntriesLists.add(Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0)));
+                }
+                Documenter.savePostingEntries(allPostingEntriesLists);
+                    /*
                     if (allPostingEntriesLists.size() >= 2) {
                         Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists));
                         futures.add(future);
@@ -59,30 +64,26 @@ public class RunnableParse implements Runnable {
                     if (futures.size() > 0) {
                         if (futures.get(0).isDone()) {
                             Future<ArrayList<Trio>> future = futures.remove(0);
-                            try {
-                                allPostingEntriesLists.add(future.get());
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                try {
+                                    allPostingEntriesLists.add(future.get());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                             }
                         }
                     }
                 }
                 for (Future<ArrayList<Trio>> future : futures) {
-                    while (!future.isDone()) ;
-                    try {
-                        allPostingEntriesLists.add(future.get());
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                            while (!future.isDone()) ;
+                            try {
+                                allPostingEntriesLists.add(future.get());
+                            } catch (Exception e) {
+                                e.printStackTrace();
                     }
                 }
                 mergersPool.shutdown();
-                while (allPostingEntriesLists.size() > 1) {
-                    allPostingEntriesLists.add(Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0)));
-                }
-                Documenter.savePostingEntries(allPostingEntriesLists);
 
+                */
             }
-
         }
     }
 }
