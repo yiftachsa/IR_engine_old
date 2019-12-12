@@ -12,16 +12,16 @@ import java.util.concurrent.*;
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        Parse parser = new Parse(new HashSet<>(), new HashSet<>(), false);
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        //parseTest();
-        // Parse_parseDocument_Test1_parseDocument(parser);
+        parseTest(parser);
+        //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2();
+        //Model_Test2();
     }
 
 
@@ -46,18 +46,18 @@ public class TestsPart1 {
     }
 
     private static void parseTest(Parse parser) {
-        parse_parseQuery_Test1_generateTokenDollar(parser);
-        parse_parseQuery_Test2_generateTokenMonth(parser);
-        parse_parseQuery_Test3_Percentage(parser);
-        parse_parseQuery_Test4_Thousand(parser);
-        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
-        parse_parseQuery_Test6_generateTokenPrice(parser);
-        parse_parseQuery_Test7_Fractions(parser);
-        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
-        parse_parseQuery_Test9_Between(parser);
-        parse_parseQuery_Test10_FirstCustomAdd(parser);
+//        parse_parseQuery_Test1_generateTokenDollar(parser);
+//        parse_parseQuery_Test2_generateTokenMonth(parser);
+//        parse_parseQuery_Test3_Percentage(parser);
+//        parse_parseQuery_Test4_Thousand(parser);
+//        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+//        parse_parseQuery_Test6_generateTokenPrice(parser);
+//        parse_parseQuery_Test7_Fractions(parser);
+//        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+//        parse_parseQuery_Test9_Between(parser);
+//        parse_parseQuery_Test10_FirstCustomAdd(parser);
         parse_parseQuery_Test11_generateTokensEntity(parser);
-        parse_parseQuery_Test12_stemmer(parser);
+ //       parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
@@ -228,9 +228,8 @@ public class TestsPart1 {
         passed = passed && testResults.get(14).equals("YIFTACH");
         passed = passed && testResults.get(15).equals("SAVRANSKY");
         System.out.println("passed: " + passed);
-        //TODO: add tests for AllCAps
 
-        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH  bamba MERAV SHAKED YIFTACH SAVRANSKY");
+        ArrayList<String> testResultsCaptial = parser.parseQuery("MERAV bamba MERAV SHAKED bamba MERAV SHAKED YIFTACH   bamba MERAV SHAKED YIFTACH SAVRANSKY");
         passed = passed && testResultsCaptial.get(0).equals("MERAV");
         passed = passed && testResultsCaptial.get(1).equals("bamba");
         passed = passed && testResultsCaptial.get(2).equals("MERAV SHAKED");
@@ -247,6 +246,9 @@ public class TestsPart1 {
         passed = passed && testResultsCaptial.get(13).equals("yiftach");
         passed = passed && testResultsCaptial.get(14).equals("savransky");
         System.out.println("passed: " + passed);
+
+        ArrayList<String> testResultsMix = parser.parseQuery("I am happy to join with you today in what will go down in history as the Greatest Demonstration For Freedom in the history Of-Our nation. I HAVE A DREAM That one day this NATION WILL RISE Up and live out the true meaning of its creed: WE HOLD THESE TRUTH TO BE SELF-EVIDENT, THAT/ALL MEN ARE CREATED EQUAL.");
+        System.out.println(testResultsMix);
     }
 
     private static void parse_parseQuery_Test12_stemmer(Parse parser) {
@@ -286,12 +288,12 @@ public class TestsPart1 {
     private static boolean Mapper_Test1() {
         boolean result = false;
         ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries = Mapper.processBagOfWords("Doc1", bagOfWords);
         for (Trio trio : postingsEntries) {
             System.out.println(trio);
         }
-        Documenter.shutdown();
+
         return result;
     }
 
@@ -299,7 +301,7 @@ public class TestsPart1 {
         boolean result = false;
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> mergedList = Mapper.mergeAndSortTwoPostingEntriesLists(postingsEntries1, postingsEntries2);
@@ -316,7 +318,7 @@ public class TestsPart1 {
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
         ArrayList<String> bagOfWords3 = new ArrayList<String>(Arrays.asList("C", "F", "h", "m"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> postingsEntries3 = Mapper.processBagOfWords("Doc3", bagOfWords3);
@@ -363,11 +365,11 @@ public class TestsPart1 {
     }
 
 
-    public static void Model_Test2() {
+    public static void Model_Test2(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
+        String resultPath = "D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine";
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath, resultPath);
+        myModel.start(corpusPath,resultPath);
 
 
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;

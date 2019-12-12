@@ -5,6 +5,7 @@ import CorpusProcessing.Document;
 import CorpusProcessing.Parse;
 import CorpusProcessing.ReadFile;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 
