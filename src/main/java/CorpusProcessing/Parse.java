@@ -641,7 +641,7 @@ public class Parse {
         // <<<Price Dollars>>>
         int additionalTokensProcessed = 0;
         token = token.replaceAll(",", "");
-       
+
 
             double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
             if (value >= Million) {
