@@ -137,7 +137,7 @@ public class Parse {
                 }
 
                 //Dollar Detection
-                if (token.matches(".*[$m].*|.*bn.*")) { //checks for $ m b n FIXME: change to recognise bn and not b or n
+                if (token.matches(".*[$m].*|.*bn.*")) { //checks for $ m b n
                     String firstNextToken = "";
                     if (i < tokens.length - 1) {
                         firstNextToken = strip(tokens[i + 1]);
@@ -201,11 +201,12 @@ public class Parse {
                     }
                     //Prices - Dollars
                     else if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) {
-
                         result = generateTokenPrice(token);
-
-                        terms.add(result.getKey());
-                        i = i + result.getValue();
+                        token = result.getKey();
+                        if(!token.equals("")) {
+                            terms.add(token);
+                            i = i + result.getValue();
+                        }
                     }
                     //Large number dependent on next token
                     else if (firstNextToken.equals("Million") || firstNextToken.equals("million") || firstNextToken.equals("Billion") || firstNextToken.equals("billion")) {
@@ -607,7 +608,8 @@ public class Parse {
             } else if (firstNextToken.equals("billion") || firstNextToken.equals("Billion")) { // <<<$price billion>>>
                 token = token + "000 M Dollars";
                 additionalTokensProcessed++;
-            } else if (token.matches("\\$\\d+")) { // <<<$price>>>
+            }
+            else { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
                 if (value >= Million) {
@@ -643,18 +645,22 @@ public class Parse {
         // <<<Price Dollars>>>
         int additionalTokensProcessed = 0;
         token = token.replaceAll(",", "");
+        if((token.matches("^[0-9]*$"))) {
 
-        double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
-        if (value >= Million) {
-            value = value / Million;
-            token = doubleDecimalFormat(value) + " M Dollars";
-        } else {
-            token = doubleDecimalFormat(value) + " Dollars";
+            double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            if (value >= Million) {
+                value = value / Million;
+                token = doubleDecimalFormat(value) + " M Dollars";
+            } else {
+                token = doubleDecimalFormat(value) + " Dollars";
+            }
+
+            additionalTokensProcessed++;
+
+            Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
+            return result;
         }
-
-        additionalTokensProcessed++;
-
-        Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
+        Pair<String, Integer> result = new Pair<>("", 0);
         return result;
     }
 
