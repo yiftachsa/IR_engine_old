@@ -201,9 +201,7 @@ public class Parse {
                     }
                     //Prices - Dollars
                     else if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) {
-
                         result = generateTokenPrice(token);
-
                         terms.add(result.getKey());
                         i = i + result.getValue();
                     }
@@ -643,19 +641,22 @@ public class Parse {
         // <<<Price Dollars>>>
         int additionalTokensProcessed = 0;
         token = token.replaceAll(",", "");
+       
 
-        double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
-        if (value >= Million) {
-            value = value / Million;
-            token = doubleDecimalFormat(value) + " M Dollars";
-        } else {
-            token = doubleDecimalFormat(value) + " Dollars";
-        }
+            double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            if (value >= Million) {
+                value = value / Million;
+                token = doubleDecimalFormat(value) + " M Dollars";
+            } else {
+                token = doubleDecimalFormat(value) + " Dollars";
+            }
 
-        additionalTokensProcessed++;
+            additionalTokensProcessed++;
 
-        Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
-        return result;
+            Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
+            return result;
+
+
     }
 
     /**
