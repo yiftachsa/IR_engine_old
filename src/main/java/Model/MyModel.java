@@ -97,6 +97,7 @@ public class MyModel extends Observable implements IModel {
             HashSet<String> singleAppearanceEntities = new HashSet<>();
 
             RunnableParse runnableParse = new RunnableParse(entities, singleAppearanceEntities, stemming);
+
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             runnableParses[i] = runnableParse;
             currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;

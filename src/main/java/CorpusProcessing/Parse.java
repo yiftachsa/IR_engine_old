@@ -103,7 +103,6 @@ public class Parse {
         ArrayList<String> terms = parseText(tokens, useStemmer);
         return terms;
     }
-
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *

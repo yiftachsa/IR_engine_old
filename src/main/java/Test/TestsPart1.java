@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
+        //Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
@@ -366,8 +366,8 @@ public class TestsPart1 {
 
 
     public static void Model_Test2(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
