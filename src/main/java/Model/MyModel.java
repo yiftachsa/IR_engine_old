@@ -12,7 +12,7 @@ public class MyModel extends Observable implements IModel {
     private boolean stemming;
     private Indexer indexer;
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 10;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
 
 
 /*  setChanged();
@@ -92,6 +92,8 @@ public class MyModel extends Observable implements IModel {
 
     private void generatePostingEntriesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses) {
         int currentDirectoryIndex = 0;
+        int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
+
         for (int i = 0; i < threads.length; i++) {
             HashSet<String> entities = new HashSet<>();
             HashSet<String> singleAppearanceEntities = new HashSet<>();
@@ -108,6 +110,11 @@ public class MyModel extends Observable implements IModel {
         while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
+
+            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
+                runnableParse.saveAndClearEntitiesSets();
+            }
+
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             threads[finishedThreadIndex] = new Thread(runnableParse);
             threads[finishedThreadIndex].start();

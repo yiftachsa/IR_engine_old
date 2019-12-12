@@ -111,7 +111,7 @@ public class Documenter {
      *
      * @param postingEntriesLists
      */
-    public static void savePostingEntries(ArrayList<Trio> postingEntriesLists) {
+    public static void savePostingEntries(ArrayList<ArrayList<Trio>> postingEntriesLists) {
         if (filesPath != null) {
 
             postingEntriesMutex.lock();
@@ -298,6 +298,10 @@ public class Documenter {
 
     private static void saveDocumentationFiles() {
         //TODO: save all the counters and the information needed for the reconstruction of the dictionary (if necessary)
+    }
+
+    public static void saveEntitiesSets(HashSet<String> entities, HashSet<String> singleAppearanceEntities) {
+        //TODO: Save all the given lists as objects
     }
 }
 
