@@ -15,7 +15,7 @@ public class CallableMerge implements Callable<ArrayList<Trio>> {
     }
     @Override
     public ArrayList<Trio> call() throws Exception {
-        return Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesList1,postingEntriesList2);
+        return Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesList1,postingEntriesList2);//allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0));
     }
 
 }

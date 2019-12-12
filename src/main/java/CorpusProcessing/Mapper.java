@@ -1,6 +1,8 @@
 package CorpusProcessing;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.LinkedList;
 
 /**
  * Responsible for processing the bag of words of each document and deliver an ordered list

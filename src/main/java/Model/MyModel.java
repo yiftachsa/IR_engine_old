@@ -12,7 +12,7 @@ public class MyModel extends Observable implements IModel {
     private boolean stemming;
     private Indexer indexer;
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 5;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 10;
 
 
 /*  setChanged();
@@ -49,6 +49,9 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public void start(String corpusPath, String resultPath) {
+        double startTime  = System.currentTimeMillis();
+
+
         if (!testPath(corpusPath) || !testPath(resultPath)) {
             setChanged();
             notifyObservers("Bad input"); //TODO: Maybe replace with enum
@@ -66,7 +69,12 @@ public class MyModel extends Observable implements IModel {
         Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
         RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
 
+        System.out.println("Start Parsing");
         generatePostingEntriesParallel(directories, threads, runnableParses);
+
+        double endParseTimer = System.currentTimeMillis();
+        System.out.println("End Parsing: "+ (endParseTimer-startTime)/1000);
+
 
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(threads, runnableParses);

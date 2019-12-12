@@ -41,6 +41,8 @@ public class Documenter {
         postingEntriesMutex = new ReentrantLock();
         new File(filesPath + "\\entities").mkdir();
         new File(filesPath + "\\postingEntries").mkdir();
+        new File(filesPath + "\\DocumentsDetails").mkdir();
+
     }
 
     public static int getIterationNumber() {
@@ -88,7 +90,6 @@ public class Documenter {
     private static void saveDocumentsDetailsToFile() {
         BufferedWriter writer = null;
         try {
-            new File(filesPath + "\\DocumentsDetails").mkdir();
             writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\DocumentsDetails"));
             for (String documentDetails : documentsDetails) {
                 writer.write(documentDetails);
@@ -110,7 +111,7 @@ public class Documenter {
      *
      * @param postingEntriesLists
      */
-    public static void savePostingEntries(ArrayList<ArrayList<Trio>> postingEntriesLists) {
+    public static void savePostingEntries(ArrayList<Trio> postingEntriesLists) {
         if (filesPath != null) {
 
             postingEntriesMutex.lock();

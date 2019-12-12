@@ -36,12 +36,13 @@ public class RunnableParse implements Runnable {
 
     @Override
     public void run() {
+        ArrayList<Trio> entirePostingEntries = new ArrayList<>();
         for (File directory : filesToParse) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
-                ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
+                ArrayList<ArrayList<Trio>> postingEntriesListsOfFile = new ArrayList<>();
 
                 //ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
                 //ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
@@ -50,12 +51,16 @@ public class RunnableParse implements Runnable {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
                     ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
-                    allPostingEntriesLists.add(postingsEntries);
+                    postingEntriesListsOfFile.add(postingsEntries);
                 }
-                while (allPostingEntriesLists.size() > 1) {
-                    allPostingEntriesLists.add(Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesLists.remove(0), allPostingEntriesLists.remove(0)));
+                while (postingEntriesListsOfFile.size() > 1) {
+                    postingEntriesListsOfFile.add(Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesListsOfFile.remove(0), postingEntriesListsOfFile.remove(0)));
                 }
-                Documenter.savePostingEntries(allPostingEntriesLists);
+                //merge postingEntriesListsOfFile into entirePostingEntries
+                entirePostingEntries=(Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesListsOfFile.get(0),entirePostingEntries));
+            }
+        }
+        Documenter.savePostingEntries(entirePostingEntries);
                     /*
                     if (allPostingEntriesLists.size() >= 2) {
                         Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists));
@@ -83,7 +88,5 @@ public class RunnableParse implements Runnable {
                 mergersPool.shutdown();
 
                 */
-            }
-        }
     }
 }

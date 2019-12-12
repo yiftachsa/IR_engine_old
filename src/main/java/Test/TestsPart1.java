@@ -16,7 +16,7 @@ public class TestsPart1 {
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        //parseTest(parser);
+//        parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
@@ -46,18 +46,18 @@ public class TestsPart1 {
     }
 
     private static void parseTest(Parse parser) {
-//        parse_parseQuery_Test1_generateTokenDollar(parser);
-//        parse_parseQuery_Test2_generateTokenMonth(parser);
-//        parse_parseQuery_Test3_Percentage(parser);
-//        parse_parseQuery_Test4_Thousand(parser);
-//        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
-//        parse_parseQuery_Test6_generateTokenPrice(parser);
-//        parse_parseQuery_Test7_Fractions(parser);
-//        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
-//        parse_parseQuery_Test9_Between(parser);
-//        parse_parseQuery_Test10_FirstCustomAdd(parser);
+        parse_parseQuery_Test1_generateTokenDollar(parser);
+         parse_parseQuery_Test2_generateTokenMonth(parser);
+        parse_parseQuery_Test3_Percentage(parser);
+        parse_parseQuery_Test4_Thousand(parser);
+        parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
+        parse_parseQuery_Test6_generateTokenPrice(parser);
+        parse_parseQuery_Test7_Fractions(parser);
+        parse_parseQuery_Test8_generateTokenSimpleNumber(parser);
+        parse_parseQuery_Test9_Between(parser);
+        parse_parseQuery_Test10_FirstCustomAdd(parser);
         parse_parseQuery_Test11_generateTokensEntity(parser);
- //       parse_parseQuery_Test12_stemmer(parser);
+        parse_parseQuery_Test12_stemmer(parser);
     }
 
     /**
@@ -66,7 +66,7 @@ public class TestsPart1 {
     private static void parse_parseQuery_Test1_generateTokenDollar(Parse parser) {
         System.out.println("\ntestDollars");
         boolean passed = true;
-        ArrayList<String> testResults = parser.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
+        ArrayList<String> testResults = parser.parseQuery("$20-Million 20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
         passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
