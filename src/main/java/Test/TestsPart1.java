@@ -16,12 +16,12 @@ public class TestsPart1 {
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
-        parseTest(parser);
+        //parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        //Model_Test2();
+        Model_Test2();
     }
 
 
@@ -288,7 +288,7 @@ public class TestsPart1 {
     private static boolean Mapper_Test1() {
         boolean result = false;
         ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
-        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries = Mapper.processBagOfWords("Doc1", bagOfWords);
         for (Trio trio : postingsEntries) {
             System.out.println(trio);
@@ -301,7 +301,7 @@ public class TestsPart1 {
         boolean result = false;
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
-        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> mergedList = Mapper.mergeAndSortTwoPostingEntriesLists(postingsEntries1, postingsEntries2);
@@ -318,7 +318,7 @@ public class TestsPart1 {
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
         ArrayList<String> bagOfWords3 = new ArrayList<String>(Arrays.asList("C", "F", "h", "m"));
-        Documenter.setPath("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> postingsEntries3 = Mapper.processBagOfWords("Doc3", bagOfWords3);
@@ -328,7 +328,7 @@ public class TestsPart1 {
         allPostingEntriesLists.add(postingsEntries3);
 
         if (allPostingEntriesLists.size() >= 2) {
-            Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists));
+            Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(allPostingEntriesLists.remove(0),allPostingEntriesLists.remove(0)));
             futures.add(future);
         }
         if (futures.size() > 0) {
@@ -367,7 +367,7 @@ public class TestsPart1 {
 
     public static void Model_Test2(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
-        String resultPath = "D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
@@ -377,7 +377,7 @@ public class TestsPart1 {
 
 
 
-        Documenter.setPath(resultPath);
+        Documenter.start(resultPath);
         //initializing the stop words set
         Parse.loadStopWords(corpusPath);
         File Corpus = new File(corpusPath);

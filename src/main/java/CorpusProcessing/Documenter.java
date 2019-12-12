@@ -164,7 +164,7 @@ public class Documenter {
                     }
                 }
                 if (allPostingEntriesPortions.size() > 1) {
-                    Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
+                    Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0),allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
                     futuresMerge.add(futureMerge);
                 }
                 if (futuresMerge.size() > 0) {
@@ -188,7 +188,7 @@ public class Documenter {
                         e.printStackTrace();
                     }
                     if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
+                        Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0),allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
                         futuresMerge.add(futureMerge);
                     }
                 } else if (futuresMerge.get(0).isDone()) {
@@ -199,7 +199,7 @@ public class Documenter {
                         e.printStackTrace();
                     }
                     if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> nextFutureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
+                        Future<ArrayList<Trio>> nextFutureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0), allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
                         futuresMerge.add(nextFutureMerge);
                     }
                 }
