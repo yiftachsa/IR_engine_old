@@ -376,7 +376,7 @@ public class Parse {
                                 }
                         }
                     }
-                    i = i + entityTokensCandidates.size() -1;//TODO:CHECK
+                    i = i + entityTokensCandidates.size() -1;
                 }
             } else if (token.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*")) {
                 ArrayList<String> entityTokensCandidates = new ArrayList<>();
@@ -630,7 +630,6 @@ public class Parse {
                 additionalTokensProcessed++;
             }
         }
-
         Pair<String, Integer> result = new Pair<>(token, additionalTokensProcessed);
         return result;
     }
