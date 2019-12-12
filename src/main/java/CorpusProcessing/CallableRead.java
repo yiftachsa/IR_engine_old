@@ -36,7 +36,6 @@ public class CallableRead implements Callable<ArrayList<Trio>> {
         else if(numberOfLines * iterationNumber < trioArrayList.size())
         {
             trioArrayList.subList(numberOfLines * iterationNumber, trioArrayList.size()-1);
-
         }
         else
         {

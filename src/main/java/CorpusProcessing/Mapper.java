@@ -8,6 +8,14 @@ import java.util.ArrayList;
  */
 public class Mapper {
 
+    /**
+     * Processes a given bag of words and deliver an ordered list of posting entries (trio).
+     * Updates the tf for each term in the bag of words.
+     * Saves all the relevant details os the document to memory.
+     * @param DocNO - String - the id of the document which contains the terms.
+     * @param terms - ArrayList<String> - the terms to be converted into trios
+     * @return - ArrayList<Trio> - ordered list of posting entries
+     */
     public static ArrayList<Trio> processBagOfWords(String DocNO, ArrayList<String> terms){
         ArrayList<Trio> postingEntries = new ArrayList<Trio>();
         int maxTermFrequency = 1;
@@ -32,15 +40,21 @@ public class Mapper {
         if(termFrequency>maxTermFrequency){
             maxTermFrequency = termFrequency;
         }
+
         Documenter.saveDocumentDetails(DocNO, maxTermFrequency,postingEntries.size(), terms.size());
 
         return postingEntries;
     }
 
-
+    /**
+     * Receives two Trios lists, merges and sort them.
+     * @param list1 - ArrayList<Trio> - the first list to be merged
+     * @param list2 - ArrayList<Trio> - the second list to be merged
+     * @return - ArrayList<Trio> - the merged list
+     */
     public static ArrayList<Trio> mergeAndSortTwoPostingEntriesLists(ArrayList<Trio> list1 , ArrayList<Trio> list2)
     {
-        //TODO: check time complexity in compression to a simple merge sort geek to geek
+        //TODO: check time complexity in compression to a simple merge sort geeks for geeks
         ArrayList<Trio> mergedList = new ArrayList<>();
         while (list1.size() > 0 && list2.size() > 0) {
 

@@ -7,29 +7,41 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Responsible to write to Disk.
  * Receive the information about specific document(Doc ID , Max tf , number of uniq words)
  */
+//TODO:Maybe should be singleton
 public class Documenter {
 
-    private static final int NUMBEROFDOCUMENTSPERFILE = 200;
+    // private static final int NUMBEROFDOCUMENTSPERFILE = (int) Math.pow(2, 12);
     // private static final int NUMBEROFCATEGORIES = 27;
     // private static final int TRIOBUFFERSIZE = 10000;
+    private static int fileIndex = 0;
     private static final int NUMBEROFPOSTINGLINES = (int) Math.pow(2, 20);
 
-
-    public static void setPath(String path) {
-        filesPath = path + "";
-    }
-
-    private static int fileIndex = 0;
     private static int postingEntriesIndex = 0;
     private static ArrayList<String> documentsDetails = new ArrayList<>();
+
+    private static ReentrantLock documentsDetailsMutex;
+    private static ReentrantLock postingEntriesMutex;
+
     private static String filesPath;
+
     private static int iterationNumber = 0;
-    private static int longestPostingEntriesFile = 0;
+    private static AtomicInteger longestPostingEntriesFile = new AtomicInteger(0);
+
+
+    public static void start(String path) {
+        filesPath = path + "";
+        documentsDetailsMutex = new ReentrantLock();
+        postingEntriesMutex = new ReentrantLock();
+        new File(filesPath + "\\entities").mkdir();
+        new File(filesPath + "\\postingEntries").mkdir();
+    }
 
     public static int getIterationNumber() {
         return iterationNumber;
@@ -39,29 +51,45 @@ public class Documenter {
         return documentsDetails.size();
     }
 
+    /**
+     * Returns the path of the posting entries files
+     *
+     * @return - String - the path of the posting entries files
+     */
     public static String getFilePathToPostingEntries() {
         return filesPath + "\\postingEntries";
     }
 
-
-
+    /**
+     * Receives details about a document and adds it to the field documentsDetails list.
+     *
+     * @param docId            - String - uniq document identifier
+     * @param maxTermFrequency - int - the maximum term frequency in the document
+     * @param uniqTermsCount   - int - the number of uniq terms in the document
+     * @param length           - int - the total number of terms in the document
+     */
     public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length) {
         if (filesPath != null) {
-            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," +length);
+            documentsDetailsMutex.lock();
+            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length);
+            documentsDetailsMutex.unlock();
+            /*
             if (documentsDetails.size() >= NUMBEROFDOCUMENTSPERFILE) {
                 //WRITE TO DISK! 
                 saveDocumentsDetailsToFile();
             }
+             */
         }
     }
 
+    /**
+     * Saves the documentsDetails field to file
+     */
     private static void saveDocumentsDetailsToFile() {
         BufferedWriter writer = null;
         try {
-            if (fileIndex == 0) {
-                new File(filesPath + "\\DocumentsDetails").mkdir();
-            }
-            writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\" + fileIndex));
+            new File(filesPath + "\\DocumentsDetails").mkdir();
+            writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\DocumentsDetails"));
             for (String documentDetails : documentsDetails) {
                 writer.write(documentDetails);
                 writer.newLine();
@@ -70,33 +98,40 @@ public class Documenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        fileIndex++;
-        documentsDetails = new ArrayList<>();
+        //fileIndex++;
+        //documentsDetails = new ArrayList<>();
     }
 
     public static int getNUMBEROFPOSTINGLINES() {
         return NUMBEROFPOSTINGLINES;
     }
 
-    public static void savePostingEntries(ArrayList<ArrayList<Trio>> allPostingEntriesLists) {
+    /**
+     *
+     * @param postingEntriesLists
+     */
+    public static void savePostingEntries(ArrayList<ArrayList<Trio>> postingEntriesLists) {
         if (filesPath != null) {
-            if (postingEntriesIndex == 0) {
-                new File(filesPath + "\\postingEntries").mkdir();
-            }
+
+            postingEntriesMutex.lock();
             String filePath = filesPath + "\\postingEntries\\" + postingEntriesIndex;
+            postingEntriesIndex++;
+            postingEntriesMutex.unlock();
+
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(filePath);
                 ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-                outputStream.writeObject(allPostingEntriesLists);
-                if (Documenter.longestPostingEntriesFile < allPostingEntriesLists.size()) {
-                    Documenter.longestPostingEntriesFile = allPostingEntriesLists.size();
-                }
+                outputStream.writeObject(postingEntriesLists);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            postingEntriesIndex++;
+
+            if (longestPostingEntriesFile.get() < postingEntriesLists.size()) {
+                longestPostingEntriesFile.set(postingEntriesLists.size());
+            }
+
         }
     }
 
@@ -104,6 +139,7 @@ public class Documenter {
         return null;
     }
 
+    //TODO: Move to Mapper
     public static void mergeAllPostingEntries() {
         final int THREADPOOLSIZE = 2;
         ExecutorService documentLoadersPool = Executors.newFixedThreadPool(THREADPOOLSIZE); //FIXME:MAGIC NUMBER
@@ -111,7 +147,8 @@ public class Documenter {
         ArrayList<ArrayList<Trio>> allPostingEntriesPortions = new ArrayList<>();
         ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
         ArrayList<Future<ArrayList<Trio>>> futuresMerge = new ArrayList<>();
-        for (int i = 0; i < Documenter.longestPostingEntriesFile / Documenter.NUMBEROFPOSTINGLINES; i++) {
+        int numberOfPostingPortions = longestPostingEntriesFile.get() / NUMBEROFPOSTINGLINES;
+        for (int i = 0; i < numberOfPostingPortions; i++) {
             //If there is 1000 postingEntries, will be 998 threads that will wait - is that ok? memory complexity!!!!
             while (CallableRead.getIndexDoc().get() < postingEntriesIndex) {
                 Future<ArrayList<Trio>> futureRead = documentLoadersPool.submit(new CallableRead());
@@ -127,7 +164,7 @@ public class Documenter {
                     }
                 }
                 if (allPostingEntriesPortions.size() > 1) {
-                    Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions));
+                    Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
                     futuresMerge.add(futureMerge);
                 }
                 if (futuresMerge.size() > 0) {
@@ -151,7 +188,7 @@ public class Documenter {
                         e.printStackTrace();
                     }
                     if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions));
+                        Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
                         futuresMerge.add(futureMerge);
                     }
                 } else if (futuresMerge.get(0).isDone()) {
@@ -162,7 +199,7 @@ public class Documenter {
                         e.printStackTrace();
                     }
                     if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> nextFutureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions));
+                        Future<ArrayList<Trio>> nextFutureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions)); //FIXME:: Race condition - remove here instead of inside the thread
                         futuresMerge.add(nextFutureMerge);
                     }
                 }
@@ -232,22 +269,27 @@ public class Documenter {
         }
     }
 
-
-    public static void saveEntities(TreeSet<String> entitiesTreeSet) {
-
-        new File(filesPath + "\\entities").mkdir();
+    /**
+     * Saves a given String TreeSet to a file as an Object.
+     *
+     * @param treeSetToSave - TreeSet<String> - an ordered set of Strings
+     */
+    public static void saveEntities(TreeSet<String> treeSetToSave) {
         String filePath = filesPath + "\\entities\\entities";
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(filePath);
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-            outputStream.writeObject(entitiesTreeSet);
+            outputStream.writeObject(treeSetToSave);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Saves all the data structures which are in the memory and need to be saved for later use
+     */
     public static void shutdown() {
-        if(documentsDetails.size() > 0){
+        if (documentsDetails.size() > 0) {
             saveDocumentsDetailsToFile();
         }
         saveDocumentationFiles();
