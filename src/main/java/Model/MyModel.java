@@ -79,6 +79,11 @@ public class MyModel extends Observable implements IModel {
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(threads, runnableParses);
 
+        //TODO: finished with "threads" and "runnableParses" we can delete them now. CHECK IF NEEDED
+        threads = null;
+        runnableParses = null;
+        System.gc(); // CHECK IF NEEDED
+
         //merge all the individuals posting entries and sort them
         Documenter.mergeAllPostingEntries();
 
@@ -92,7 +97,7 @@ public class MyModel extends Observable implements IModel {
 
     private void generatePostingEntriesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses) {
         int currentDirectoryIndex = 0;
-        int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
+        //int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
 
         for (int i = 0; i < threads.length; i++) {
             HashSet<String> entities = new HashSet<>();
@@ -111,9 +116,9 @@ public class MyModel extends Observable implements IModel {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
 
-            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
-                runnableParse.saveAndClearEntitiesSets();
-            }
+//            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
+//                runnableParse.saveAndClearEntitiesSets();
+//            }
 
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             threads[finishedThreadIndex] = new Thread(runnableParse);

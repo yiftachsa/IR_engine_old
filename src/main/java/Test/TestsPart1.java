@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        //Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
@@ -276,7 +276,7 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396002\\FB396002";
+        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
         for (String term : bagOfWords) {
@@ -366,8 +366,8 @@ public class TestsPart1 {
 
 
     public static void Model_Test2(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
@@ -431,5 +431,24 @@ public class TestsPart1 {
         Documenter.shutdown();
 
          */
+    }
+
+
+
+    private static int totalPostingEntries(int numberOfFilesPerThread){
+        final int totalFilesInCorpus = 1815;
+        int totalPostingEntries = totalFilesInCorpus/numberOfFilesPerThread;
+        return totalPostingEntries;
+    }
+
+
+    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread){
+        int totalFilesInTest = testsTimes.length * numberOfFilesPerThread;
+        double totalTestTime = 0;
+        for (int i = 0; i < testsTimes.length; i++) {
+            totalTestTime = totalTestTime + testsTimes[i];
+        }
+        double averageTimePerFile = totalTestTime/totalFilesInTest;
+        return averageTimePerFile;
     }
 }

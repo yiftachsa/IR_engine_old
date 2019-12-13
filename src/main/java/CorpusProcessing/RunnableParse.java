@@ -42,8 +42,9 @@ public class RunnableParse implements Runnable {
 
 
         ArrayList<ArrayList<Trio>> entirePostingEntries = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE); 
+        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
         ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
+
         for (File directory : filesToParse) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {

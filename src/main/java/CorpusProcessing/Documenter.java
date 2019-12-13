@@ -21,7 +21,9 @@ public class Documenter {
     // private static final int NUMBEROFCATEGORIES = 27;
     // private static final int TRIOBUFFERSIZE = 10000;
     private static int fileIndex = 0;
-    private static final int NUMBEROFPOSTINGLINES = (int) Math.pow(2, 20);
+    private static final int NUMBEROFPOSTINGLINESPERPOSTINGPORTION = (int) Math.pow(2, 20);
+    private static final int MERGERSPOOLSIZE = 2;
+    private static final int LOADERSPOOLSIZE = 2;
 
     private static int postingEntriesIndex = 0;
     private static ArrayList<String> documentsDetails = new ArrayList<>();
@@ -51,6 +53,10 @@ public class Documenter {
 
     public static int getDocumentsDetailsSize() {
         return documentsDetails.size();
+    }
+
+    public static AtomicInteger getLongestPostingEntriesFile() {
+        return longestPostingEntriesFile;
     }
 
     /**
@@ -104,7 +110,7 @@ public class Documenter {
     }
 
     public static int getNUMBEROFPOSTINGLINES() {
-        return NUMBEROFPOSTINGLINES;
+        return NUMBEROFPOSTINGLINESPERPOSTINGPORTION;
     }
 
     /**
@@ -142,18 +148,23 @@ public class Documenter {
 
     //TODO: Move to Mapper
     public static void mergeAllPostingEntries() {
-        final int THREADPOOLSIZE = 2;
-        ExecutorService documentLoadersPool = Executors.newFixedThreadPool(THREADPOOLSIZE); //FIXME:MAGIC NUMBER
+        ExecutorService documentLoadersPool = Executors.newFixedThreadPool(LOADERSPOOLSIZE);
+        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
+
         ArrayList<Future<ArrayList<Trio>>> futureLoaders = new ArrayList<>();
-        ArrayList<ArrayList<Trio>> allPostingEntriesPortions = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
         ArrayList<Future<ArrayList<Trio>>> futuresMerge = new ArrayList<>();
-        int numberOfPostingPortions = longestPostingEntriesFile.get() / NUMBEROFPOSTINGLINES;
+
+        ArrayList<ArrayList<Trio>> allPostingEntriesPortions = new ArrayList<>();
+
+        int numberOfPostingPortions = longestPostingEntriesFile.get() / NUMBEROFPOSTINGLINESPERPOSTINGPORTION;
+
         for (int i = 0; i < numberOfPostingPortions; i++) {
             //If there is 1000 postingEntries, will be 998 threads that will wait - is that ok? memory complexity!!!!
             while (CallableRead.getIndexDoc().get() < postingEntriesIndex) {
                 Future<ArrayList<Trio>> futureRead = documentLoadersPool.submit(new CallableRead());
                 futureLoaders.add(futureRead);
+
+                //Check if a read call is done //TODO: Maybe overkill
                 if (futureLoaders.size() > 0) {
                     if (futureLoaders.get(0).isDone()) {
                         Future<ArrayList<Trio>> finishedFuture = futureLoaders.remove(0);
@@ -164,10 +175,14 @@ public class Documenter {
                         }
                     }
                 }
+
+                //MERGE
                 if (allPostingEntriesPortions.size() > 1) {
                     Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0),allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
                     futuresMerge.add(futureMerge);
                 }
+
+                //Check if a merge call is done
                 if (futuresMerge.size() > 0) {
                     if (futuresMerge.get(0).isDone()) {
                         Future<ArrayList<Trio>> futureMerge = futuresMerge.remove(0);

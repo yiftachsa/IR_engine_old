@@ -12,7 +12,7 @@ public class CallableRead implements Callable<ArrayList<Trio>> {
 
     private  static AtomicInteger indexDoc = new AtomicInteger(0);
     private final int numberOfLines = Documenter.getNUMBEROFPOSTINGLINES();
-    private static int iterationNumber = Documenter.getIterationNumber();
+    private static int iterationNumber = Documenter.getIterationNumber(); //Fixme
 
 
     public static void setIterationNumber(int iterationNumber) {

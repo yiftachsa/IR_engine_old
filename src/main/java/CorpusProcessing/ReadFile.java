@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ReadFile {
 
@@ -20,6 +21,7 @@ public class ReadFile {
      */
     public static ArrayList<Document> separateFileToDocuments(String filePath) {
         ArrayList<Document> documents = new ArrayList();
+        String documentId = "";
         try {
             List fileText = Files.readAllLines(Paths.get(filePath), StandardCharsets.ISO_8859_1); //TODO: Check
             Iterator<String> iterator = fileText.iterator();
@@ -27,7 +29,7 @@ public class ReadFile {
                 String currentLine = iterator.next();
                 if (currentLine.equals("<DOC>")) {
                     //Document ID extraction
-                    String documentId = iterator.next();
+                    documentId = iterator.next();
                     //Removing the tags
                     documentId = documentId.substring(8, documentId.length() - 1);
                     documentId = documentId.substring(0, documentId.length() - 8);
@@ -36,7 +38,13 @@ public class ReadFile {
                     String documentHeader = "";
                     do {
                         iterText = iterator.next();
-                    } while (!(iterText.equals("<HEADER>")) && !(iterText.equals("<TEXT>")));
+                    } while (!(iterText.equals("<HEADER>")) && !(iterText.equals("<TEXT>")) && !(iterText.equals("</DOC>")));
+
+                    if (iterText.equals("</DOC>")) {
+                        documents.add(new Document(documentId, documentHeader, ""));
+                        continue;
+                    }
+
                     if (iterText.equals("<HEADER>")) {
                         currentLine = iterator.next();
                         while (!currentLine.equals("</HEADER>")) {
@@ -49,9 +57,14 @@ public class ReadFile {
                         while (!(iterator.next().equals("<TEXT>"))) {
                         }
                     }
+
                     String documentText = "";
                     currentLine = iterator.next();
                     while (!currentLine.equals("</TEXT>")) {
+//                        if (currentLine.contains("<P>")) {
+//                            currentLine = iterator.next();
+//                            continue;
+//                        }
                         documentText = documentText + currentLine + "\n";
                         currentLine = iterator.next();
                     }
@@ -61,7 +74,12 @@ public class ReadFile {
             }
         } catch (IOException e) {
             e.printStackTrace(); //FIXME: !!
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            System.out.println("documentId: " + documentId);
         }
+
+
         return documents;
     }
 }
