@@ -594,10 +594,10 @@ public class Parse {
                 token = token.substring(0, token.indexOf("-"));
                 additionalTokensProcessed--;
             }
-            if (firstNextToken.equals("million") || firstNextToken.equals("Million")) { // <<<$price million>>>
+            if (firstNextToken.contains("million") || firstNextToken.contains("Million")) { // <<<$price million>>>
                 token = token + " M Dollars";
                 additionalTokensProcessed++;
-            } else if (firstNextToken.equals("billion") || firstNextToken.equals("Billion")) { // <<<$price billion>>>
+            } else if (firstNextToken.contains("billion") || firstNextToken.contains("Billion")) { // <<<$price billion>>>
                 token = token + "000 M Dollars";
                 additionalTokensProcessed++;
             } else if (token.matches("\\d+[mM]|\\d+.\\d+[mM]")) { // <<<Price'm' Dollars>>>
