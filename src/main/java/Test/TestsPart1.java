@@ -367,8 +367,8 @@ public class TestsPart1 {
 
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
