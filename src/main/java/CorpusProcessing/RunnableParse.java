@@ -42,8 +42,9 @@ public class RunnableParse implements Runnable {
 
 
         ArrayList<ArrayList<Trio>> entirePostingEntries = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE); 
+        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
         ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
+
         for (File directory : filesToParse) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {
@@ -93,6 +94,7 @@ public class RunnableParse implements Runnable {
             }
         }
         mergersPool.shutdown();
+
         while (entirePostingEntries.size() > 1) {
             entirePostingEntries.add(Mapper.mergeAndSortTwoPostingEntriesLists(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
         }
@@ -101,7 +103,7 @@ public class RunnableParse implements Runnable {
         timePrint = timePrint+" EndTime: " +endTime + " Total: "+(endTime-startTime);
         System.out.println(timePrint);
 
-        Documenter.savePostingEntries(entirePostingEntries);
+        Documenter.savePostingEntries(entirePostingEntries.get(0));
     }
 
 

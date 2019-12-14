@@ -4,12 +4,9 @@ import CorpusProcessing.*;
 import Model.MyModel;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
@@ -18,13 +15,14 @@ public class TestsPart1 {
         Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
-        //ReadFile_separateFileToDocuments_Test2();
-//        parseTest(parser);
-        Parse_parseDocument_Test1_parseDocument(parser);
+        //ReadFile_separateFileToDocuments_Test2()
+        //parseTest(parser);
+        //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        //Model_Test2();
+        //Model_Test2_entireCorpus();
+        Model_Test2_100DocsTest();
     }
 
 
@@ -279,34 +277,12 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        File Corpus = new File("C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus");
-        File[] directories = Corpus.listFiles();
-        LinkedList<String> strings =new LinkedList<>();
-        for (File directory : directories) {
-            String filePath = directory.listFiles()[0].getAbsolutePath();
-            System.out.println(filePath);
-            if (Files.isReadable(Paths.get(filePath))) {
-                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
-                for (int i = 0; i < documents.size(); i++) {
-                   // System.out.println(i+": ");
-                    ArrayList<String> bagOfWords = parser.parseDocument(documents.get(i));
-                 //   strings.addAll(bagOfWords);
-                 //   for (String term : bagOfWords) {
-                 //       System.out.println(term);
-                 //   }
-                }
-            }
+        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
+        ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
+        ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
+        for (String term : bagOfWords) {
+            System.out.println(term);
         }
-
-
-//        ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments("C:\\Users\\Merav\\Desktop\\new 3");
-//        for (int i = 0; i < documents.size(); i++) {
-//            System.out.println(i+": ");
-//            ArrayList<String> bagOfWords = parser.parseDocument(documents.get(i));
-//            for (String term : bagOfWords) {
-//                System.out.println(term);
-//            }
-//        }
         return result;
     }
 
@@ -390,9 +366,9 @@ public class TestsPart1 {
     }
 
 
-    public static void Model_Test2(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+    public static void Model_Test2_entireCorpus(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
@@ -457,4 +433,39 @@ public class TestsPart1 {
 
          */
     }
+
+
+    public static void Model_Test2_100DocsTest(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+    }
+
+    public static void Model_Test2_300DocsTest(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\Output";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+    }
+
+
+
+    private static int totalPostingEntries(int numberOfFilesPerThread){
+        final int totalFilesInCorpus = 1815;
+        int totalPostingEntries = totalFilesInCorpus/numberOfFilesPerThread;
+        return totalPostingEntries;
+    }
+
+
+    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread){
+        int totalFilesInTest = testsTimes.length * numberOfFilesPerThread;
+        double totalTestTime = 0;
+        for (int i = 0; i < testsTimes.length; i++) {
+            totalTestTime = totalTestTime + testsTimes[i];
+        }
+        double averageTimePerFile = totalTestTime/totalFilesInTest;
+        return averageTimePerFile;
+    }
+
 }

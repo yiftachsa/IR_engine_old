@@ -79,8 +79,16 @@ public class MyModel extends Observable implements IModel {
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(threads, runnableParses);
 
+        //TODO: finished with "threads" and "runnableParses" we can delete them now. CHECK IF NEEDED
+        threads = null;
+        runnableParses = null;
+        System.gc(); // CHECK IF NEEDED
+
         //merge all the individuals posting entries and sort them
-        Documenter.mergeAllPostingEntries();
+        HorizontalMerger.mergeAllPostingEntries();
+
+        double endHorizontalMerger = System.currentTimeMillis();
+        System.out.println("endHorizontalMerger: "+ (endHorizontalMerger-endParseTimer)/1000);
 
         //now we have sorted posting entries files and we can iterate through them based on term name
         this.indexer = new Indexer(resultPath, allSingleAppearanceEntities);
@@ -92,7 +100,7 @@ public class MyModel extends Observable implements IModel {
 
     private void generatePostingEntriesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses) {
         int currentDirectoryIndex = 0;
-        int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
+        //int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
 
         for (int i = 0; i < threads.length; i++) {
             HashSet<String> entities = new HashSet<>();
@@ -111,9 +119,9 @@ public class MyModel extends Observable implements IModel {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
 
-            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
-                runnableParse.saveAndClearEntitiesSets();
-            }
+//            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
+//                runnableParse.saveAndClearEntitiesSets();
+//            }
 
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             threads[finishedThreadIndex] = new Thread(runnableParse);
@@ -148,7 +156,7 @@ public class MyModel extends Observable implements IModel {
             singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
         }
         //merge-sorting single entities
-        HashSet<String>[] multipleAndUniqEntities = getMultipleAppearancesEntities(singleAppearanceEntitiesList);
+        HashSet<String>[] multipleAndUniqEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
         entitiesTreeSet.addAll(multipleAndUniqEntities[0]);
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
@@ -159,19 +167,20 @@ public class MyModel extends Observable implements IModel {
         return multipleAndUniqEntities[1];
     }
 
-
-    private HashSet<String>[] getMultipleAppearancesEntities(LinkedList<String> singleAppearanceEntitiesList) {
+//TODO:Change the name to getUniqueAndDuplicatedEntitiesSets
+    private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> singleAppearanceEntitiesList) {
         HashSet<String> uniqueEntities = new HashSet<>();
         HashSet<String> duplicatedEntities = new HashSet<>();
-        for (int i = 0; i < singleAppearanceEntitiesList.size(); i++) {
-            String currentEntity = singleAppearanceEntitiesList.get(i);
+        for (String currentEntity : singleAppearanceEntitiesList) {
             if (uniqueEntities.contains(currentEntity)) {
                 duplicatedEntities.add(currentEntity);
             } else {
                 uniqueEntities.add(currentEntity);
             }
         }
+
         uniqueEntities.removeAll(duplicatedEntities);
+
         HashSet<String>[] result = new HashSet[2];
         result[0] = duplicatedEntities;
         result[1] = uniqueEntities;
