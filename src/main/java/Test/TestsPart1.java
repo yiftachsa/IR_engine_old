@@ -4,24 +4,27 @@ import CorpusProcessing.*;
 import Model.MyModel;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        //Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2();
 //        parseTest(parser);
-        //Parse_parseDocument_Test1_parseDocument(parser);
+        Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2();
+        //Model_Test2();
     }
 
 
@@ -276,12 +279,34 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396002\\FB396002";
-        ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
-        ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        for (String term : bagOfWords) {
-            System.out.println(term);
+        File Corpus = new File("C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus");
+        File[] directories = Corpus.listFiles();
+        LinkedList<String> strings =new LinkedList<>();
+        for (File directory : directories) {
+            String filePath = directory.listFiles()[0].getAbsolutePath();
+            System.out.println(filePath);
+            if (Files.isReadable(Paths.get(filePath))) {
+                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+                for (int i = 0; i < documents.size(); i++) {
+                   // System.out.println(i+": ");
+                    ArrayList<String> bagOfWords = parser.parseDocument(documents.get(i));
+                 //   strings.addAll(bagOfWords);
+                 //   for (String term : bagOfWords) {
+                 //       System.out.println(term);
+                 //   }
+                }
+            }
         }
+
+
+//        ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments("C:\\Users\\Merav\\Desktop\\new 3");
+//        for (int i = 0; i < documents.size(); i++) {
+//            System.out.println(i+": ");
+//            ArrayList<String> bagOfWords = parser.parseDocument(documents.get(i));
+//            for (String term : bagOfWords) {
+//                System.out.println(term);
+//            }
+//        }
         return result;
     }
 
