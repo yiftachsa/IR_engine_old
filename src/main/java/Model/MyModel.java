@@ -85,7 +85,7 @@ public class MyModel extends Observable implements IModel {
         System.gc(); // CHECK IF NEEDED
 
         //merge all the individuals posting entries and sort them
-        Documenter.mergeAllPostingEntries();
+        HorizontalMerger.mergeAllPostingEntries();
 
         //now we have sorted posting entries files and we can iterate through them based on term name
         this.indexer = new Indexer(resultPath, allSingleAppearanceEntities);
@@ -153,7 +153,7 @@ public class MyModel extends Observable implements IModel {
             singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
         }
         //merge-sorting single entities
-        HashSet<String>[] multipleAndUniqEntities = getMultipleAppearancesEntities(singleAppearanceEntitiesList);
+        HashSet<String>[] multipleAndUniqEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
         entitiesTreeSet.addAll(multipleAndUniqEntities[0]);
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
@@ -164,19 +164,20 @@ public class MyModel extends Observable implements IModel {
         return multipleAndUniqEntities[1];
     }
 
-
-    private HashSet<String>[] getMultipleAppearancesEntities(LinkedList<String> singleAppearanceEntitiesList) {
+//TODO:Change the name to getUniqueAndDuplicatedEntitiesSets
+    private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> singleAppearanceEntitiesList) {
         HashSet<String> uniqueEntities = new HashSet<>();
         HashSet<String> duplicatedEntities = new HashSet<>();
-        for (int i = 0; i < singleAppearanceEntitiesList.size(); i++) {
-            String currentEntity = singleAppearanceEntitiesList.get(i);
+        for (String currentEntity : singleAppearanceEntitiesList) {
             if (uniqueEntities.contains(currentEntity)) {
                 duplicatedEntities.add(currentEntity);
             } else {
                 uniqueEntities.add(currentEntity);
             }
         }
+
         uniqueEntities.removeAll(duplicatedEntities);
+
         HashSet<String>[] result = new HashSet[2];
         result[0] = duplicatedEntities;
         result[1] = uniqueEntities;

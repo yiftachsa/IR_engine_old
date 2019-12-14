@@ -21,9 +21,9 @@ public class Documenter {
     // private static final int NUMBEROFCATEGORIES = 27;
     // private static final int TRIOBUFFERSIZE = 10000;
     private static int fileIndex = 0;
-    private static final int NUMBEROFPOSTINGLINESPERPOSTINGPORTION = (int) Math.pow(2, 20);
-    private static final int MERGERSPOOLSIZE = 2;
-    private static final int LOADERSPOOLSIZE = 2;
+
+
+//    private static final int LOADERSPOOLSIZE = 2;
 
     private static int postingEntriesIndex = 0;
     private static ArrayList<String> documentsDetails = new ArrayList<>();
@@ -44,19 +44,23 @@ public class Documenter {
         new File(filesPath + "\\entities").mkdir();
         new File(filesPath + "\\postingEntries").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
-
+        new File(filesPath + "\\postingPortions").mkdir();
     }
 
     public static int getIterationNumber() {
         return iterationNumber;
     }
 
+    public static int getPostingEntriesIndex() {
+        return postingEntriesIndex;
+    }
+
     public static int getDocumentsDetailsSize() {
         return documentsDetails.size();
     }
 
-    public static AtomicInteger getLongestPostingEntriesFile() {
-        return longestPostingEntriesFile;
+    public static int getLongestPostingEntriesFile() {
+        return longestPostingEntriesFile.get();
     }
 
     /**
@@ -67,6 +71,7 @@ public class Documenter {
     public static String getFilePathToPostingEntries() {
         return filesPath + "\\postingEntries";
     }
+
 
     /**
      * Receives details about a document and adds it to the field documentsDetails list.
@@ -109,15 +114,10 @@ public class Documenter {
         //documentsDetails = new ArrayList<>();
     }
 
-    public static int getNUMBEROFPOSTINGLINES() {
-        return NUMBEROFPOSTINGLINESPERPOSTINGPORTION;
-    }
-
     /**
-     *
-     * @param postingEntriesLists
+     * @param postingEntriesList
      */
-    public static void savePostingEntries(ArrayList<ArrayList<Trio>> postingEntriesLists) {
+    public static void savePostingEntries(ArrayList<Trio> postingEntriesList) {
         if (filesPath != null) {
 
             postingEntriesMutex.lock();
@@ -128,121 +128,43 @@ public class Documenter {
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(filePath);
                 ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-                outputStream.writeObject(postingEntriesLists);
+                outputStream.writeObject(postingEntriesList);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            if (longestPostingEntriesFile.get() < postingEntriesLists.size()) {
-                longestPostingEntriesFile.set(postingEntriesLists.size());
+            if (longestPostingEntriesFile.get() < postingEntriesList.size()) {
+                longestPostingEntriesFile.set(postingEntriesList.size());
             }
 
         }
     }
 
-    public static ArrayList<Trio> loadPostingEntree() {
-        return null;
-    }
+    public static ArrayList<Trio> loadPostingEntree(int postingEntreeIndex)
+    {
+        FileInputStream fileInputStream = null;
+        ArrayList<Trio> trioArrayList = null;
 
-    //TODO: Move to Mapper
-    public static void mergeAllPostingEntries() {
-        ExecutorService documentLoadersPool = Executors.newFixedThreadPool(LOADERSPOOLSIZE);
-        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
-
-        ArrayList<Future<ArrayList<Trio>>> futureLoaders = new ArrayList<>();
-        ArrayList<Future<ArrayList<Trio>>> futuresMerge = new ArrayList<>();
-
-        ArrayList<ArrayList<Trio>> allPostingEntriesPortions = new ArrayList<>();
-
-        int numberOfPostingPortions = longestPostingEntriesFile.get() / NUMBEROFPOSTINGLINESPERPOSTINGPORTION;
-
-        for (int i = 0; i < numberOfPostingPortions; i++) {
-            //If there is 1000 postingEntries, will be 998 threads that will wait - is that ok? memory complexity!!!!
-            while (CallableRead.getIndexDoc().get() < postingEntriesIndex) {
-                Future<ArrayList<Trio>> futureRead = documentLoadersPool.submit(new CallableRead());
-                futureLoaders.add(futureRead);
-
-                //Check if a read call is done //TODO: Maybe overkill
-                if (futureLoaders.size() > 0) {
-                    if (futureLoaders.get(0).isDone()) {
-                        Future<ArrayList<Trio>> finishedFuture = futureLoaders.remove(0);
-                        try {
-                            allPostingEntriesPortions.add(finishedFuture.get());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                //MERGE
-                if (allPostingEntriesPortions.size() > 1) {
-                    Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0),allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
-                    futuresMerge.add(futureMerge);
-                }
-
-                //Check if a merge call is done
-                if (futuresMerge.size() > 0) {
-                    if (futuresMerge.get(0).isDone()) {
-                        Future<ArrayList<Trio>> futureMerge = futuresMerge.remove(0);
-                        try {
-                            allPostingEntriesPortions.add(futureMerge.get());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-            //Waiting for all the files to be loaded and merged
-            while (futureLoaders.size() > 0 || futuresMerge.size() > 0) {
-                if (futureLoaders.get(0).isDone()) {
-                    Future<ArrayList<Trio>> finishedFuture = futureLoaders.remove(0);
-                    try {
-                        allPostingEntriesPortions.add(finishedFuture.get());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> futureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0),allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
-                        futuresMerge.add(futureMerge);
-                    }
-                } else if (futuresMerge.get(0).isDone()) {
-                    Future<ArrayList<Trio>> futureMerge = futuresMerge.remove(0);
-                    try {
-                        allPostingEntriesPortions.add(futureMerge.get());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (allPostingEntriesPortions.size() > 1) {
-                        Future<ArrayList<Trio>> nextFutureMerge = mergersPool.submit(new CallableMerge(allPostingEntriesPortions.remove(0), allPostingEntriesPortions.remove(0))); //FIXME:: Race condition - remove here instead of inside the thread
-                        futuresMerge.add(nextFutureMerge);
-                    }
-                }
-            }
-            for (Future<ArrayList<Trio>> future : futuresMerge) {
-                while (!future.isDone()) ;
-                try {
-                    allPostingEntriesPortions.add(future.get());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            mergersPool.shutdown();
-            while (allPostingEntriesPortions.size() > 1) {
-                allPostingEntriesPortions.add(Mapper.mergeAndSortTwoPostingEntriesLists(allPostingEntriesPortions.remove(0), allPostingEntriesPortions.remove(0)));
-            }
-            Documenter.savePostingPortions(allPostingEntriesPortions.get(0), iterationNumber);
-            iterationNumber++;
-            CallableRead.setIterationNumber(iterationNumber);
+        try {
+            fileInputStream = new FileInputStream(filesPath + "\\postingEntries\\" + postingEntreeIndex);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            trioArrayList = (ArrayList<Trio>) objectInputStream.readObject();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
+
+        return trioArrayList;
     }
 
-    private static void savePostingPortions(ArrayList<Trio> allPostingEntriesPortions, int fileNumber) {
+
+    static void savePostingPortions(ArrayList<Trio> allPostingEntriesPortions, int fileNumber) {
         if (filesPath != null) {
-            if (fileNumber == 0) {
-                new File(filesPath + "\\postingPortions").mkdir();
-            }
             String filePath = filesPath + "\\postingPortions\\" + fileNumber;
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(filePath);
@@ -253,7 +175,6 @@ public class Documenter {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            postingEntriesIndex++;
         }
     }
 

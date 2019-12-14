@@ -15,13 +15,14 @@ public class TestsPart1 {
         Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
-        //ReadFile_separateFileToDocuments_Test2();
-//        parseTest(parser);
+        //ReadFile_separateFileToDocuments_Test2()
+        //parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2();
+        //Model_Test2_entireCorpus();
+        Model_Test2_100DocsTest();
     }
 
 
@@ -365,7 +366,7 @@ public class TestsPart1 {
     }
 
 
-    public static void Model_Test2(){
+    public static void Model_Test2_entireCorpus(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
         String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
@@ -431,6 +432,21 @@ public class TestsPart1 {
         Documenter.shutdown();
 
          */
+    }
+
+
+    public static void Model_Test2_100DocsTest(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+    }
+
+    public static void Model_Test2_300DocsTest(){
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\Output";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
     }
 
 
