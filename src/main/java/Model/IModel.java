@@ -36,5 +36,7 @@ public interface IModel {
      * @param resultPath - String - "resultPath" text field content
      */
     void start(String corpusPath, String resultPath);
+
+    String getDictionary();
     //FIXME:expend the JavaDocs
 }

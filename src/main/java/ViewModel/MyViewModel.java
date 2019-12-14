@@ -74,8 +74,7 @@ public class MyViewModel extends Observable implements Observer {
      * @return
      */
     public String getDictionary() {
-
-        return "";//(String)model.getDictionary();
+        return model.getDictionary();
     }
     //FIXME:expend the JavaDocs
 

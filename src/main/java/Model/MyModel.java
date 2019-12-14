@@ -1,6 +1,7 @@
 package Model;
 
 import CorpusProcessing.*;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.util.*;
@@ -33,6 +34,10 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean loadDictionary(String path) {
+        this.indexer = new Indexer(Documenter.loadDictionary(path), path);
+        if ((this.indexer != null)){
+            return this.indexer.getDictionaryStatus();
+        }
         return false;
     }
 
@@ -46,6 +51,18 @@ public class MyModel extends Observable implements IModel {
         return indexer.getDictionaryStatus();
     }
 
+    @Override
+    public String getDictionary() {
+        StringBuilder stringBuilder = new StringBuilder();
+        Map<String, Pair<Integer, String>> dictionary = this.indexer.getDictionary();
+        for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
+            String key = entry.getKey();
+            Pair<Integer, String> pair = entry.getValue();
+            String outLine = key + "," + pair.getKey() + "," + pair.getValue() + "\n";
+            stringBuilder.append(outLine);
+        }
+        return stringBuilder.toString();
+    }
 
     @Override
     public void start(String corpusPath, String resultPath) {

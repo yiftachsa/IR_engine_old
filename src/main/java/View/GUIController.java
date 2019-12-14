@@ -90,7 +90,6 @@ public class GUIController implements Observer {
         {
             AlertBox.display("Dictionary display failed","Dictionary display failed", "\n\n\n\n\n","Back to menu" , "default background" );
         }
-               //TODO: display dictionary!!!!!!!!
     }
 
     /**
