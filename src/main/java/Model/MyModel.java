@@ -87,6 +87,9 @@ public class MyModel extends Observable implements IModel {
         //merge all the individuals posting entries and sort them
         HorizontalMerger.mergeAllPostingEntries();
 
+        double endHorizontalMerger = System.currentTimeMillis();
+        System.out.println("endHorizontalMerger: "+ (endHorizontalMerger-endParseTimer)/1000);
+
         //now we have sorted posting entries files and we can iterate through them based on term name
         this.indexer = new Indexer(resultPath, allSingleAppearanceEntities);
         indexer.buildInvertedIndex();

@@ -760,6 +760,7 @@ public class Parse {
                 while ((line = bufferedReader.readLine()) != null) {
                     stopwords.add(line);
                 }
+                stopwords.add("");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {

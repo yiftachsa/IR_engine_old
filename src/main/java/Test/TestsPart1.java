@@ -467,4 +467,5 @@ public class TestsPart1 {
         double averageTimePerFile = totalTestTime/totalFilesInTest;
         return averageTimePerFile;
     }
+
 }
