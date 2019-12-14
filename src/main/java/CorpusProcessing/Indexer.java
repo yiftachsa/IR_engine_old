@@ -41,8 +41,13 @@ public class Indexer {
         this.singleAppearances = singleAppearanceEntities;
     }
 
+    public Indexer(Map<String, Pair<Integer, String>> dictionary, String path) {
+        this.dictionary = dictionary;
+        this.filePath = path;
+    }
+
     public void buildInvertedIndex() {
-        int numberOfPostingPortions = Documenter.getIterationNumber();
+        int numberOfPostingPortions = Documenter.getNumberOfPostingPortions();
         for (int i = 0; i < numberOfPostingPortions; i++) {
             int trioCount = 0;
             //open postingPortion i
@@ -92,6 +97,8 @@ public class Indexer {
                 }
             }
         }
+
+        Documenter.saveDictionary(dictionary);
     }
 
 

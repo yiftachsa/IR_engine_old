@@ -33,7 +33,7 @@ public class Documenter {
 
     private static String filesPath;
 
-    private static int iterationNumber = 0;
+    private static int numberOfPostingPortions = 0;
     private static AtomicInteger longestPostingEntriesFile = new AtomicInteger(0);
 
 
@@ -45,10 +45,12 @@ public class Documenter {
         new File(filesPath + "\\postingEntries").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
         new File(filesPath + "\\postingPortions").mkdir();
+        new File(filesPath + "\\PostingFiles").mkdir();
+        new File(filesPath + "\\Dictionary").mkdir();
     }
 
-    public static int getIterationNumber() {
-        return iterationNumber;
+    public static int getNumberOfPostingPortions() {
+        return numberOfPostingPortions;
     }
 
     public static int getPostingEntriesIndex() {
@@ -142,8 +144,7 @@ public class Documenter {
         }
     }
 
-    public static ArrayList<Trio> loadPostingEntree(int postingEntreeIndex)
-    {
+    public static ArrayList<Trio> loadPostingEntree(int postingEntreeIndex) {
         FileInputStream fileInputStream = null;
         ArrayList<Trio> trioArrayList = null;
 
@@ -176,6 +177,7 @@ public class Documenter {
                 e.printStackTrace();
             }
         }
+        numberOfPostingPortions = fileNumber;
     }
 
     public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>> posting, int index) {
@@ -183,10 +185,7 @@ public class Documenter {
             //WRITE TO DISK! 
             BufferedWriter writer = null;
             try {
-                if (index == 0) {
-                    new File(filesPath + "\\PostingFiles").mkdir();
-                }
-                writer = new BufferedWriter(new FileWriter(filesPath + "\\PostingDetails\\" + index));
+                writer = new BufferedWriter(new FileWriter(filesPath + "\\PostingFiles\\" + index));
                 for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : posting.entrySet()) {
                     String term = postingLine.getKey();
                     ArrayList<Pair<String, Integer>> pairs = postingLine.getValue();
@@ -230,6 +229,11 @@ public class Documenter {
             saveDocumentsDetailsToFile();
         }
         saveDocumentationFiles();
+        deleteAllTemporaryFiles();
+    }
+
+    private static void deleteAllTemporaryFiles() {
+        //TODO:Delete all temp Files
     }
 
     private static void saveDocumentationFiles() {
@@ -238,6 +242,45 @@ public class Documenter {
 
     public static void saveEntitiesSets(HashSet<String> entities, HashSet<String> singleAppearanceEntities) {
         //TODO: Save all the given lists as objects
+    }
+
+    public static void saveDictionary(Map<String, Pair<Integer, String>> dictionary) {
+        if (filesPath != null) {
+            //WRITE TO DISK! 
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(filesPath + "\\Dictionary\\dictionary"));
+                for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
+                    String key = entry.getKey();
+                    Pair<Integer, String> pair = entry.getValue();
+                    String outLine = key + "," + pair.getKey() + "," + pair.getValue(); //TODO: Maybe use a different delimiter then ","
+                    writer.write(outLine);
+                    writer.newLine();
+                }
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath){
+        BufferedReader reader = null;
+        Map<String, Pair<Integer, String>> dictionary = new HashMap<>();
+        try {
+            reader = new BufferedReader((new FileReader(dictionaryPath+"\\Dictionary\\dictionary")));
+            String line = "";
+            while ((line = reader.readLine()) != null){
+                String[] entreeDetails = line.split(",");
+                dictionary.put(entreeDetails[0], new Pair<>(Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dictionary;
     }
 }
 
