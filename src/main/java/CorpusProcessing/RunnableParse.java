@@ -1,10 +1,14 @@
 package CorpusProcessing;
 
+import javafx.util.Pair;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -16,6 +20,8 @@ public class RunnableParse implements Runnable {
     private HashSet<String> singleAppearanceEntities;
     private File[] filesToParse;
     private Parse parser;
+    private Indexer indexer;
+
 
     public HashSet<String> getEntities() {
         return entities;
@@ -25,9 +31,10 @@ public class RunnableParse implements Runnable {
         return singleAppearanceEntities;
     }
 
-    public RunnableParse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
-        this.entities = entities;
-        this.singleAppearanceEntities = singleAppearanceEntities;
+    public RunnableParse(String pathToPostingDirectories , boolean useStemmer) {
+        this.entities =new HashSet<>();
+        this.singleAppearanceEntities = new HashSet<>();
+        this.indexer = new Indexer(pathToPostingDirectories);
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
     }
 
@@ -37,6 +44,7 @@ public class RunnableParse implements Runnable {
 
     @Override
     public void run() {
+        //FIXME: for debugging!!!
         double startTime = System.currentTimeMillis()/1000;
         String timePrint = "Thread: "+Thread.currentThread().getId()+" StartTime: "+startTime;
 
@@ -79,10 +87,6 @@ public class RunnableParse implements Runnable {
                         }
                     }
                 }
-                //merge postingEntriesListsOfFile into entirePostingEntries
-
-                //entirePostingEntries=(Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesListsOfFile.get(0),entirePostingEntries));
-
             }
         }
         for (Future<ArrayList<Trio>> future : futures) {
@@ -93,15 +97,22 @@ public class RunnableParse implements Runnable {
                 e.printStackTrace();
             }
         }
+
         mergersPool.shutdown();
 
         while (entirePostingEntries.size() > 1) {
             entirePostingEntries.add(Mapper.mergeAndSortTwoPostingEntriesLists(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
         }
 
+        //FIXME: NEED TO DELETE ITS ONLY FOR DEBUGGING
         double endTime = System.currentTimeMillis()/1000;
         timePrint = timePrint+" EndTime: " +endTime + " Total: "+(endTime-startTime);
         System.out.println(timePrint);
+
+        //entirePostingEntries contains all the sorted trios from all the documents - per thread
+        //build posting file for all the documents in the thread
+        this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
+
 
         Documenter.savePostingEntries(entirePostingEntries.get(0));
     }
@@ -111,5 +122,9 @@ public class RunnableParse implements Runnable {
         Documenter.saveEntitiesSets(this.entities, this.singleAppearanceEntities);
         this.entities = new HashSet<>();
         this.singleAppearanceEntities = new HashSet<>();
+    }
+
+    public Map<String, Pair<Integer, String>> getDictionary() {
+        return this.indexer.getDictionary();
     }
 }

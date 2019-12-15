@@ -26,9 +26,12 @@ public class Documenter {
 //    private static final int LOADERSPOOLSIZE = 2;
 
     private static int postingEntriesIndex = 0;
+    private static int invertedIndexIndex = 0;
+
     private static ArrayList<String> documentsDetails = new ArrayList<>();
 
     private static ReentrantLock documentsDetailsMutex;
+    private static ReentrantLock invertedIndexMutex;
     private static ReentrantLock postingEntriesMutex;
 
     private static String filesPath;
@@ -42,10 +45,13 @@ public class Documenter {
         documentsDetailsMutex = new ReentrantLock();
         postingEntriesMutex = new ReentrantLock();
         new File(filesPath + "\\entities").mkdir();
-        new File(filesPath + "\\postingEntries").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
-        new File(filesPath + "\\postingPortions").mkdir();
         new File(filesPath + "\\PostingFiles").mkdir();
+        char directoryName = '`';
+        for (int i = 0; i < Indexer.getINVERTEDINDEXDIRECTORIESCOUNT(); i++) {
+            new File(filesPath + "\\PostingFiles\\" + directoryName).mkdir();
+            directoryName++;
+        }
         new File(filesPath + "\\Dictionary").mkdir();
     }
 
@@ -180,29 +186,52 @@ public class Documenter {
         numberOfPostingPortions = fileNumber;
     }
 
-    public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>> posting, int index) {
+    public static int getInvertedIndexIndex() {
+        return invertedIndexIndex;
+    }
+
+    public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>> posting)
+    {
+        //todo: fill this function!
+    }
+
+    public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>>[] postingArray) {
+
         if (filesPath != null) {
-            //WRITE TO DISK! 
+
+            invertedIndexMutex.lock();
+            int fileIndex = invertedIndexIndex;
+            invertedIndexIndex++;
+            invertedIndexMutex.unlock();
+
+            String filePath = filesPath + "\\PostingFiles";
+
+            char startChar = '`';
             BufferedWriter writer = null;
-            try {
-                writer = new BufferedWriter(new FileWriter(filesPath + "\\PostingFiles\\" + index));
-                for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : posting.entrySet()) {
-                    String term = postingLine.getKey();
-                    ArrayList<Pair<String, Integer>> pairs = postingLine.getValue();
-                    String out = term + "~";
-                    for (Pair<String, Integer> pair : pairs) {
-                        out = out + "<" + pair.getKey() + "," + pair.getValue() + ">";
+            for (int i = 0; i < postingArray.length; i++) {
+                try {
+                    String currentFilePath = filePath + "\\" + (char)((int) startChar + i) + "postingFile" + fileIndex;
+
+                    writer = new BufferedWriter(new FileWriter(currentFilePath));
+                    for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : postingArray[i].entrySet()) {
+                        String term = postingLine.getKey();
+                        ArrayList<Pair<String, Integer>> pairs = postingLine.getValue();
+                        String out = term + "~";
+                        for (Pair<String, Integer> pair : pairs) {
+                            out = out + "<" + pair.getKey() + "," + pair.getValue() + ">,";
+                            out = out.substring(0,out.length()-1);
+                        }
+                        writer.write(out);
+                        writer.newLine();
                     }
-                    writer.write(out);
-                    writer.newLine();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            fileIndex++;
-            documentsDetails = new ArrayList<>();
+
         }
+
     }
 
     /**
@@ -265,13 +294,13 @@ public class Documenter {
     }
 
 
-    public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath){
+    public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
         Map<String, Pair<Integer, String>> dictionary = new HashMap<>();
         try {
-            reader = new BufferedReader((new FileReader(dictionaryPath+"\\Dictionary\\dictionary")));
+            reader = new BufferedReader((new FileReader(dictionaryPath + "\\Dictionary\\dictionary")));
             String line = "";
-            while ((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 String[] entreeDetails = line.split(",");
                 dictionary.put(entreeDetails[0], new Pair<>(Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
             }
