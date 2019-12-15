@@ -12,8 +12,8 @@ public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
     private Indexer indexer;
-    private static final int NUMBEROFDOCUMENTPROCESSORS = 1;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 2;
+    private static final int NUMBEROFDOCUMENTPROCESSORS = 2;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 8;
 
 
 /*  setChanged();

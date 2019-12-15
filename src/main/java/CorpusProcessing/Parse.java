@@ -103,6 +103,7 @@ public class Parse {
         ArrayList<String> terms = parseText(tokens, useStemmer);
         return terms;
     }
+
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *
@@ -119,7 +120,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--")) {
                 continue;
             }
 
@@ -233,6 +234,7 @@ public class Parse {
                         }
                     } else //<<<Simple Number>>>
                     {
+                        if (token.matches("^[0-9]+$"))
                         terms.add(generateTokenSimpleNumber(token));
                     }
                 }
@@ -299,7 +301,7 @@ public class Parse {
                 }
             }
             // Hyphens <<<Word-Word-Word>>>
-            else if (token.matches(".*-.*-.*") || token.matches(".*-.*")) {
+            else if (token.matches(".*-.*-.*") || token.matches(".*-.*") || token.contains("--")) {
                 LinkedList<String> resultHyphenList = generateTokenHyphens(token);
                 for (String term : resultHyphenList) {
                     if (!isStopWord(term.toLowerCase())) {
@@ -403,7 +405,7 @@ public class Parse {
                 }
                 i = i + resultList.getValue();
             } else {
-                if (!isStopWord(token.toLowerCase()))
+                if (token.matches("^[a-z]+$") && !isStopWord(token.toLowerCase()))
                     if (useStemmer) {
                         terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
@@ -589,7 +591,7 @@ public class Parse {
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
-            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million")||token.contains("billion")||token.contains("Billion"))) {
+            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million") || token.contains("billion") || token.contains("Billion"))) {
                 firstNextToken = token.substring(token.indexOf("-") + 1);
                 token = token.substring(0, token.indexOf("-"));
                 additionalTokensProcessed--;
@@ -620,7 +622,7 @@ public class Parse {
                     } else {
                         token = doubleDecimalFormat(value) + " Dollars";
                     }
-                }else{
+                } else {
                     token = "";
                 }
             }
@@ -728,6 +730,10 @@ public class Parse {
             resultList.add(token);
             resultList.add(token.substring(0, token.indexOf("-")));
             resultList.add(token.substring(token.indexOf("-") + 1));
+        } else if (token.contains("--")) {
+            resultList.add(token);
+            resultList.add(token.substring(0, token.indexOf("-")));
+            resultList.add(token.substring(token.indexOf("-") + 2));
         }
         return resultList;
     }

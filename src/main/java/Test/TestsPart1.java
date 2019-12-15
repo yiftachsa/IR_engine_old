@@ -17,12 +17,12 @@ public class TestsPart1 {
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
-        //Parse_parseDocument_Test1_parseDocument(parser);
+       // Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
         //Model_Test2_entireCorpus();
-        Model_Test2_100DocsTest();
+       Model_Test2_100DocsTest();
     }
 
 
@@ -277,7 +277,7 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
+        String filePath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10\\corpus\\FB396001\\FB396001";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
         for (String term : bagOfWords) {
@@ -436,8 +436,8 @@ public class TestsPart1 {
 
 
     public static void Model_Test2_100DocsTest(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
     }
