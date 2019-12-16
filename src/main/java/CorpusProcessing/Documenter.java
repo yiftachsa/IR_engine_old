@@ -44,6 +44,7 @@ public class Documenter {
         filesPath = path + "";
         documentsDetailsMutex = new ReentrantLock();
         postingEntriesMutex = new ReentrantLock();
+        invertedIndexMutex=new ReentrantLock();
         new File(filesPath + "\\entities").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
         new File(filesPath + "\\PostingFiles").mkdir();
@@ -210,7 +211,7 @@ public class Documenter {
             BufferedWriter writer = null;
             for (int i = 0; i < postingArray.length; i++) {
                 try {
-                    String currentFilePath = filePath + "\\" + (char)((int) startChar + i) + "postingFile" + fileIndex;
+                    String currentFilePath = filePath + "\\" + (char)((int) startChar + i) + "\\postingFile" + fileIndex;
 
                     writer = new BufferedWriter(new FileWriter(currentFilePath));
                     for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : postingArray[i].entrySet()) {

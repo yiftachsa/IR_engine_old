@@ -42,7 +42,9 @@ public class Indexer {
 
         //Posting buffer - entry: term-->({docId,term frequency},{(docId,term frequency)},...)
         SortedMap<String, ArrayList<Pair<String, Integer>>>[] posting = new TreeMap[INVERTEDINDEXDIRECTORIESCOUNT];
-
+        for (int i = 0; i < posting.length; i++) {
+            posting[i] = new TreeMap<>();
+        }
         //the posting entries is sorted by ascii, the inverted index wont be like that its will be AaBb..
 
         //Enter to dictionary
@@ -51,59 +53,88 @@ public class Indexer {
         String singleLetterPosting = "";
         boolean isLowerCaseLetters = true;
 
-        for (int i = postingEntries.size(); i >= 0; i--) {
+        for (int i = postingEntries.size() -1; i >= 0; i--) {
             Trio postingEntry = postingEntries.get(i);
             String term = postingEntry.getTerm();
             String docId = postingEntry.getDocid();
             int termFrequency = postingEntry.getFrequency();
-
-            if (isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
-                if (dictionary.containsKey(term)) {
-                    int newFrequency = dictionary.get(term).getKey() + 1;
-                    //The function put override the previous value;
-                    dictionary.put(term, new Pair<Integer, String>(newFrequency, "")); // TODO: maybe we can put the name of the posting file here.
-                    posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newFrequency));
+            if(!term.equals("")) {
+                if (isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
+                    if (dictionary.containsKey(term)) {
+                        int newFrequency = dictionary.get(term).getKey() + 1;
+                        //The function put override the previous value;
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, "")); // TODO: maybe we can put the name of the posting file here.
+                        if(posting[invertedArrayIndex].get(term) == null)
+                        {
+                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                            postingLine.add(new Pair<>(docId, termFrequency));
+                            posting[invertedArrayIndex].put(term, postingLine);
+                        }
+                        else
+                        {
+                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newFrequency));
+                        }
+                    } else {
+                        dictionary.put(term, new Pair<Integer, String>(1, ""));
+                        ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                        postingLine.add(new Pair<>(docId, termFrequency));
+                        posting[invertedArrayIndex].put(term, postingLine);
+                    }
+                } else if (!isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
+                    String lowerCaseTerm = term.toLowerCase();
+                    //the dictionary already contains the term in lower case
+                    if (dictionary.containsKey(lowerCaseTerm)) {
+                        int newFrequency = dictionary.get(lowerCaseTerm).getKey() + 1;
+                        dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, ""));
+                        if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
+                        {
+                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                            postingLine.add(new Pair<>(docId, termFrequency));
+                            posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
+                        }
+                        else
+                        {
+                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
+                        }
+                        //posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
+                    }
+                    //the dictionary already contains the term in upper case
+                    else if (dictionary.containsKey(term)) {
+                        int newFrequency = dictionary.get(term).getKey() + 1;
+                        //The function put override the previous value;
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, ""));
+                        if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
+                        {
+                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                            postingLine.add(new Pair<>(docId, termFrequency));
+                            posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
+                        }
+                        else
+                        {
+                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
+                        }
+                    }
+                    //the dictionary doesn't contain the term
+                    else {
+                        dictionary.put(term, new Pair<Integer, String>(1, ""));
+                        ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                        postingLine.add(new Pair<>(docId, termFrequency));
+                        posting[invertedArrayIndex].put(term, postingLine);
+                    }
                 } else {
-                    dictionary.put(term, new Pair<Integer, String>(1, ""));
-                    ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
-                    postingLine.add(new Pair<>(docId, termFrequency));
-                    posting[invertedArrayIndex].put(term, postingLine);
+                    invertedArrayIndex--;
+                    limitCharacter--;
+                    if (limitCharacter == '_') {
+                        limitCharacter = 'Y';
+                        invertedArrayIndex = 26;
+                        isLowerCaseLetters = false;
+                    }
+                    if (limitCharacter == '?') {
+                        limitCharacter = ' ';
+                    }
+                    //TODO:check!!!!!!!!!
+                    i++;
                 }
-            } else if (!isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
-                String lowerCaseTerm = term.toLowerCase();
-                //the dictionary already contains the term in lower case
-                if (dictionary.containsKey(lowerCaseTerm)) {
-                    int newFrequency = dictionary.get(lowerCaseTerm).getKey() + 1;
-                    dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, ""));
-                    posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
-                }
-                //the dictionary already contains the term in upper case
-                else if (dictionary.containsKey(term)) {
-                    int newFrequency = dictionary.get(term).getKey() + 1;
-                    //The function put override the previous value;
-                    dictionary.put(term, new Pair<Integer, String>(newFrequency, ""));
-                    posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newFrequency));
-                }
-                //the dictionary doesn't contain the term
-                else {
-                    dictionary.put(term, new Pair<Integer, String>(1, ""));
-                    ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
-                    postingLine.add(new Pair<>(docId, termFrequency));
-                    posting[invertedArrayIndex].put(term, postingLine);
-                }
-            } else {
-                invertedArrayIndex--;
-                limitCharacter--;
-                if (limitCharacter == '`') {
-                    limitCharacter = 'y';
-                    invertedArrayIndex = 26;
-                    isLowerCaseLetters = false;
-                }
-                if (limitCharacter == '?') {
-                    limitCharacter = ' ';
-                }
-                //TODO:check!!!!!!!!!
-                i++;
             }
         }
         Documenter.saveInvertedIndex(posting);

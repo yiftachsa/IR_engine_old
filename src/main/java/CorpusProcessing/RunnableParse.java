@@ -114,7 +114,7 @@ public class RunnableParse implements Runnable {
         this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
 
 
-        Documenter.savePostingEntries(entirePostingEntries.get(0));
+        //Documenter.savePostingEntries(entirePostingEntries.get(0));
     }
 
 
