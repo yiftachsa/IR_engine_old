@@ -1,5 +1,6 @@
 package CorpusProcessing;
 
+import javafx.collections.transformation.SortedList;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -41,7 +42,7 @@ public class Indexer {
         String[] invertedIndex = new String[INVERTEDINDEXDIRECTORIESCOUNT];
 
         //Posting buffer - entry: term-->({docId,term frequency},{(docId,term frequency)},...)
-        SortedMap<String, ArrayList<Pair<String, Integer>>>[] posting = new TreeMap[INVERTEDINDEXDIRECTORIESCOUNT];
+        Map<String, PriorityQueue<Pair<String, Integer>>>[] posting = new TreeMap[INVERTEDINDEXDIRECTORIESCOUNT]; //the priority queue functions as a sorted list
         for (int i = 0; i < posting.length; i++) {
             posting[i] = new TreeMap<>();
         }
@@ -66,7 +67,8 @@ public class Indexer {
                         dictionary.put(term, new Pair<Integer, String>(newFrequency, "")); // TODO: maybe we can put the name of the posting file here.
                         if(posting[invertedArrayIndex].get(term) == null)
                         {
-                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+
+                            PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(term, postingLine);
                         }
@@ -76,7 +78,7 @@ public class Indexer {
                         }
                     } else {
                         dictionary.put(term, new Pair<Integer, String>(1, ""));
-                        ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                        PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
                     }
@@ -88,7 +90,7 @@ public class Indexer {
                         dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, ""));
                         if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
                         {
-                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                            PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
                         }
@@ -105,7 +107,7 @@ public class Indexer {
                         dictionary.put(term, new Pair<Integer, String>(newFrequency, ""));
                         if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
                         {
-                            ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                            PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
                         }
@@ -117,14 +119,14 @@ public class Indexer {
                     //the dictionary doesn't contain the term
                     else {
                         dictionary.put(term, new Pair<Integer, String>(1, ""));
-                        ArrayList<Pair<String, Integer>> postingLine = new ArrayList<>();
+                        PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
                     }
                 } else {
                     invertedArrayIndex--;
                     limitCharacter--;
-                    if (limitCharacter == '_') {
+                    if (limitCharacter == '`') {//todo:
                         limitCharacter = 'Y';
                         invertedArrayIndex = 26;
                         isLowerCaseLetters = false;
@@ -132,7 +134,6 @@ public class Indexer {
                     if (limitCharacter == '?') {
                         limitCharacter = ' ';
                     }
-                    //TODO:check!!!!!!!!!
                     i++;
                 }
             }
@@ -238,6 +239,19 @@ public class Indexer {
             if(this.dictionary.containsKey(entity)){
                 this.dictionary.remove(entity);
             }
+        }
+        //TODO:Check if there is a better way
+        ArrayList<String> singleDocumentTerms = new ArrayList<>();
+
+        for (Map.Entry<String, Pair<Integer, String>> dictionaryEntree : this.dictionary.entrySet()) {
+            int documentFrequency = dictionaryEntree.getValue().getKey();
+            if (documentFrequency ==1){
+                singleDocumentTerms.add(dictionaryEntree.getKey());
+            }
+        }
+
+        for(String singleAppearanceTerm : singleDocumentTerms){
+            this.dictionary.remove(singleAppearanceTerm);
         }
     }
 }

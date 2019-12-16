@@ -66,11 +66,15 @@ public class RunnableParse implements Runnable {
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
                     postingEntriesListsOfFile.add(postingsEntries);
                 }
+
                 while (postingEntriesListsOfFile.size() > 1) {
                     postingEntriesListsOfFile.add(Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesListsOfFile.remove(0), postingEntriesListsOfFile.remove(0)));
                 }
+
                 //insert all posting entries of the file to entirePostingEntries
-                entirePostingEntries.add(postingEntriesListsOfFile.get(0));
+
+                    entirePostingEntries.add(postingEntriesListsOfFile.get(0));
+
                 //check if we can merge two posting list to one
                 if (entirePostingEntries.size() >= 2) {
                     Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));

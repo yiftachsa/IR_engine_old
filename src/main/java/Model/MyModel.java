@@ -15,9 +15,9 @@ public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
     private Indexer indexer;
-    private static final int NUMBEROFDOCUMENTPROCESSORS = 5;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 1;
-    private static final int POSTINGMERGERSPOOLSIZE = 4;
+    private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
+    private static final int POSTINGMERGERSPOOLSIZE = 2;
 
 
 /*  setChanged();
@@ -114,16 +114,12 @@ public class MyModel extends Observable implements IModel {
         runnableParses = null;
         System.gc(); // CHECK IF NEEDED
 
+        Documenter.saveDictionary(this.indexer.getDictionary());
 
         // now we have single posting file in each directory and we have a dictionary
 
-
-
         //Closing all open ends
         Documenter.shutdown();
-
-
-
 
     }
 
@@ -191,6 +187,7 @@ public class MyModel extends Observable implements IModel {
     private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> singleAppearanceEntitiesList) {
         HashSet<String> uniqueEntities = new HashSet<>();
         HashSet<String> duplicatedEntities = new HashSet<>();
+
         for (String currentEntity : singleAppearanceEntitiesList) {
             if (uniqueEntities.contains(currentEntity)) {
                 duplicatedEntities.add(currentEntity);
@@ -251,6 +248,7 @@ public class MyModel extends Observable implements IModel {
         for(Map<String, Pair<Integer, String>> dictionary : dictionaries){
             this.indexer.addPartialDictionary(dictionary);
         }
+
         //The indexer have a single unified dictionary
         this.indexer.removeAllSingleAppearances(singleAppearanceEntities);
 
@@ -282,7 +280,6 @@ public class MyModel extends Observable implements IModel {
             }
         }
         postingMergersPool.shutdown();
-
     }
 
     private Map<String, Pair<Integer, String>>[] getAllDictionaries(RunnableParse[] runnableParses) {

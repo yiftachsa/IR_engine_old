@@ -45,7 +45,7 @@ public class Documenter {
         documentsDetailsMutex = new ReentrantLock();
         postingEntriesMutex = new ReentrantLock();
         invertedIndexMutex=new ReentrantLock();
-        new File(filesPath + "\\entities").mkdir();
+        new File(filesPath + "\\Entities").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
         new File(filesPath + "\\PostingFiles").mkdir();
         char directoryName = '`';
@@ -191,12 +191,12 @@ public class Documenter {
         return invertedIndexIndex;
     }
 
-    public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>> posting)
+    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>> posting)
     {
         //todo: fill this function!
     }
 
-    public static void saveInvertedIndex(SortedMap<String, ArrayList<Pair<String, Integer>>>[] postingArray) {
+    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>>[] postingArray) {
 
         if (filesPath != null) {
 
@@ -208,31 +208,38 @@ public class Documenter {
             String filePath = filesPath + "\\PostingFiles";
 
             char startChar = '`';
-            BufferedWriter writer = null;
-            for (int i = 0; i < postingArray.length; i++) {
-                try {
-                    String currentFilePath = filePath + "\\" + (char)((int) startChar + i) + "\\postingFile" + fileIndex;
 
-                    writer = new BufferedWriter(new FileWriter(currentFilePath));
-                    for (SortedMap.Entry<String, ArrayList<Pair<String, Integer>>> postingLine : postingArray[i].entrySet()) {
-                        String term = postingLine.getKey();
-                        ArrayList<Pair<String, Integer>> pairs = postingLine.getValue();
-                        String out = term + "~";
-                        for (Pair<String, Integer> pair : pairs) {
-                            out = out + "<" + pair.getKey() + "," + pair.getValue() + ">,";
-                            out = out.substring(0,out.length()-1);
-                        }
-                        writer.write(out);
-                        writer.newLine();
-                    }
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            for (int i = 0; i < postingArray.length; i++) {
+                savePostingFile(postingArray[i], filePath + "\\" + (char) ((int) startChar + i) + "\\postingFile" + fileIndex);
             }
 
         }
 
+    }
+
+    /**
+     * Saves an individual posting file.
+     * @param posting
+     * @param filePath
+     */
+    public static void savePostingFile(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
+        BufferedWriter writer;
+        try {
+            writer = new BufferedWriter(new FileWriter(filePath));
+            for (SortedMap.Entry<String, PriorityQueue<Pair<String, Integer>>> postingLine : posting.entrySet()) {
+                String term = postingLine.getKey();
+                PriorityQueue<Pair<String, Integer>> pairs = postingLine.getValue();
+                String out = term + "~";
+                for (Pair<String, Integer> pair : pairs) {
+                    out = out + "<" + pair.getKey() + "," + pair.getValue() + ">|";
+                }
+                writer.write(out);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -241,7 +248,7 @@ public class Documenter {
      * @param treeSetToSave - TreeSet<String> - an ordered set of Strings
      */
     public static void saveEntities(TreeSet<String> treeSetToSave) {
-        String filePath = filesPath + "\\entities\\entities";
+        String filePath = filesPath + "\\Entities\\Entities";
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(filePath);
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
@@ -312,5 +319,56 @@ public class Documenter {
         }
         return dictionary;
     }
+
+    public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile(String path) {
+        Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
+        BufferedReader bufferedReader = null;
+
+        try {
+            bufferedReader = new BufferedReader((new FileReader(path)));
+            String line = "";
+            while((line = bufferedReader.readLine()) !=null)
+            {
+                int indexOfTilde = line.indexOf('~');
+                String term = line.substring(0 , indexOfTilde);
+                line = line.substring(indexOfTilde+1);
+                PriorityQueue<Pair<String, Integer>> pairs =new PriorityQueue<>(new PairComparator());
+                while(line.length()>1) //until the last character '|'
+                {
+                    String pair = line.substring(1, line.indexOf(">"));
+                    String key = pair.substring(0,pair.indexOf(','));
+                    String value=pair.substring(pair.indexOf(',')+1);
+                    Pair pairToAdd = new Pair(key , Integer.parseInt(value));
+                    pairs.add(pairToAdd);
+                    line = line.substring(line.indexOf('|'));
+                    if(line.length() > 1)
+                    {
+                        line = line.substring(1);
+                    }
+                }
+                postingResult.put(term, pairs);
+
+            }
+            bufferedReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return postingResult;
+    }
+
+    /**
+     * Deletes all the files from a given directory
+     * @param path - String - The directory absolute path
+     */
+    public static void deleteAllFilesFromDirectory(String path) {
+        File directory = new File(path);
+        File[] postingFiles = directory.listFiles();
+        for (int i = 0; i < postingFiles.length; i++) {
+            postingFiles[i].delete();
+        }
+    }
+
+
 }
 
