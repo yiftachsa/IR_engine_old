@@ -38,7 +38,7 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean loadDictionary(String path) {
-        this.indexer = new Indexer(Documenter.loadDictionary(path), path);
+        this.indexer = new Indexer(Documenter.loadDictionary(path), path , Documenter.loadEntities(path));
         if ((this.indexer != null)){
             return this.indexer.getDictionaryStatus();
         }
@@ -46,8 +46,9 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public boolean clear(String path) {
-        return false;
+    public boolean clear(String resultPath) {
+        this.indexer = new Indexer(resultPath);
+        return Documenter.deleteIndexingFilesFromDirectory(resultPath);
     }
 
     @Override
@@ -179,6 +180,8 @@ public class MyModel extends Observable implements IModel {
         entitiesTreeSet.addAll(multipleAndUniqueEntities[0]);
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
+
+        this.indexer.setEntities(entitiesTreeSet);
 
         return multipleAndUniqueEntities[1];
     }
