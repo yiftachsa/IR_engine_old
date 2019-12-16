@@ -22,7 +22,7 @@ public class TestsPart1 {
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
         //Model_Test2_entireCorpus();
-        Model_Test2_100DocsTest();
+        Model_Test2_300DocsTest();
     }
 
 
@@ -367,8 +367,8 @@ public class TestsPart1 {
 
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
 
