@@ -55,8 +55,6 @@ public class MyViewModel extends Observable implements Observer {
      * @return - boolean - true if deleting  the files completed successfully, else false
      */
     public boolean clear(String path) {
-        //TODO: clear the memory,posting,dictionary!
-        //TODO"check if its already clear!
         return model.clear(path);
     }
 

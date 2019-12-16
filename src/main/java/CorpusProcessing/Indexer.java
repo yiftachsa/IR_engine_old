@@ -15,7 +15,7 @@ public class Indexer {
 
     private Map<String, String> uniqueDictionary; //FIXME: maybe wh should delete it.
 
-    private Map<String, String> entitiesDictionary; //FIXME: maybe wh should delete it.
+    private TreeSet<String> entities; //FIXME: maybe wh should delete it.
 
     private int postingCount;
 
@@ -27,7 +27,6 @@ public class Indexer {
         this.filePath = filePath;
         this.dictionary = new TreeMap<>();
         this.uniqueDictionary = new HashMap<>();
-        this.entitiesDictionary = new HashMap<>();
     }
 
     public Indexer(Map<String, Pair<Integer, String>> dictionary, String path) {
@@ -35,6 +34,15 @@ public class Indexer {
         this.filePath = path;
     }
 
+    public Indexer(Map<String, Pair<Integer, String>> dictionary, String path, TreeSet<String> entities) {
+        this.dictionary = dictionary;
+        this.filePath = path;
+        this.entities = entities;
+    }
+
+    public void setEntities(TreeSet<String> entities) {
+        this.entities = entities;
+    }
 
     public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
 
@@ -171,13 +179,6 @@ public class Indexer {
         this.uniqueDictionary = uniqueDictionary;
     }
 
-    public Map<String, String> getEntitiesDictionary() {
-        return entitiesDictionary;
-    }
-
-    public void setEntitiesDictionary(Map<String, String> entitiesDictionary) {
-        this.entitiesDictionary = entitiesDictionary;
-    }
 
     public int getPostingCount() {
         return postingCount;

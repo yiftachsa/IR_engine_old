@@ -258,6 +258,25 @@ public class Documenter {
         }
     }
 
+    public static TreeSet<String> loadEntities(String path) {
+        String entitiesPath = path + "\\Entities\\Entities";
+        FileInputStream fileInputStream;
+        TreeSet<String> entities = null;
+
+        try {
+            fileInputStream = new FileInputStream(entitiesPath);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            entities = (TreeSet<String>) objectInputStream.readObject();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return entities;
+    }
     /**
      * Saves all the data structures which are in the memory and need to be saved for later use
      */
@@ -320,6 +339,7 @@ public class Documenter {
         return dictionary;
     }
 
+
     public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile(String path) {
         Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
         BufferedReader bufferedReader = null;
@@ -370,5 +390,17 @@ public class Documenter {
     }
 
 
+    public static boolean deleteIndexingFilesFromDirectory(String path) {
+        File entitiesDirectory = new File(filesPath + "\\Entities");
+        File documentsDetailsDirectory = new File(filesPath + "\\DocumentsDetails");
+        File postingFilesDirectory = new File(filesPath + "\\PostingFiles");
+        File dictionaryDirectory = new File(filesPath + "\\Dictionary");
+        boolean clearSuccessful = true;
+        clearSuccessful = clearSuccessful && entitiesDirectory.delete();
+        clearSuccessful = clearSuccessful && documentsDetailsDirectory.delete();
+        clearSuccessful = clearSuccessful && postingFilesDirectory.delete();
+        clearSuccessful = clearSuccessful && dictionaryDirectory.delete();
+        return clearSuccessful;
+    }
 }
 
