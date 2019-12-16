@@ -5,6 +5,9 @@ import javafx.util.Pair;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 //import IR_engine.CorpusProcessing;
 
@@ -12,8 +15,9 @@ public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
     private Indexer indexer;
-    private static final int NUMBEROFDOCUMENTPROCESSORS = 1;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 2;
+    private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
+    private static final int POSTINGMERGERSPOOLSIZE = 2;
 
 
 /*  setChanged();
@@ -86,44 +90,44 @@ public class MyModel extends Observable implements IModel {
         Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
         RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
 
+
+        generatePostingFilesParallel(directories, threads, runnableParses, resultPath );
+        /*
         System.out.println("Start Parsing");
         generatePostingEntriesParallel(directories, threads, runnableParses);
 
         double endParseTimer = System.currentTimeMillis();
         System.out.println("End Parsing: "+ (endParseTimer-startTime)/1000);
-
+        */
 
         //merge all the parsers from the RunnableParse
-        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(threads, runnableParses);
+        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
-        //TODO: finished with "threads" and "runnableParses" we can delete them now. CHECK IF NEEDED
+        //merge all the indexers from the RunnableParse
+        this.indexer = new Indexer(resultPath);
+
+        // merge all posting files within each directory
+        this.mergeAllPostingFiles(resultPath , runnableParses, allSingleAppearanceEntities);
+
+        //finished with "threads" and "runnableParses" we can delete them now.
         threads = null;
         runnableParses = null;
         System.gc(); // CHECK IF NEEDED
 
-        //merge all the individuals posting entries and sort them
-        HorizontalMerger.mergeAllPostingEntries();
+        Documenter.saveDictionary(this.indexer.getDictionary());
 
-        double endHorizontalMerger = System.currentTimeMillis();
-        System.out.println("endHorizontalMerger: "+ (endHorizontalMerger-endParseTimer)/1000);
-
-        //now we have sorted posting entries files and we can iterate through them based on term name
-        this.indexer = new Indexer(resultPath, allSingleAppearanceEntities);
-        indexer.buildInvertedIndex();
+        // now we have single posting file in each directory and we have a dictionary
 
         //Closing all open ends
         Documenter.shutdown();
+
     }
 
-    private void generatePostingEntriesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses) {
+    private void generatePostingFilesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses , String resultPath) {
+
         int currentDirectoryIndex = 0;
-        //int quarterOfTheWay = directories.length/(NUMBEROFDOCUMENTPROCESSORS*4);
-
         for (int i = 0; i < threads.length; i++) {
-            HashSet<String> entities = new HashSet<>();
-            HashSet<String> singleAppearanceEntities = new HashSet<>();
-
-            RunnableParse runnableParse = new RunnableParse(entities, singleAppearanceEntities, stemming);
+            RunnableParse runnableParse = new RunnableParse(resultPath, stemming);
 
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             runnableParses[i] = runnableParse;
@@ -135,10 +139,6 @@ public class MyModel extends Observable implements IModel {
         while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
-
-//            if(currentDirectoryIndex>=quarterOfTheWay){ //FIXME:: Find a way to do it after every quarter
-//                runnableParse.saveAndClearEntitiesSets();
-//            }
 
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
             threads[finishedThreadIndex] = new Thread(runnableParse);
@@ -154,7 +154,7 @@ public class MyModel extends Observable implements IModel {
             threads[finishedThreadIndex] = new Thread(runnableParse);
             threads[finishedThreadIndex].start();
         }
-        //
+        //Waiting for all the threads to finished
         for (int i = 0; i < threads.length; i++) {
             try {
                 threads[i].join();
@@ -162,32 +162,32 @@ public class MyModel extends Observable implements IModel {
                 e.printStackTrace();
             }
         }
+
     }
 
-    private HashSet<String> getExcludedEntitiesAndSaveEntities(Thread[] threads, RunnableParse[] runnableParses) {
-        TreeSet<String> entitiesTreeSet = new TreeSet<>(); //TODO: Check if using a hashset and then sorting us quicker
+
+    private HashSet<String> getExcludedEntitiesAndSaveEntities(RunnableParse[] runnableParses) {
+        TreeSet<String> entitiesTreeSet = new TreeSet<>();
         LinkedList<String> singleAppearanceEntitiesList = new LinkedList<>();
 
-        for (int i = 0; i < threads.length; i++) {
+        for (int i = 0; i < runnableParses.length; i++) {
             entitiesTreeSet.addAll(runnableParses[i].getEntities());
             singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
         }
         //merge-sorting single entities
-        HashSet<String>[] multipleAndUniqEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
-        entitiesTreeSet.addAll(multipleAndUniqEntities[0]);
+        HashSet<String>[] multipleAndUniqueEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
+        entitiesTreeSet.addAll(multipleAndUniqueEntities[0]);
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
-        //sorting the entities
-        //TreeSet<String> sortedEntities = new TreeSet<>(entitiesHashSet);
-        /*ArrayList<String> sortedEntities = new ArrayList<>(entitiesHashSet);
-        Collections.sort(sortedEntities);*/
-        return multipleAndUniqEntities[1];
+
+        return multipleAndUniqueEntities[1];
     }
 
-//TODO:Change the name to getUniqueAndDuplicatedEntitiesSets
+
     private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> singleAppearanceEntitiesList) {
         HashSet<String> uniqueEntities = new HashSet<>();
         HashSet<String> duplicatedEntities = new HashSet<>();
+
         for (String currentEntity : singleAppearanceEntitiesList) {
             if (uniqueEntities.contains(currentEntity)) {
                 duplicatedEntities.add(currentEntity);
@@ -203,7 +203,6 @@ public class MyModel extends Observable implements IModel {
         result[1] = uniqueEntities;
         return result;
     }
-
     private int getFinishedThreadIndex(Thread[] threads) {
         while (true) {
             for (int i = 0; i < threads.length; i++) {
@@ -237,61 +236,62 @@ public class MyModel extends Observable implements IModel {
         return stemming;
     }
 
+    /**
+     * Receive resultPath mergers all the posting files of all the posting files directories.
+     * @param resultPath
+     * @param singleAppearanceEntities
+     */
+    private void mergeAllPostingFiles(String resultPath, RunnableParse[] runnableParses, HashSet<String> singleAppearanceEntities) {
+        Map<String, Pair<Integer, String>>[] dictionaries = getAllDictionaries(runnableParses);
+
+        //Merge all individual dictionaries
+        for(Map<String, Pair<Integer, String>> dictionary : dictionaries){
+            this.indexer.addPartialDictionary(dictionary);
+        }
+
+        //The indexer have a single unified dictionary
+        this.indexer.removeAllSingleAppearances(singleAppearanceEntities);
+
+        //Merge posting files
+        int index= 0;
+        //todo: add threads - parallel
+        ExecutorService postingMergersPool = Executors.newFixedThreadPool(POSTINGMERGERSPOOLSIZE);
+        ArrayList<Future> postingMergerFutures = new ArrayList<>();
+
+        char startCharacter = '`';
+        int invertedIndexDirectoriesCount = Indexer.getINVERTEDINDEXDIRECTORIESCOUNT();
+        for (int i = 0; i < invertedIndexDirectoriesCount ; i++) {
+            String path = resultPath + "\\PostingFiles\\" + (char)((int) startCharacter + i);
+            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path , this.indexer.getDictionary())));
+        }
+        //waiting for threads to finish
+        while(postingMergerFutures.size() > 0){
+            if(postingMergerFutures.get(0).isDone())
+            {
+                postingMergerFutures.remove(0);
+            }
+            else
+            {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        postingMergersPool.shutdown();
+    }
+
+    private Map<String, Pair<Integer, String>>[] getAllDictionaries(RunnableParse[] runnableParses) {
+        Map<String, Pair<Integer, String>>[] allDictionaries = new TreeMap[NUMBEROFDOCUMENTPROCESSORS];
+
+        for (int i = 0; i < runnableParses.length; i++) {
+            allDictionaries[i] = runnableParses[i].getDictionary();
+        }
+        return allDictionaries;
+    }
+
 }
-
-/*
-    @Override
-    public void saveGame(File file)
-    {
-        byte[] mazeByteArray = maze.toByteArray();
-        saveMazeToFile(mazeByteArray, file.getAbsolutePath());
-    }
-    */
-    /*
-
-      Save a Maze to a file.
-      @param decompressedMaze - byte[]
-      @param mazeFileName - String
-
-    private void saveMazeToFile(byte[] decompressedMaze, String mazeFileName) {
-        // save maze to a file
-        try {
-            OutputStream fileOutputStream = new FileOutputStream(mazeFileName);
-            OutputStream myCompressorOutputStream = new MyCompressorOutputStream(fileOutputStream);
-            myCompressorOutputStream.write(decompressedMaze);
-            fileOutputStream.close();
-            myCompressorOutputStream.flush();
-            myCompressorOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    */
-   /*
-    public void loadGame(File file)
-    {
-        //read maze from file
-
-        try{
-            byte savedMazeBytes[] = new byte[500000];
-            InputStream fileInputStream = new FileInputStream( file.getAbsolutePath());
-            InputStream myDecompressorInputStream = new MyDecompressorInputStream(fileInputStream);
-            myDecompressorInputStream.read(savedMazeBytes);
-            maze = new Maze(savedMazeBytes);
-            currentCharacterPosition = maze.getStartPosition();
-            myDecompressorInputStream.close();
-            fileInputStream.close();
-            solution=null;
-            mazeChanged = true;
-            characterChanged = true;
-            solutionChanged=false;
-            setChanged();
-            notifyObservers();
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-*/
 
 
 

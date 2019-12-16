@@ -103,6 +103,7 @@ public class Parse {
         ArrayList<String> terms = parseText(tokens, useStemmer);
         return terms;
     }
+
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *
@@ -119,7 +120,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--")) {
                 continue;
             }
 
@@ -233,7 +234,9 @@ public class Parse {
                         }
                     } else //<<<Simple Number>>>
                     {
-                        terms.add(generateTokenSimpleNumber(token));
+                        if (token.matches("^[0-9]+$"))
+                            terms.add(generateTokenSimpleNumber(token));
+                        else continue; //todo:check!
                     }
                 }
             }
@@ -299,7 +302,7 @@ public class Parse {
                 }
             }
             // Hyphens <<<Word-Word-Word>>>
-            else if (token.matches(".*-.*-.*") || token.matches(".*-.*")) {
+            else if (token.matches(".*-.*-.*") || token.matches(".*-.*") || token.contains("--")) {
                 LinkedList<String> resultHyphenList = generateTokenHyphens(token);
                 for (String term : resultHyphenList) {
                     if (!isStopWord(term.toLowerCase())) {
@@ -321,7 +324,9 @@ public class Parse {
                 entityTokensCandidates.add(token);
                 String nextToken = "";
                 if (i < tokens.length - 1) {
-                    nextToken = strip(tokens[i + 1]);
+                    if (!(tokens[i + 1].contains("\n")) && !(tokens[i + 1].contains("\t"))) {
+                        nextToken = strip(tokens[i + 1]);
+                    }
                 }
                 for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*"); j++) {
                     entityTokensCandidates.add(nextToken);
@@ -347,15 +352,22 @@ public class Parse {
                         }
 
                     }
-                    terms.add(term);
-                    if (!entities.contains(term)) {
-                        if (!singleAppearanceEntities.contains(term)) {
-                            singleAppearanceEntities.add(term);
+                    if (!isStopWord(term.toLowerCase())) {
+                        if (useStemmer) {
+                            terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
-                            singleAppearanceEntities.remove(term);
-                            entities.add(term);
+                            terms.add(term);
+                        }
+                        if (!entities.contains(term)) {
+                            if (!singleAppearanceEntities.contains(term)) {
+                                singleAppearanceEntities.add(term);
+                            } else {
+                                singleAppearanceEntities.remove(term);
+                                entities.add(term);
+                            }
                         }
                     }
+
                     if (entityTokensCandidates.size() > 1) {
                         for (String string : entityTokensCandidates) {
                             if (!isStopWord(string.toLowerCase()))
@@ -403,7 +415,7 @@ public class Parse {
                 }
                 i = i + resultList.getValue();
             } else {
-                if (!isStopWord(token.toLowerCase()))
+                if (token.matches("^[a-z]+$") && !isStopWord(token.toLowerCase()))
                     if (useStemmer) {
                         terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
@@ -485,8 +497,13 @@ public class Parse {
             }
         }
         //Removing dot in the end of the token
-        if ((result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
+        if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
+        }
+        else
+        {
+           while( (result.indexOf('-') == 0))
+               result = result.substring(1);
         }
         return result;
     }
@@ -589,7 +606,7 @@ public class Parse {
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
-            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million")||token.contains("billion")||token.contains("Billion"))) {
+            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million") || token.contains("billion") || token.contains("Billion"))) {
                 firstNextToken = token.substring(token.indexOf("-") + 1);
                 token = token.substring(0, token.indexOf("-"));
                 additionalTokensProcessed--;
@@ -620,7 +637,7 @@ public class Parse {
                     } else {
                         token = doubleDecimalFormat(value) + " Dollars";
                     }
-                }else{
+                } else {
                     token = "";
                 }
             }
@@ -716,7 +733,12 @@ public class Parse {
 
     private LinkedList<String> generateTokenHyphens(String token) {
         LinkedList<String> resultList = new LinkedList<>();
-        if (token.matches(".*-.*-.*")) {
+        if(token.contains("--"))
+        {
+            resultList.add(token.substring(0, token.indexOf("-")));
+            resultList.add(token.substring(token.indexOf("-") +2));
+        }
+        else if (token.matches(".*-.*-.*")) {
             resultList.add(token);
             resultList.add(token.substring(0, token.indexOf("-")));
             resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")));
