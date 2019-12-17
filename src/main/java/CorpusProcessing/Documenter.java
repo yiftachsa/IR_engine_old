@@ -1,14 +1,12 @@
 package CorpusProcessing;
 
 import javafx.util.Pair;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,11 +40,12 @@ public class Documenter {
     private static AtomicInteger longestPostingEntriesFile = new AtomicInteger(0);
 
 
-    public static void start(String path) {
+    public static void start(String path, boolean stemming) {
         filesPath = path + "";
         documentsDetailsMutex = new ReentrantLock();
         postingEntriesMutex = new ReentrantLock();
-        invertedIndexMutex=new ReentrantLock();
+        invertedIndexMutex = new ReentrantLock();
+        new File(filesPath).mkdir();
         new File(filesPath + "\\Entities").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
         new File(filesPath + "\\PostingFiles").mkdir();
@@ -193,8 +192,7 @@ public class Documenter {
         return invertedIndexIndex;
     }
 
-    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>> posting)
-    {
+    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>> posting) {
         //todo: fill this function!
     }
 
@@ -226,7 +224,7 @@ public class Documenter {
             FileWriter fileWriter = new FileWriter(file);
             List<String> allPosting = new LinkedList<>();
             for (int i = 0; i < listWithoutEntity.size(); i++) {
-                fileWriter.write(listWithoutEntity.get(i)+"\n");
+                fileWriter.write(listWithoutEntity.get(i) + "\n");
             }
             fileWriter.flush();
             fileWriter.close();
@@ -236,9 +234,9 @@ public class Documenter {
     }
 
 
-
     /**
      * Saves an individual posting file.
+     *
      * @param posting
      * @param filePath
      */
@@ -308,6 +306,7 @@ public class Documenter {
 
         return entities;
     }
+
     /**
      * Saves all the data structures which are in the memory and need to be saved for later use
      */
@@ -359,8 +358,8 @@ public class Documenter {
             reader = new BufferedReader((new FileReader(dictionaryPath + "\\Dictionary\\dictionary")));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                String term = line.substring(0,line.indexOf('~'));
-                line = line.substring(line.indexOf('~')+1);
+                String term = line.substring(0, line.indexOf('~'));
+                line = line.substring(line.indexOf('~') + 1);
                 String[] entreeDetails = line.split(",");
                 dictionary.put(term, new Pair<>(Integer.parseInt(entreeDetails[0]), entreeDetails[1]));
             }
@@ -428,13 +427,9 @@ public class Documenter {
     }
 
 
-
-
-
-
-
     /**
      * Deletes all the files from a given directory
+     *
      * @param path - String - The directory absolute path
      */
     public static void deleteAllFilesFromDirectory(String path) {
@@ -447,15 +442,22 @@ public class Documenter {
 
 
     public static boolean deleteIndexingFilesFromDirectory(String path) {
-        File entitiesDirectory = new File(filesPath + "\\Entities");
-        File documentsDetailsDirectory = new File(filesPath + "\\DocumentsDetails");
-        File postingFilesDirectory = new File(filesPath + "\\PostingFiles");
-        File dictionaryDirectory = new File(filesPath + "\\Dictionary");
+//        File entitiesDirectory = new File(path + "\\Entities");
+//        File documentsDetailsDirectory = new File(path + "\\DocumentsDetails");
+        File stemmedDirectory = new File(path + "\\Stemmed");
+        File unstemmedDirectory = new File(path + "\\UnStemmed");
+        if (!stemmedDirectory.exists() || !unstemmedDirectory.exists()) {
+            return false;
+        }
+
         boolean clearSuccessful = true;
-        clearSuccessful = clearSuccessful && entitiesDirectory.delete();
-        clearSuccessful = clearSuccessful && documentsDetailsDirectory.delete();
-        clearSuccessful = clearSuccessful && postingFilesDirectory.delete();
-        clearSuccessful = clearSuccessful && dictionaryDirectory.delete();
+        try {
+            FileUtils.deleteDirectory(stemmedDirectory);
+            FileUtils.deleteDirectory(unstemmedDirectory);
+        } catch (IOException e) {
+            clearSuccessful = false;
+        }
+
         return clearSuccessful;
     }
 }

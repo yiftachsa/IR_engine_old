@@ -17,7 +17,7 @@ public class MyModel extends Observable implements IModel {
     private Indexer indexer;
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
     private static final int NUMBEROFDOCUMENTPERPARSER = 4;
-    private static final int POSTINGMERGERSPOOLSIZE = 2;
+    private static final int POSTINGMERGERSPOOLSIZE = 3;
 
 
 /*  setChanged();
@@ -36,8 +36,20 @@ public class MyModel extends Observable implements IModel {
 
     }
 
+    private String getResultPath(String path){
+        if(stemming){
+            path = path +"\\Stemmed";
+        }else{
+            path = path + "\\UnStemmed";
+        }
+        return path;
+    }
+
+
     @Override
     public boolean loadDictionary(String path) {
+        path = getResultPath(path);
+
         this.indexer = new Indexer(Documenter.loadDictionary(path), path , Documenter.loadEntities(path));
         if ((this.indexer != null)){
             return this.indexer.getDictionaryStatus();
@@ -53,7 +65,10 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean getDictionaryStatus() {
-        return indexer.getDictionaryStatus();
+        if (this.indexer != null){
+            return indexer.getDictionaryStatus();
+        }
+        return false;
     }
 
     @Override
@@ -63,7 +78,7 @@ public class MyModel extends Observable implements IModel {
         for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
             String key = entry.getKey();
             Pair<Integer, String> pair = entry.getValue();
-            String outLine = key + "," + pair.getKey() + "," + pair.getValue() + "\n";
+            String outLine = key + "~" + pair.getKey();
             stringBuilder.append(outLine);
         }
         return stringBuilder.toString();
@@ -71,7 +86,6 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public void start(String corpusPath, String resultPath) {
-        double startTime  = System.currentTimeMillis();
 
 
         if (!testPath(corpusPath) || !testPath(resultPath)) {
@@ -80,7 +94,9 @@ public class MyModel extends Observable implements IModel {
         }
 
         //From now on the paths are assumed to be valid
-        Documenter.start(resultPath);
+        resultPath = getResultPath(resultPath);
+
+        Documenter.start(resultPath, stemming);
 
         //initializing the stop words set
         Parse.loadStopWords(corpusPath + "\\stop-words");
@@ -93,10 +109,12 @@ public class MyModel extends Observable implements IModel {
 
 
         generatePostingFilesParallel(directories, threads, runnableParses, resultPath );
+
         /*
+
         System.out.println("Start Parsing");
         generatePostingEntriesParallel(directories, threads, runnableParses);
-
+double startTime  = System.currentTimeMillis();
         double endParseTimer = System.currentTimeMillis();
         System.out.println("End Parsing: "+ (endParseTimer-startTime)/1000);
         */
@@ -107,6 +125,8 @@ public class MyModel extends Observable implements IModel {
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
+        int totalDocumentsCount = getTotalDocumentsCount(runnableParses);
+        this.indexer.setDocumentsCount(totalDocumentsCount);
 
         // merge all posting files within each directory
         this.mergeAllPostingFiles(resultPath , runnableParses, allSingleAppearanceEntities);
@@ -123,6 +143,19 @@ public class MyModel extends Observable implements IModel {
         //Closing all open ends
         Documenter.shutdown();
 
+    }
+
+    /**
+     * Sums all the documents counters from all the runnable parses
+     * @param runnableParses - RunnableParse[]
+     * @return - int - total
+     */
+    private int getTotalDocumentsCount(RunnableParse[] runnableParses) {
+        int total = 0;
+        for (int i = 0; i < runnableParses.length; i++) {
+            total = total + runnableParses[i].getDocumentsCount();
+        }
+        return total;
     }
 
     private void generatePostingFilesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses , String resultPath) {
@@ -295,6 +328,15 @@ public class MyModel extends Observable implements IModel {
         return allDictionaries;
     }
 
+    @Override
+    public int getDocumentsProcessedCount() {
+        return this.indexer.getDocumentsCount();
+    }
+
+    @Override
+    public int getUniqueTermsCount() {
+        return this.indexer.getDictionarySize();
+    }
 }
 
 

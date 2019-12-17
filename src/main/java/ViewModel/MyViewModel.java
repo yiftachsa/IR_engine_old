@@ -84,4 +84,21 @@ public class MyViewModel extends Observable implements Observer {
     public void start(String corpusPath, String resultPath) {
         model.start(corpusPath , resultPath);
     }
+
+
+    /**
+     * Returns the number of the unique terms
+     * @return - int - the number of the unique terms
+     */
+    public int getUniqueTermsCount() {
+        return model.getUniqueTermsCount();
+    }
+
+    /**
+     * Returns the number of the documents processed
+     * @return - int - the number of the documents processed
+     */
+    public int getDocumentsProcessedCount() {
+        return model.getDocumentsProcessedCount();
+    }
 }

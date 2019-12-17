@@ -38,5 +38,17 @@ public interface IModel {
     void start(String corpusPath, String resultPath);
 
     String getDictionary();
-    //FIXME:expend the JavaDocs
+
+
+    /**
+     * The dictionary size, the number of the unique terms
+     * @return - int -  the number of the unique terms
+     */
+    int getUniqueTermsCount();
+
+    /**
+     * Returns the number of the documents processed
+     * @return - int - the number of the documents processed
+     */
+    int getDocumentsProcessedCount();
 }

@@ -21,7 +21,16 @@ public class RunnableParse implements Runnable {
     private File[] filesToParse;
     private Parse parser;
     private Indexer indexer;
+    private int documentsCount;
 
+
+    public RunnableParse(String pathToPostingDirectories , boolean useStemmer) {
+        this.entities =new HashSet<>();
+        this.singleAppearanceEntities = new HashSet<>();
+        this.indexer = new Indexer(pathToPostingDirectories);
+        this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
+        this.documentsCount = 0;
+    }
 
     public HashSet<String> getEntities() {
         return entities;
@@ -31,11 +40,8 @@ public class RunnableParse implements Runnable {
         return singleAppearanceEntities;
     }
 
-    public RunnableParse(String pathToPostingDirectories , boolean useStemmer) {
-        this.entities =new HashSet<>();
-        this.singleAppearanceEntities = new HashSet<>();
-        this.indexer = new Indexer(pathToPostingDirectories);
-        this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
+    public int getDocumentsCount() {
+        return documentsCount;
     }
 
     public void setFilesToParse(File[] filesToParse) {
@@ -65,6 +71,7 @@ public class RunnableParse implements Runnable {
                     ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
                     //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
                     postingEntriesListsOfFile.add(postingsEntries);
+                    this.documentsCount++;
                 }
 
                 while (postingEntriesListsOfFile.size() > 1) {
@@ -130,5 +137,9 @@ public class RunnableParse implements Runnable {
 
     public Map<String, Pair<Integer, String>> getDictionary() {
         return this.indexer.getDictionary();
+    }
+
+    public void setDocumentsCount(int documentsCount) {
+        this.documentsCount = documentsCount;
     }
 }

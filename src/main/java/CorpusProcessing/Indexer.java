@@ -21,7 +21,11 @@ public class Indexer {
 
     private String filePath;
 
+    private int documentsCount;
+
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
+
+
 
     public Indexer(String filePath) {
         this.filePath = filePath;
@@ -38,6 +42,14 @@ public class Indexer {
         this.dictionary = dictionary;
         this.filePath = path;
         this.entities = entities;
+    }
+
+    public int getDocumentsCount() {
+        return documentsCount;
+    }
+
+    public void setDocumentsCount(int documentsCount) {
+        this.documentsCount = documentsCount;
     }
 
     public void setEntities(TreeSet<String> entities) {
@@ -259,5 +271,16 @@ public class Indexer {
         for(String singleAppearanceTerm : singleDocumentTerms){
             this.dictionary.remove(singleAppearanceTerm);
         }*/
+    }
+
+    /**
+     * Returns the dictionary size
+     * @return - int - the dictionary size, the number of the unique terms
+     */
+    public int getDictionarySize() {
+        if (this.dictionary!=null){
+            return this.dictionary.size();
+        }
+        return 0;
     }
 }

@@ -56,16 +56,15 @@ public class GUIController implements Observer {
      */
     public void clearHandler(){
         String path = resultText.getText();
-        if(path == null || path== "")
+        if(path == null || path.isEmpty())
         {
             AlertBox.display("Wrong Input","Wrong Input", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
-
         }
         else
         {
             if(!viewModel.clear(path)){
 
-                AlertBox.display("Clear", "Clear", "Everything is already cleared\n\n\n\n\n", "Back to menu", "default background");
+                AlertBox.display("Clear Failed", "Clear", "Everything is already cleared\n\n\n\n\n", "Back to menu", "default background");
             }
             else
             {
@@ -154,8 +153,21 @@ public class GUIController implements Observer {
         if (!corpusText.getText().equals("") && !resultText.getText().equals("")){
             //TODO: send paths to viewModel, THE MODEL should know if a dictionary was loaded already
             AlertBox.display("Inverted Index Creation","Inverted Index Creation", "The Inverted Index and the dictionary\nare being created.\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n","Got it!" , "default background" );
+
+            double startTime  = System.currentTimeMillis();
             viewModel.start(corpusText.getText(), resultText.getText());
-            AlertBox.display("Inverted Index Creation","Inverted Index Created Successfully", "The Inverted Index and the dictionary\nwere successfully created\n\n\n\n\n","    Yeah!\nBack to menu" , "default background" );
+            double endTime = System.currentTimeMillis();
+
+            String time = "Total indexing time: "+ (endTime-startTime)/1000 + " sec\n";
+
+            int uniqueTermsCount = viewModel.getUniqueTermsCount();
+            String termsCount = "Total number of unique terms: " + uniqueTermsCount + "\n";
+
+            int documentsProcessedCount = viewModel.getDocumentsProcessedCount();
+            String documentsCount = "Total number of documents processed: " + documentsProcessedCount + "\n";
+
+
+            AlertBox.display("Inverted Index Creation","Inverted Index Created Successfully", "The Inverted Index and the dictionary\nwere successfully created\n\n"+time+termsCount+documentsCount,"    Yeah!\nBack to menu" , "default background" );
         }else {
             AlertBox.display("Wrong Inputs","Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n","Back to menu" , "default background" );
         }
