@@ -372,7 +372,7 @@ public class Documenter {
         return dictionary;
     }
 
-
+/*
     public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile(String path) {
         Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
         BufferedReader bufferedReader = null;
@@ -411,7 +411,9 @@ public class Documenter {
     }
 
 
-    public static ArrayList<String> loadPostingFile2(String path) {
+ */
+
+    public static ArrayList<String> loadPostingFile(String path) {
         ArrayList<String> stringArrayList = new ArrayList<>();
         File folder = new File(path);
         try {

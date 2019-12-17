@@ -23,7 +23,7 @@ public class RunnableMerge implements Runnable {
     @Override
     public void run() {
 
-        ArrayList<String> stringArrayList = Documenter.loadPostingFile2(this.path);
+        ArrayList<String> stringArrayList = Documenter.loadPostingFile(this.path);
         ArrayList<String> listWithoutEntity =  new ArrayList<>();
 
 
