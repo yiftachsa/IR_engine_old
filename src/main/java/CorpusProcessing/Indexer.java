@@ -46,11 +46,12 @@ public class Indexer {
 
     public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
 
-        //this array contains in each cell all the posting lines separated by first letter - [*,a,b,c,d,e,...,z]
-        String[] invertedIndex = new String[INVERTEDINDEXDIRECTORIESCOUNT];
+        //this array contains in each cell the directory title - [`,a,b,c,d,e,...,z]
+        String[] invertedIndexDirectoriesTitles = {"`","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 
         //Posting buffer - entry: term-->({docId,term frequency},{(docId,term frequency)},...)
         Map<String, PriorityQueue<Pair<String, Integer>>>[] posting = new TreeMap[INVERTEDINDEXDIRECTORIESCOUNT]; //the priority queue functions as a sorted list
+
         for (int i = 0; i < posting.length; i++) {
             posting[i] = new TreeMap<>();
         }
@@ -72,7 +73,7 @@ public class Indexer {
                     if (dictionary.containsKey(term)) {
                         int newFrequency = dictionary.get(term).getKey() + 1;
                         //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, "")); // TODO: maybe we can put the name of the posting file here.
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex])); // TODO: maybe we can put the name of the posting file here.
                         if(posting[invertedArrayIndex].get(term) == null)
                         {
 
@@ -85,7 +86,7 @@ public class Indexer {
                             posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newFrequency));
                         }
                     } else {
-                        dictionary.put(term, new Pair<Integer, String>(1, ""));
+                        dictionary.put(term, new Pair<Integer, String>(1, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
@@ -95,7 +96,7 @@ public class Indexer {
                     //the dictionary already contains the term in lower case
                     if (dictionary.containsKey(lowerCaseTerm)) {
                         int newFrequency = dictionary.get(lowerCaseTerm).getKey() + 1;
-                        dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, ""));
+                        dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
                         {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
@@ -111,8 +112,9 @@ public class Indexer {
                     //the dictionary already contains the term in upper case
                     else if (dictionary.containsKey(term)) {
                         int newFrequency = dictionary.get(term).getKey() + 1;
+                        String postingDirectory = dictionary.get(term).getValue();
                         //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, ""));
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, postingDirectory));
                         if(posting[invertedArrayIndex].get(lowerCaseTerm) == null)
                         {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
@@ -126,7 +128,7 @@ public class Indexer {
                     }
                     //the dictionary doesn't contain the term
                     else {
-                        dictionary.put(term, new Pair<Integer, String>(1, ""));
+                        dictionary.put(term, new Pair<Integer, String>(1, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
@@ -134,7 +136,7 @@ public class Indexer {
                 } else {
                     invertedArrayIndex--;
                     limitCharacter--;
-                    if (limitCharacter == '`') {//todo:
+                    if (limitCharacter == '_') {//todo:
                         limitCharacter = 'Y';
                         invertedArrayIndex = 26;
                         isLowerCaseLetters = false;
@@ -237,22 +239,25 @@ public class Indexer {
      */
     public void removeAllSingleAppearances(HashSet<String> singleAppearances) {
         for (String entity : singleAppearances ){
+            entity = entity.toUpperCase();
             if(this.dictionary.containsKey(entity)){
                 this.dictionary.remove(entity);
             }
         }
+        /*
         //TODO:Check if there is a better way
         ArrayList<String> singleDocumentTerms = new ArrayList<>();
 
         for (Map.Entry<String, Pair<Integer, String>> dictionaryEntree : this.dictionary.entrySet()) {
+            String term = dictionaryEntree.getKey();
             int documentFrequency = dictionaryEntree.getValue().getKey();
-            if (documentFrequency ==1){
+            if (documentFrequency ==1 && term.matches("^[A-Z].*")){ //TODO: Check REGEX
                 singleDocumentTerms.add(dictionaryEntree.getKey());
             }
         }
 
         for(String singleAppearanceTerm : singleDocumentTerms){
             this.dictionary.remove(singleAppearanceTerm);
-        }
+        }*/
     }
 }

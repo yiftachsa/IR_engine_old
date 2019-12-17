@@ -101,11 +101,12 @@ public class MyModel extends Observable implements IModel {
         System.out.println("End Parsing: "+ (endParseTimer-startTime)/1000);
         */
 
+        //merge all the indexers from the RunnableParse
+        this.indexer = new Indexer(resultPath);
+
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
-        //merge all the indexers from the RunnableParse
-        this.indexer = new Indexer(resultPath);
 
         // merge all posting files within each directory
         this.mergeAllPostingFiles(resultPath , runnableParses, allSingleAppearanceEntities);

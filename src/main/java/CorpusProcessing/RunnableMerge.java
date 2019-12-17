@@ -22,39 +22,45 @@ public class RunnableMerge implements Runnable {
     //merges all the posting within the path
     @Override
     public void run() {
-        Map<String, PriorityQueue<Pair<String, Integer>>> mainPosting = Documenter.loadPostingFile(this.path +"\\postingFile"+ '0');
-        int numberOfPostingFiles = Documenter.getInvertedIndexIndex();
 
-        //todo: load the first posting file to posting!
+        ArrayList<String> stringArrayList = Documenter.loadPostingFile2(this.path);
+        ArrayList<String> listWithoutEntity =  new ArrayList<>();
 
-        for (int i = 1; i < numberOfPostingFiles; i++) {
-            //Merge into posting. - need to check about single appearance!
-            Map<String, PriorityQueue<Pair<String, Integer>>> currentPosting = Documenter.loadPostingFile(this.path +"\\postingFile"+ i);
-            for(Map.Entry<String, PriorityQueue<Pair<String, Integer>>> postingLine : currentPosting.entrySet()){
-                String term = postingLine.getKey();
-                //removing all single appearance terms
-                if(!this.dictionary.containsKey(term)){
-                    continue;
-                }
 
-                PriorityQueue<Pair<String, Integer>> pairs = postingLine.getValue();
-                if(mainPosting.containsKey(term))
-                {
-                    PriorityQueue<Pair<String, Integer>> newQueuePairs = mainPosting.get(term);
-                    newQueuePairs.addAll(pairs);
-                    mainPosting.put(term ,newQueuePairs);
-                }
-                else
-                {
-                    mainPosting.put(term ,pairs);
-                }
+        Collections.sort(stringArrayList , String.CASE_INSENSITIVE_ORDER);
+
+
+        for (int i = 0; i < stringArrayList.size(); i++) {
+            String s = stringArrayList.get(i);
+            if(this.dictionary.containsKey(s.substring(0,s.indexOf('!'))));
+            {
+                listWithoutEntity.add(stringArrayList.get(i));
             }
         }
+        for (int i = listWithoutEntity.size()-1; i > 0 ; i--) {
+            String firstRecord = listWithoutEntity.get(i);
+            String seconedRecord =listWithoutEntity.get(i-1);
+            String firstTerm = firstRecord.substring(0,firstRecord.indexOf("!"));
+            String seconedTerm = seconedRecord.substring(0,seconedRecord.indexOf("!"));
+            String firstPairs = firstRecord.substring(firstRecord.indexOf("!")+1);
+            String seconedPairs = seconedRecord.substring(seconedRecord.indexOf("!")+1);
+            if(firstTerm.toLowerCase().equals(seconedTerm.toLowerCase()))
+            {
+                //case at least one is not in upper case
+                if(!(Character.isUpperCase(seconedTerm.charAt(0))&&Character.isUpperCase(firstTerm.charAt(0))))
+                {
+                    seconedTerm = seconedTerm.toLowerCase() +"!"+ seconedPairs + firstPairs;
+                }
+                else //both in upper case
+                {
+                    seconedTerm = seconedTerm +"!"+seconedPairs + "|" + firstPairs;
 
-
-        //Delete all the partial posting files
+                }
+                listWithoutEntity.remove(i);
+                listWithoutEntity.set(i-1,seconedTerm);
+            }
+        }
         Documenter.deleteAllFilesFromDirectory(this.path);
-        //Save the main posting file
-        Documenter.savePostingFile(mainPosting, this.path+"\\posting");
+        Documenter.saveFinalPostingFile(listWithoutEntity, this.path+"\\posting");
     }
 }

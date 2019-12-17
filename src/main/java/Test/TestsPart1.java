@@ -22,7 +22,7 @@ public class TestsPart1 {
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
         //Model_Test2_entireCorpus();
-        Model_Test2_300DocsTest();
+        Model_Test2_100DocsTest();
     }
 
 
@@ -369,9 +369,12 @@ public class TestsPart1 {
     public static void Model_Test2_entireCorpus(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
         String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
+        double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
-
+        double endTime = System.currentTimeMillis()/1000;
+        String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
+        System.out.println(timePrint);
 
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
         final int NUMBEROFDOCUMENTPERPARSER = 5;
@@ -434,17 +437,9 @@ public class TestsPart1 {
          */
     }
 
-
     public static void Model_Test2_100DocsTest(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
-        MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
-    }
-
-    public static void Model_Test2_300DocsTest(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\Output";
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
     }

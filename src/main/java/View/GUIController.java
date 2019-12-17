@@ -158,7 +158,6 @@ public class GUIController implements Observer {
         }else {
             AlertBox.display("Wrong Inputs","Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n","Back to menu" , "default background" );
         }
-        //TODO: fill the function!!!!!!!!
     }
 
     /**
