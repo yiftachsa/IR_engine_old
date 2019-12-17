@@ -152,8 +152,10 @@ public class GUIController implements Observer {
     public void startHandler()
     {
         if (!corpusText.getText().equals("") && !resultText.getText().equals("")){
-            //Do something - send paths to viewModel, THE MODEL should know if a dictionary was loaded already
+            //TODO: send paths to viewModel, THE MODEL should know if a dictionary was loaded already
+            AlertBox.display("Inverted Index Creation","Inverted Index Creation", "The Inverted Index and the dictionary\nare being created.\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n","Got it!" , "default background" );
             viewModel.start(corpusText.getText(), resultText.getText());
+            AlertBox.display("Inverted Index Creation","Inverted Index Created Successfully", "The Inverted Index and the dictionary\nwere successfully created\n\n\n\n\n","    Yeah!\nBack to menu" , "default background" );
         }else {
             AlertBox.display("Wrong Inputs","Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n","Back to menu" , "default background" );
         }
