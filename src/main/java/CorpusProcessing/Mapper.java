@@ -51,8 +51,6 @@ public class Mapper {
             }
         }
 
-        //TODO:remove '' trio
-
         Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size());
 
         return postingEntries;
@@ -66,7 +64,6 @@ public class Mapper {
      * @return - ArrayList<Trio> - the merged list
      */
     public static ArrayList<Trio> mergeAndSortTwoPostingEntriesLists(ArrayList<Trio> list1, ArrayList<Trio> list2) {
-        //TODO: check time complexity in compression to a simple merge sort geeks for geeks
         ArrayList<Trio> mergedList = new ArrayList<>();
         while (list1.size() > 0 && list2.size() > 0) {
 

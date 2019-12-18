@@ -11,41 +11,32 @@ public class Indexer {
      * Corpus dictionary
      * entry: term-->{document frequency,posting file index}
      */
-    private Map<String, Pair<Integer, String>> dictionary;//FIXME: If the dictionary need to be sorted we need to use SortedMap
+    private Map<String, Pair<Integer, String>> dictionary;
 
-    private TreeSet<String> entities; //FIXME: maybe wh should delete it.
-
-    private int postingCount;
-
-    private String filePath;
+    private TreeSet<String> entities;
 
     private int documentsCount;
 
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
 
-
-    public Indexer(String filePath) {
-        this.filePath = filePath;
+    /**
+     * Constructor
+     */
+    public Indexer() {
         this.dictionary = new TreeMap<>();
     }
 
-    public Indexer(Map<String, Pair<Integer, String>> dictionary, String path, TreeSet<String> entities) {
+    /**
+     * Constructor
+     *
+     * @param dictionary - Map<String, Pair<Integer, String>>
+     * @param entities   - TreeSet<String>
+     */
+    public Indexer(Map<String, Pair<Integer, String>> dictionary, TreeSet<String> entities) {
         this.dictionary = dictionary;
-        this.filePath = path;
         this.entities = entities;
     }
 
-    public int getDocumentsCount() {
-        return documentsCount;
-    }
-
-    public void setDocumentsCount(int documentsCount) {
-        this.documentsCount = documentsCount;
-    }
-
-    public void setEntities(TreeSet<String> entities) {
-        this.entities = entities;
-    }
 
     public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
 
@@ -76,7 +67,7 @@ public class Indexer {
                     if (dictionary.containsKey(term)) {
                         int newFrequency = dictionary.get(term).getKey() + 1;
                         //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex])); // TODO: maybe we can put the name of the posting file here.
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         if (posting[invertedArrayIndex].get(term) == null) {
 
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
@@ -130,7 +121,7 @@ public class Indexer {
                 } else {
                     invertedArrayIndex--;
                     limitCharacter--;
-                    if (limitCharacter == '_') {//todo:
+                    if (limitCharacter == '_') {
                         limitCharacter = 'Y';
                         invertedArrayIndex = 26;
                         isLowerCaseLetters = false;
@@ -151,13 +142,20 @@ public class Indexer {
      * @return - boolean - true if the dictionary is loaded, else false
      */
     public boolean getDictionaryStatus() {
-        if (dictionary == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return dictionary != null;
     }
 
+    public int getDocumentsCount() {
+        return documentsCount;
+    }
+
+    public void setDocumentsCount(int documentsCount) {
+        this.documentsCount = documentsCount;
+    }
+
+    public void setEntities(TreeSet<String> entities) {
+        this.entities = entities;
+    }
 
     public boolean doesDictionaryContains(String key) {
         return dictionary.containsKey(key);
@@ -165,26 +163,6 @@ public class Indexer {
 
     public Map<String, Pair<Integer, String>> getDictionary() {
         return dictionary;
-    }
-
-    public void setDictionary(Map<String, Pair<Integer, String>> dictionary) {
-        this.dictionary = dictionary;
-    }
-
-    public int getPostingCount() {
-        return postingCount;
-    }
-
-    public void setPostingCount(int postingCount) {
-        this.postingCount = postingCount;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public static int getINVERTEDINDEXDIRECTORIESCOUNT() {
@@ -228,6 +206,7 @@ public class Indexer {
 
     /**
      * Removes all the Strings in the given set from the dictionary field.
+     *
      * @param singleAppearances - HashSet<String> - a set of Strings to be removed
      */
     public void removeAllSingleAppearances(HashSet<String> singleAppearances) {
@@ -241,6 +220,7 @@ public class Indexer {
 
     /**
      * Returns the dictionary size.
+     *
      * @return - int - the dictionary size, the number of the unique terms
      */
     public int getDictionarySize() {
