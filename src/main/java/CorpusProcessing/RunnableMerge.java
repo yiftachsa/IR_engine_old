@@ -42,7 +42,7 @@ public class RunnableMerge implements Runnable {
 
             if(!(this.dictionary.containsKey(firstTerm)))
             {
-                listWithoutEntity.remove(i); //todo: find better!!
+                listWithoutEntity.set(i,"knjue"); //todo: find better!!
                 continue;
             }
 
@@ -61,7 +61,7 @@ public class RunnableMerge implements Runnable {
                     seconedTerm = seconedTerm +"!"+seconedPairs + "|" + firstPairs;
 
                 }
-                listWithoutEntity.remove(i);
+                listWithoutEntity.set(i , "knjue");
                 listWithoutEntity.set(i-1,seconedTerm);
             }
         }

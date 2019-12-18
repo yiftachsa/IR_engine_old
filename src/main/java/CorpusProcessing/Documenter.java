@@ -578,9 +578,10 @@ public class Documenter {
         try {
             file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
-            List<String> allPosting = new LinkedList<>();
             for (int i = 0; i < listWithoutEntity.size(); i++) {
-                fileWriter.write(listWithoutEntity.get(i)+"\n");
+                if(!listWithoutEntity.get(i).equals("knjue")) {
+                    fileWriter.write(listWithoutEntity.get(i) + "\n");
+                }
             }
             fileWriter.flush();
             fileWriter.close();

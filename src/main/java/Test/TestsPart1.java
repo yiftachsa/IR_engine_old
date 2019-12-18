@@ -210,7 +210,7 @@ public class TestsPart1 {
 
 
     public static void Model_Test2_100DocsTest(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
         String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
