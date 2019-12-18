@@ -807,6 +807,10 @@ public class Parse {
         return isStopWord;
     }
 
+    /**
+     * return if to use stemmer
+     * @param useStemmer
+     */
     public void setUseStemmer(boolean useStemmer) {
         this.useStemmer = useStemmer;
     }
