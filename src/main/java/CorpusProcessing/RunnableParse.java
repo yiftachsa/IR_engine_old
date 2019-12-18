@@ -5,10 +5,7 @@ import javafx.util.Pair;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,82 +42,32 @@ public class RunnableParse implements Runnable {
     @Override
     public void run() {
         //FIXME: for debugging!!!
-        double startTime = System.currentTimeMillis()/1000;
-        String timePrint = "Thread: "+Thread.currentThread().getId()+" StartTime: "+startTime;
+        double startTime = System.currentTimeMillis() / 1000;
+        String timePrint = "Thread: " + Thread.currentThread().getId() + " StartTime: " + startTime;
 
 
-        ArrayList<ArrayList<Trio>> entirePostingEntries = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
-        ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
+        ArrayList<HashMap<String, Pair<String, Integer>>> postingEntriesListsOfFile = new ArrayList<>();
 
         for (File directory : filesToParse) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
-                ArrayList<ArrayList<Trio>> postingEntriesListsOfFile = new ArrayList<>();
-
                 for (Document document : documents) {
-                    ArrayList<String> bagOfWords = parser.parseDocument(document);
-                    ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
-                    //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
-                    postingEntriesListsOfFile.add(postingsEntries);
+                    HashMap<String, Pair<String, Integer>> bagOfWords = parser.parseDocument(document);
+                    postingEntriesListsOfFile.add(bagOfWords);
                 }
 
-                while (postingEntriesListsOfFile.size() > 1) {
-                    postingEntriesListsOfFile.add(Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesListsOfFile.remove(0), postingEntriesListsOfFile.remove(0)));
-                }
-
-                //insert all posting entries of the file to entirePostingEntries
-
-                    entirePostingEntries.add(postingEntriesListsOfFile.get(0));
-
-                //check if we can merge two posting list to one
-                if (entirePostingEntries.size() >= 2) {
-                    Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
-                    futures.add(future);
-                }
-                //Getting result from callableMerge
-                if (futures.size() > 0) {
-                    if (futures.get(0).isDone()) {
-                        Future<ArrayList<Trio>> future = futures.remove(0);
-                        try {
-                            entirePostingEntries.add(future.get());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
             }
+            double endTime = System.currentTimeMillis() / 1000;
+            timePrint = timePrint + " EndTime: " + endTime + " Total: " + (endTime - startTime);
+            System.out.println(timePrint);
+
+            //entirePostingEntries contains all the sorted trios from all the documents - per thread
+            //build posting file for all the documents in the thread
         }
-        for (Future<ArrayList<Trio>> future : futures) {
-            while (!future.isDone()) ;
-            try {
-                entirePostingEntries.add(future.get());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        mergersPool.shutdown();
-
-        while (entirePostingEntries.size() > 1) {
-            entirePostingEntries.add(Mapper.mergeAndSortTwoPostingEntriesLists(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
-        }
-
-        //FIXME: NEED TO DELETE ITS ONLY FOR DEBUGGING
-        double endTime = System.currentTimeMillis()/1000;
-        timePrint = timePrint+" EndTime: " +endTime + " Total: "+(endTime-startTime);
-        System.out.println(timePrint);
-
-        //entirePostingEntries contains all the sorted trios from all the documents - per thread
-        //build posting file for all the documents in the thread
-        this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
-
-
-        //Documenter.savePostingEntries(entirePostingEntries.get(0));
+        this.indexer.buildInvertedIndex1(postingEntriesListsOfFile);
     }
-
 
     public void saveAndClearEntitiesSets(){
         Documenter.saveEntitiesSets(this.entities, this.singleAppearanceEntities);

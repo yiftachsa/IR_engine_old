@@ -1,5 +1,6 @@
 package CorpusProcessing;
 
+import com.sun.deploy.security.SelectableSecurityManager;
 import javafx.collections.transformation.SortedList;
 import javafx.util.Pair;
 
@@ -34,6 +35,10 @@ public class Indexer {
         this.filePath = path;
     }
 
+    public TreeSet<String> getEntities() {
+        return this.entities;
+    }
+
     public Indexer(Map<String, Pair<Integer, String>> dictionary, String path, TreeSet<String> entities) {
         this.dictionary = dictionary;
         this.filePath = path;
@@ -43,6 +48,94 @@ public class Indexer {
     public void setEntities(TreeSet<String> entities) {
         this.entities = entities;
     }
+
+
+   public void buildInvertedIndex1( ArrayList<HashMap<String, Pair<String, Integer>>> allPostingPerThread)
+   {
+     HashMap <String ,HashMap<String , List<Pair<String , Integer>>>> allRecordsSplitByFolders = new HashMap<>();
+       for (int i = 0; i < allPostingPerThread.size(); i++) {
+           for (HashMap.Entry<String, Pair<String, Integer>> record : allPostingPerThread.get(i).entrySet()) {
+               if(record.getKey().length() == 0)
+               {
+                   continue;
+               }
+               String firstLetter = record.getKey().charAt(0)+""; //the term = first letter
+               char charFirstLetter =record.getKey().charAt(0);
+               String term = record.getKey(); //the term
+               if(this.dictionary.containsKey(term))
+               {
+                   int newFrequency = dictionary.get(term).getKey() + 1;
+                   //The function put override the previous value;
+                   dictionary.put(term, new Pair<Integer, String>(newFrequency, ""));
+               }
+               else
+               {
+                   dictionary.put(term, new Pair<Integer, String>(1, ""));
+               }
+               if((charFirstLetter >= 'a' && charFirstLetter <= 'z') || (charFirstLetter >= 'A' && charFirstLetter <= 'Z'))
+               {
+                   if(allRecordsSplitByFolders.containsKey(firstLetter.toLowerCase())) //already has the posting first letter that needed
+                   {
+                       HashMap<String , List<Pair<String,Integer>>> tempHashMap = allRecordsSplitByFolders.get(firstLetter.toLowerCase()); //get the hashMap from that ket letter
+                       if(tempHashMap.containsKey(record.getKey())) { //if the hash map has the term. we need to merge the pairs
+                           List<Pair<String, Integer>> tempList = tempHashMap.get(record.getKey()); //get all the pair list from the hash map
+                           tempList.add(record.getValue()); // add the new term
+                           tempHashMap.put(record.getKey(), tempList); //update the hash map into the place that the term in it
+                           allRecordsSplitByFolders.put(firstLetter.toLowerCase(), tempHashMap); // update the big hash
+                       }
+                       else  // hash map does not have the term
+                       {
+                           List<Pair<String,Integer>> tempList = new ArrayList<>(); //initialize new list
+                           tempList.add(record.getValue()); // add the new pair to the term list
+                           tempHashMap.put(record.getKey() , tempList); // add the term and the pair to hash map
+                           allRecordsSplitByFolders.put(firstLetter.toLowerCase()+ "", tempHashMap); // update the big hash
+                       }
+                   }
+                   else //doesnt have the first letter as a key
+                   {
+                       HashMap<String , List<Pair<String,Integer>>> tempHashMap = new HashMap<>(); //initialize new HashMap
+                       List<Pair<String,Integer>> tempList = new ArrayList<>(); //initialize new  List
+                       tempList.add(record.getValue()); //add the pair to the new list
+                       tempHashMap.put(record.getKey() , tempList); //update the hash map with the term and the pair list
+                       allRecordsSplitByFolders.put(firstLetter.toLowerCase()+ "" , tempHashMap); //update the big hash!
+                   }
+               }
+               else //same as the if , but the first letter is not an alphabetic english letter
+               {
+                   if(allRecordsSplitByFolders.containsKey("`"))
+                   {
+                       HashMap<String , List<Pair<String,Integer>>> tempHashMap = allRecordsSplitByFolders.get("`");
+                       if(tempHashMap.containsKey(record.getKey()))
+                       {
+                           List<Pair<String,Integer>> tempList = tempHashMap.get(record.getKey());
+                           tempList.add(record.getValue());
+                           tempHashMap.put(record.getKey() , tempList);
+                           allRecordsSplitByFolders.put("`" , tempHashMap);
+                       }
+                       else
+                       {
+                           List<Pair<String,Integer>> tempList = new ArrayList<>();
+                           tempList.add(record.getValue());
+                           tempHashMap.put(record.getKey() , tempList);
+                           allRecordsSplitByFolders.put("`" , tempHashMap);
+                       }
+                   }
+                   else
+                   {
+                       HashMap<String , List<Pair<String,Integer>>> tempHashMap = new HashMap<>();
+                       List<Pair<String,Integer>> tempList = new ArrayList<>();
+                       tempList.add(record.getValue());
+                       tempHashMap.put(record.getKey() , tempList);
+                       allRecordsSplitByFolders.put("`" , tempHashMap);
+
+                   }
+               }
+           }
+       }
+       Documenter.saveInvertedIndexes(allRecordsSplitByFolders);
+   }
+
+
 
     public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
 
@@ -134,7 +227,7 @@ public class Indexer {
                 } else {
                     invertedArrayIndex--;
                     limitCharacter--;
-                    if (limitCharacter == '`') {//todo:
+                    if (limitCharacter == '_') {//todo:
                         limitCharacter = 'Y';
                         invertedArrayIndex = 26;
                         isLowerCaseLetters = false;
@@ -221,7 +314,6 @@ public class Indexer {
                     String existingTerm = term.toUpperCase();
                     Pair<Integer, String> existingPair = this.dictionary.get(existingTerm);
                     int newFrequency = existingPair.getKey() + pair.getKey();
-
                     this.dictionary.remove(existingTerm);
                     this.dictionary.put(term, new Pair<Integer, String>(newFrequency, pair.getValue()));
                 } else {
@@ -246,7 +338,7 @@ public class Indexer {
 
         for (Map.Entry<String, Pair<Integer, String>> dictionaryEntree : this.dictionary.entrySet()) {
             int documentFrequency = dictionaryEntree.getValue().getKey();
-            if (documentFrequency ==1){
+            if (documentFrequency ==1 && dictionaryEntree.getKey().charAt(0) >= 'A' && dictionaryEntree.getKey().charAt(0) <= 'Z'){
                 singleDocumentTerms.add(dictionaryEntree.getKey());
             }
         }

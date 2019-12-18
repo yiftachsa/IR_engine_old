@@ -4,6 +4,10 @@ import CorpusProcessing.*;
 import javafx.util.Pair;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,8 +20,8 @@ public class MyModel extends Observable implements IModel {
     private boolean stemming;
     private Indexer indexer;
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
-    private static final int POSTINGMERGERSPOOLSIZE = 2;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 8;
+    private static final int POSTINGMERGERSPOOLSIZE = 1;
 
 
 /*  setChanged();
@@ -38,6 +42,8 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean loadDictionary(String path) {
+        //TODO: load dictionary from path to object
+        //TODO: check stemming!!!!
         this.indexer = new Indexer(Documenter.loadDictionary(path), path , Documenter.loadEntities(path));
         if ((this.indexer != null)){
             return this.indexer.getDictionaryStatus();
@@ -71,7 +77,8 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public void start(String corpusPath, String resultPath) {
-        double startTime  = System.currentTimeMillis();
+
+        double startTime = System.currentTimeMillis();
 
 
         if (!testPath(corpusPath) || !testPath(resultPath)) {
@@ -93,19 +100,13 @@ public class MyModel extends Observable implements IModel {
 
 
         generatePostingFilesParallel(directories, threads, runnableParses, resultPath );
-        /*
-        System.out.println("Start Parsing");
-        generatePostingEntriesParallel(directories, threads, runnableParses);
-
-        double endParseTimer = System.currentTimeMillis();
-        System.out.println("End Parsing: "+ (endParseTimer-startTime)/1000);
-        */
-
-        //merge all the parsers from the RunnableParse
-        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
         //merge all the indexers from the RunnableParse
         this.indexer = new Indexer(resultPath);
+
+
+        //merge all the parsers from the RunnableParse
+        HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
         // merge all posting files within each directory
         this.mergeAllPostingFiles(resultPath , runnableParses, allSingleAppearanceEntities);
@@ -181,7 +182,7 @@ public class MyModel extends Observable implements IModel {
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
 
-        this.indexer.setEntities(entitiesTreeSet);
+      //  this.indexer.setEntities(entitiesTreeSet); //FIXME: THROW EXCEPTION
 
         return multipleAndUniqueEntities[1];
     }
@@ -254,7 +255,7 @@ public class MyModel extends Observable implements IModel {
 
         //The indexer have a single unified dictionary
         this.indexer.removeAllSingleAppearances(singleAppearanceEntities);
-
+        System.out.println("Finished to build Dictionary");
         //Merge posting files
         int index= 0;
         //todo: add threads - parallel
