@@ -11,9 +11,9 @@ public class Indexer {
      * Corpus dictionary
      * entry: term-->{document frequency,posting file index}
      */
-    private Map<String, Pair<Integer, String>> dictionary;//FIXME: If the dictionary need to be sorted we need to use SortedMap
+    private Map<String, Pair<Integer, String>> dictionary;
 
-    private TreeSet<String> entities; //FIXME: maybe wh should delete it.
+    private TreeSet<String> entities;
 
     private int documentsCount;
 
@@ -67,7 +67,7 @@ public class Indexer {
                     if (dictionary.containsKey(term)) {
                         int newFrequency = dictionary.get(term).getKey() + 1;
                         //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex])); // TODO: maybe we can put the name of the posting file here.
+                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         if (posting[invertedArrayIndex].get(term) == null) {
 
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
@@ -142,11 +142,7 @@ public class Indexer {
      * @return - boolean - true if the dictionary is loaded, else false
      */
     public boolean getDictionaryStatus() {
-        if (dictionary == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return dictionary != null;
     }
 
     public int getDocumentsCount() {

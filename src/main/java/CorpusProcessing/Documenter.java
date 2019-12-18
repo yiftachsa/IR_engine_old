@@ -14,7 +14,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * Responsible to write to Disk.
  * Receive the information about specific document(Doc ID , Max tf , number of uniq words)
  */
-//TODO:Maybe should be singleton
 public class Documenter {
 
     private static int invertedIndexIndex = 0;
@@ -225,7 +224,7 @@ public class Documenter {
                 for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
                     String key = entry.getKey();
                     Pair<Integer, String> pair = entry.getValue();
-                    String outLine = key + "~" + pair.getKey() + "," + pair.getValue(); //TODO: Maybe use a different delimiter then ","
+                    String outLine = key + "~" + pair.getKey() + "," + pair.getValue();
                     writer.write(outLine);
                     writer.newLine();
                 }

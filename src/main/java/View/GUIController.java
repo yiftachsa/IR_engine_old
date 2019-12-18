@@ -42,8 +42,7 @@ public class GUIController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o == viewModel) {
-            //FIXME: in accordance to the object delivered from the Model
-            if (((String) arg).equals("Bad input")) {
+            if ((arg).equals("Bad input")) {
                 AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
             }
         }
@@ -88,7 +87,7 @@ public class GUIController implements Observer {
      */
     public void corpusBrowseHandler(ActionEvent event) {
         String path = browse(event);
-        if (path != "") {
+        if (path.equals("")) {
             corpusText.setText(path);
         }
     }
@@ -100,7 +99,7 @@ public class GUIController implements Observer {
      */
     public void resultBrowseHandler(ActionEvent event) {
         String path = browse(event);
-        if (path != "") {
+        if (path.equals("")) {
             resultText.setText(path);
         }
     }
@@ -117,8 +116,7 @@ public class GUIController implements Observer {
         Stage stage = (Stage) scene.getWindow();
         File file = directoryChooser.showDialog(stage);
         if (file != null) {
-            String path = file.getAbsolutePath();
-            return path;
+            return file.getAbsolutePath();
         }
         return "";
     }
@@ -127,7 +125,6 @@ public class GUIController implements Observer {
      * Handles th "stemming" checkbox. Forwards the selection to the viewModel.
      */
     public void stemmingHandler() {
-        //TODO: finish handling.
         viewModel.stemmingSelection(stemmingCheckBox.isSelected());
     }
 
@@ -138,7 +135,6 @@ public class GUIController implements Observer {
      */
     public void startHandler() {
         if (!corpusText.getText().equals("") && !resultText.getText().equals("")) {
-            //TODO: send paths to viewModel, THE MODEL should know if a dictionary was loaded already
             AlertBox.display("Inverted Index Creation", "Inverted Index Creation", "The Inverted Index and the dictionary\nare being created.\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n", "Got it!", "default background");
 
             //Set timer
@@ -209,7 +205,7 @@ public class GUIController implements Observer {
      */
     public void exitHandler(Event event) {
         //Decide whether to close the application based on the user input
-        Boolean closeWindow = true;
+        boolean closeWindow;
         closeWindow = ExitConfirmBox.display("confirmBoxButton", "Are you sure you \n want to exit?");
         //closing the main window - depends on the button used to close (exit button or the 'X' sign)
         if (closeWindow) {

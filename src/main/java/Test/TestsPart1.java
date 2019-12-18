@@ -67,7 +67,7 @@ public class TestsPart1 {
         System.out.println("\ntestDollars");
         boolean passed = true;
         ArrayList<String> testResults = parser.parseQuery("$20-Million 20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
-        passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
+        passed = passed && testResults.get(0).equals("20.6 M Dollars");
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
         passed = passed && testResults.get(3).equals("450 M Dollars");
@@ -317,7 +317,7 @@ public class TestsPart1 {
 
     private static boolean Model_MergerThreads_test1() {
         ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
+        ExecutorService mergersPool = Executors.newFixedThreadPool(4);
         ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
@@ -391,7 +391,7 @@ public class TestsPart1 {
         File[] directories = Corpus.listFiles();
         int currentDirectoryIndex = 0;
 
-        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS); //FIXME:MAGIC NUMBER
+        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS);
         Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
         RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
 
