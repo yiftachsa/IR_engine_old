@@ -10,14 +10,14 @@ import java.util.*;
 public class RunnableMerge implements Runnable {
 
     private String path;
-    private Map<String, Pair<Integer, String>> dictionary;
+    private Map<String, DictionaryEntryTrio> dictionary;
 
     /**
      * Constructor
      * @param path - String
-     * @param dictionary - Map<String, Pair<Integer, String>>
+     * @param dictionary - Map<String, DictionaryEntryTrio>
      */
-    public RunnableMerge(String path, Map<String, Pair<Integer, String>> dictionary) {
+    public RunnableMerge(String path, Map<String,DictionaryEntryTrio> dictionary) {
         this.path = path;
         this.dictionary = dictionary;
     }

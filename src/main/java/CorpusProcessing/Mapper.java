@@ -1,11 +1,6 @@
 package CorpusProcessing;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Responsible for processing the bag of words of each document and deliver an ordered list
@@ -24,8 +19,8 @@ public class Mapper {
      * @param terms - ArrayList<String> - the terms to be converted into trios
      * @return - ArrayList<Trio> - ordered list of posting entries
      */
-    public static ArrayList<Trio> processBagOfWords(String DocNO, ArrayList<String> terms) {
-        ArrayList<Trio> postingEntries = new ArrayList<Trio>();
+    public static ArrayList<TermDocumentTrio> processBagOfWords(String DocNO, ArrayList<String> terms) {
+        ArrayList<TermDocumentTrio> postingEntries = new ArrayList<TermDocumentTrio>();
         int maxTermFrequency = 1;
 
         //Sort the List
@@ -37,7 +32,7 @@ public class Mapper {
             if (term.equals(terms.get(i + 1))) {
                 termFrequency++;
             } else {
-                postingEntries.add(new Trio(term, DocNO, termFrequency));
+                postingEntries.add(new TermDocumentTrio(term, DocNO, termFrequency));
                 if (termFrequency > maxTermFrequency) {
                     maxTermFrequency = termFrequency;
                 }
@@ -45,7 +40,7 @@ public class Mapper {
             }
         }
         if (terms.size() > 0) {
-            postingEntries.add(new Trio(terms.get(terms.size() - 1), DocNO, termFrequency));
+            postingEntries.add(new TermDocumentTrio(terms.get(terms.size() - 1), DocNO, termFrequency));
             if (termFrequency > maxTermFrequency) {
                 maxTermFrequency = termFrequency;
             }
@@ -63,8 +58,8 @@ public class Mapper {
      * @param list2 - ArrayList<Trio> - the second list to be merged
      * @return - ArrayList<Trio> - the merged list
      */
-    public static ArrayList<Trio> mergeAndSortTwoPostingEntriesLists(ArrayList<Trio> list1, ArrayList<Trio> list2) {
-        ArrayList<Trio> mergedList = new ArrayList<>();
+    public static ArrayList<TermDocumentTrio> mergeAndSortTwoPostingEntriesLists(ArrayList<TermDocumentTrio> list1, ArrayList<TermDocumentTrio> list2) {
+        ArrayList<TermDocumentTrio> mergedList = new ArrayList<>();
         while (list1.size() > 0 && list2.size() > 0) {
 
             if (list1.get(0).compareTo(list2.get(0)) < 0) {
