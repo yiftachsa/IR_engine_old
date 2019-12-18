@@ -60,7 +60,7 @@ public class MyModel extends Observable implements IModel {
     public boolean loadDictionary(String path) {
         path = getResultPath(path);
 
-        this.indexer = new Indexer(Documenter.loadDictionary(path), path, Documenter.loadEntities(path));
+        this.indexer = new Indexer(Documenter.loadDictionary(path), Documenter.loadEntities(path));
         if ((this.indexer != null)) {
             return this.indexer.getDictionaryStatus();
         }
@@ -69,7 +69,7 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean clear(String resultPath) {
-        this.indexer = new Indexer(resultPath);
+        this.indexer = new Indexer();
         return Documenter.deleteIndexingFilesFromDirectory(resultPath);
     }
 
@@ -112,7 +112,7 @@ public class MyModel extends Observable implements IModel {
         //Initializing the stop words set
         Parse.loadStopWords(stopwordsPath);
         //Initializing this.indexer
-        this.indexer = new Indexer(resultPath);
+        this.indexer = new Indexer();
 
         File Corpus = new File(corpusPath);
         File[] directories = Corpus.listFiles();
@@ -172,7 +172,7 @@ public class MyModel extends Observable implements IModel {
 
         //Initialize each RunnableParse and begin its first documents processing
         for (int i = 0; i < threads.length; i++) {
-            RunnableParse runnableParse = new RunnableParse(resultPath, stemming);
+            RunnableParse runnableParse = new RunnableParse(stemming);
             //Assigning files to a RunnableParse
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
 

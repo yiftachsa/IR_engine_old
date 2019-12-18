@@ -71,7 +71,12 @@ public class Parse {
     private HashSet<String> singleAppearanceEntities;
     private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
-
+    /**
+     * Constructor
+     * @param entities - HashSet<String>
+     * @param singleAppearanceEntities - HashSet<String>
+     * @param useStemmer - boolean
+     */
     public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
         this.entities = entities;
         this.singleAppearanceEntities = singleAppearanceEntities;
@@ -334,7 +339,7 @@ public class Parse {
                         nextToken = strip(tokens[i + j + 1]); //strip the next token
                     }
                 }
-                //MORE THEN MAXENTITYLENGTH.
+                //MORE THEN MAXENTITYLENGTH
                 if (entityTokensCandidates.size() > MAXENTITYLENGTH) {
                     int counter = i;
                     for (String term : entityTokensCandidates) {
@@ -427,19 +432,36 @@ public class Parse {
     }
 
     /**
-     * Receives a list and check if all the words in the list are all constructed only from capital letters
+     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
      *
-     * @param wordList - LinkedList<String> - list of words
-     * @return - boolean - true if all the words are all capital letters
+     * @param token - String - a word with irrelevant symbols
+     * @return - String -a word without irrelevant symbols
      */
-    private boolean isAllCapsSequence(LinkedList<String> wordList) {
-        boolean areAllCaps = true;
-        for (String word : wordList) {
-            if (!word.matches("[A-Z]+")) {
-                areAllCaps = false;
+    private String strip(String token) {
+        String result = "";
+        char[] charArray = token.toCharArray();
+        for (char character : charArray) {
+            //Parenthesis
+            if (character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']') {
+                continue;
+            }
+            //Symbols
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n') {
+                continue;
+            } else {
+                result = result + character;
             }
         }
-        return areAllCaps;
+        //Removing dot in the end of the token
+        if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
+            result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
+        }
+        else
+        {
+           while( (result.indexOf('-') == 0))
+               result = result.substring(1);
+        }
+        return result;
     }
 
     /**
@@ -471,40 +493,6 @@ public class Parse {
             resultList.add(0, entity);
         }
         Pair<LinkedList<String>, Integer> result = new Pair<>(resultList, additionalTokensProcessed);
-        return result;
-    }
-
-
-    /**
-     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
-     *
-     * @param token - String - a word with irrelevant symbols
-     * @return - String -a word without irrelevant symbols
-     */
-    private String strip(String token) {
-        String result = "";
-        char[] charArray = token.toCharArray();
-        for (char character : charArray) {
-            //Parenthesis
-            if (character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']') {
-                continue;
-            }
-            //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n') {
-                continue;
-            } else {
-                result = result + character;
-            }
-        }
-        //Removing dot in the end of the token
-        if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
-            result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
-        }
-        else
-        {
-           while( (result.indexOf('-') == 0))
-               result = result.substring(1);
-        }
         return result;
     }
 
@@ -731,6 +719,11 @@ public class Parse {
         return result;
     }
 
+    /**
+     * Receives a token containing hyphens and formats it.
+     * @param token - String
+     * @return - LinkedList<String>
+     */
     private LinkedList<String> generateTokenHyphens(String token) {
         LinkedList<String> resultList = new LinkedList<>();
         if(token.contains("--"))
@@ -807,6 +800,10 @@ public class Parse {
         return isStopWord;
     }
 
+    /**
+     * Sets the useStemmer field
+     * @param useStemmer - boolean
+     */
     public void setUseStemmer(boolean useStemmer) {
         this.useStemmer = useStemmer;
     }

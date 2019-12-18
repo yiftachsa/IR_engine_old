@@ -15,37 +15,28 @@ public class Indexer {
 
     private TreeSet<String> entities; //FIXME: maybe wh should delete it.
 
-    private int postingCount;
-
-    private String filePath;
-
     private int documentsCount;
 
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
 
-
-    public Indexer(String filePath) {
-        this.filePath = filePath;
+    /**
+     * Constructor
+     */
+    public Indexer() {
         this.dictionary = new TreeMap<>();
     }
 
-    public Indexer(Map<String, Pair<Integer, String>> dictionary, String path, TreeSet<String> entities) {
+    /**
+     * Constructor
+     *
+     * @param dictionary - Map<String, Pair<Integer, String>>
+     * @param entities   - TreeSet<String>
+     */
+    public Indexer(Map<String, Pair<Integer, String>> dictionary, TreeSet<String> entities) {
         this.dictionary = dictionary;
-        this.filePath = path;
         this.entities = entities;
     }
 
-    public int getDocumentsCount() {
-        return documentsCount;
-    }
-
-    public void setDocumentsCount(int documentsCount) {
-        this.documentsCount = documentsCount;
-    }
-
-    public void setEntities(TreeSet<String> entities) {
-        this.entities = entities;
-    }
 
     public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
 
@@ -130,7 +121,7 @@ public class Indexer {
                 } else {
                     invertedArrayIndex--;
                     limitCharacter--;
-                    if (limitCharacter == '_') {//todo:
+                    if (limitCharacter == '_') {
                         limitCharacter = 'Y';
                         invertedArrayIndex = 26;
                         isLowerCaseLetters = false;
@@ -158,6 +149,17 @@ public class Indexer {
         }
     }
 
+    public int getDocumentsCount() {
+        return documentsCount;
+    }
+
+    public void setDocumentsCount(int documentsCount) {
+        this.documentsCount = documentsCount;
+    }
+
+    public void setEntities(TreeSet<String> entities) {
+        this.entities = entities;
+    }
 
     public boolean doesDictionaryContains(String key) {
         return dictionary.containsKey(key);
@@ -165,26 +167,6 @@ public class Indexer {
 
     public Map<String, Pair<Integer, String>> getDictionary() {
         return dictionary;
-    }
-
-    public void setDictionary(Map<String, Pair<Integer, String>> dictionary) {
-        this.dictionary = dictionary;
-    }
-
-    public int getPostingCount() {
-        return postingCount;
-    }
-
-    public void setPostingCount(int postingCount) {
-        this.postingCount = postingCount;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public static int getINVERTEDINDEXDIRECTORIESCOUNT() {
@@ -228,6 +210,7 @@ public class Indexer {
 
     /**
      * Removes all the Strings in the given set from the dictionary field.
+     *
      * @param singleAppearances - HashSet<String> - a set of Strings to be removed
      */
     public void removeAllSingleAppearances(HashSet<String> singleAppearances) {
@@ -241,6 +224,7 @@ public class Indexer {
 
     /**
      * Returns the dictionary size.
+     *
      * @return - int - the dictionary size, the number of the unique terms
      */
     public int getDictionarySize() {

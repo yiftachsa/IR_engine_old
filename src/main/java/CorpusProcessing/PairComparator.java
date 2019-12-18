@@ -4,6 +4,9 @@ import javafx.util.Pair;
 
 import java.util.Comparator;
 
+/**
+ * Comparator for Pair<String,Integer>
+ */
 public class PairComparator implements Comparator<Pair<String,Integer>> {
 
     @Override

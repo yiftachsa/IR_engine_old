@@ -51,8 +51,6 @@ public class Mapper {
             }
         }
 
-        //TODO:remove '' trio
-
         Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size());
 
         return postingEntries;

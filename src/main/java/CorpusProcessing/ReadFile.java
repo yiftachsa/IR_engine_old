@@ -1,7 +1,6 @@
 package CorpusProcessing;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,7 +22,7 @@ public class ReadFile {
         ArrayList<Document> documents = new ArrayList();
         String documentId = "";
         try {
-            List fileText = Files.readAllLines(Paths.get(filePath), StandardCharsets.ISO_8859_1); //TODO: Check
+            List fileText = Files.readAllLines(Paths.get(filePath), StandardCharsets.ISO_8859_1);
             Iterator<String> iterator = fileText.iterator();
             while (iterator.hasNext()) {
                 String currentLine = iterator.next();
@@ -73,7 +72,7 @@ public class ReadFile {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace(); //FIXME: !!
+            e.printStackTrace();
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             System.out.println("documentId: " + documentId);

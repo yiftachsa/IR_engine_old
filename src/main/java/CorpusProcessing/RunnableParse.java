@@ -25,13 +25,12 @@ public class RunnableParse implements Runnable {
     /**
      * Constructor
      *
-     * @param path - String - path to posting directories
      * @param useStemmer - boolean - use stemmer
      */
-    public RunnableParse(String path, boolean useStemmer) {
+    public RunnableParse(boolean useStemmer) {
         this.entities = new HashSet<>();
         this.singleAppearanceEntities = new HashSet<>();
-        this.indexer = new Indexer(path);
+        this.indexer = new Indexer();
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
         this.documentsCount = 0;
     }

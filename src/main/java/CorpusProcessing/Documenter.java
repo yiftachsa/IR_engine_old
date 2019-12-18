@@ -341,7 +341,11 @@ public class Documenter {
         }
     }
 
-
+    /**
+     * Receives a path to a directory containing a dictionary, 
+     * @param dictionaryPath
+     * @return
+     */
     public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
         Map<String, Pair<Integer, String>> dictionary = new TreeMap<>();
@@ -362,7 +366,11 @@ public class Documenter {
         return dictionary;
     }
 
-
+    /**
+     * Receives a path and loads all the posting files in it.
+     * @param path - String - a path to a directory containing posting files
+     * @return - ArrayList<String> - list of String lines from all the posting lists
+     */
     public static ArrayList<String> loadPostingFile(String path) {
         ArrayList<String> stringArrayList = new ArrayList<>();
         File folder = new File(path);
@@ -377,7 +385,6 @@ public class Documenter {
         return stringArrayList;
     }
 
-
     /**
      * Deletes all the files from a given directory
      *
@@ -391,10 +398,12 @@ public class Documenter {
         }
     }
 
-
+    /**
+     * delete indexing files from the directory based on the given path
+     * @param path - String - path to a directory containing the indexing files
+     * @return - boolean - true if the deletion was complected successfully
+     */
     public static boolean deleteIndexingFilesFromDirectory(String path) {
-//        File entitiesDirectory = new File(path + "\\Entities");
-//        File documentsDetailsDirectory = new File(path + "\\DocumentsDetails");
         File stemmedDirectory = new File(path + "\\Stemmed");
         File unstemmedDirectory = new File(path + "\\UnStemmed");
         if (!stemmedDirectory.exists() || !unstemmedDirectory.exists()) {
