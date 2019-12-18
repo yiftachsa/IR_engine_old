@@ -22,27 +22,61 @@ public class RunnableParse implements Runnable {
     private Indexer indexer;
     private int documentsCount;
 
-
-    public RunnableParse(String pathToPostingDirectories, boolean useStemmer) {
+    /**
+     * Constructor
+     *
+     * @param path - String - path to posting directories
+     * @param useStemmer - boolean - use stemmer
+     */
+    public RunnableParse(String path, boolean useStemmer) {
         this.entities = new HashSet<>();
         this.singleAppearanceEntities = new HashSet<>();
-        this.indexer = new Indexer(pathToPostingDirectories);
+        this.indexer = new Indexer(path);
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
         this.documentsCount = 0;
     }
 
+    /**
+     * Return the entities field
+     *
+     * @return - HashSet<String> - the entities field
+     */
     public HashSet<String> getEntities() {
         return entities;
     }
 
+    /**
+     * Return the singleAppearanceEntities field
+     *
+     * @return - HashSet<String> - the singleAppearanceEntities field
+     */
     public HashSet<String> getSingleAppearanceEntities() {
         return singleAppearanceEntities;
     }
 
+    /**
+     * Return the documentsCount field
+     *
+     * @return - int - the entities field
+     */
     public int getDocumentsCount() {
         return documentsCount;
     }
 
+    /**
+     * Return the dictionary from the indexer field
+     *
+     * @return - Map<String, Pair<Integer, String>> - dictionary
+     */
+    public Map<String, Pair<Integer, String>> getDictionary() {
+        return this.indexer.getDictionary();
+    }
+
+    /**
+     * Sets the files to parse field
+     *
+     * @param filesToParse - File[] - files to parse
+     */
     public void setFilesToParse(File[] filesToParse) {
         this.filesToParse = filesToParse;
     }
@@ -121,20 +155,5 @@ public class RunnableParse implements Runnable {
         //entirePostingEntries contains all the sorted trios from all the documents - per thread
         //build posting file for all the documents in the thread
         this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
-    }
-
-
-    public void saveAndClearEntitiesSets() {
-        Documenter.saveEntitiesSets(this.entities, this.singleAppearanceEntities);
-        this.entities = new HashSet<>();
-        this.singleAppearanceEntities = new HashSet<>();
-    }
-
-    public Map<String, Pair<Integer, String>> getDictionary() {
-        return this.indexer.getDictionary();
-    }
-
-    public void setDocumentsCount(int documentsCount) {
-        this.documentsCount = documentsCount;
     }
 }

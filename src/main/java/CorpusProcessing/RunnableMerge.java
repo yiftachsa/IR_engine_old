@@ -12,7 +12,11 @@ public class RunnableMerge implements Runnable {
     private String path;
     private Map<String, Pair<Integer, String>> dictionary;
 
-
+    /**
+     * Constructor
+     * @param path - String
+     * @param dictionary - Map<String, Pair<Integer, String>>
+     */
     public RunnableMerge(String path, Map<String, Pair<Integer, String>> dictionary) {
         this.path = path;
         this.dictionary = dictionary;
