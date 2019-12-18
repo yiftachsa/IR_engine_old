@@ -31,7 +31,7 @@ public class GUIController implements Observer {
     private CheckBox stemmingCheckBox;
 
     /**
-     * sets the view model private field
+     * Sets the view model private field
      * @param viewModel - MyViewModel
      */
     public void setViewModel(MyViewModel viewModel) {
@@ -43,8 +43,8 @@ public class GUIController implements Observer {
     public void update(Observable o, Object arg) {
         if (o == viewModel) {
             //FIXME: in accordance to the object delivered from the Model
-            if (((String)arg).equals("Bad input")){
-                AlertBox.display("Wrong Input","Wrong Input", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
+            if (((String) arg).equals("Bad input")) {
+                AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
             }
         }
     }
@@ -54,21 +54,16 @@ public class GUIController implements Observer {
      * clear all the files related to the IR engine from the disk drive and the memory.
      * Displays the appropriate message for a successful deletion, wrong path or if  the files weren't found in the path given.
      */
-    public void clearHandler(){
+    public void clearHandler() {
         String path = resultText.getText();
-        if(path == null || path.isEmpty())
-        {
-            AlertBox.display("Wrong Input","Wrong Input", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
-        }
-        else
-        {
-            if(!viewModel.clear(path)){
+        if (path == null || path.isEmpty()) {
+            AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
+        } else {
+            if (!viewModel.clear(path)) {
 
                 AlertBox.display("Clear Failed", "Clear", "Everything is already cleared\n\n\n\n\n", "Back to menu", "default background");
-            }
-            else
-            {
-                AlertBox.display("Succeed","Succeed", "clear was successful\n\n\n\n\n","Close" , "default background");
+            } else {
+                AlertBox.display("Succeed", "Succeed", "clear was successful\n\n\n\n\n", "Close", "default background");
             }
         }
     }
@@ -76,17 +71,13 @@ public class GUIController implements Observer {
     /**
      * Handles the "displayDictionary" button. Displays the sorted dictionary with the total occurrences of these word in the corpus.
      */
-    public void displayDictionaryHandler()
-    {
-        if(viewModel.getDictionaryStatus())
-        {
+    public void displayDictionaryHandler() {
+        if (viewModel.getDictionaryStatus()) {
             String dictionaryToDisplay = viewModel.getDictionary();
-            AlertBox.display("Dictionary","", "\n\n\n\n\n","Back to menu" , "default background" );
+            AlertBox.display("Dictionary", "", "\n\n\n\n\n", "Back to menu", "default background");
 
-        }
-        else
-        {
-            AlertBox.display("Dictionary display failed","Dictionary display failed", "\n\n\n\n\n","Back to menu" , "default background" );
+        } else {
+            AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
         }
     }
 
@@ -95,8 +86,7 @@ public class GUIController implements Observer {
      * Displays a folder selection window and updates the corpusText field according to the selection.
      * @param event - ActionEvent - the button pressed
      */
-    public void corpusBrowseHandler(ActionEvent event)
-    {
+    public void corpusBrowseHandler(ActionEvent event) {
         String path = browse(event);
         if (path != "") {
             corpusText.setText(path);
@@ -108,10 +98,9 @@ public class GUIController implements Observer {
      * Displays a folder selection window and updates the corpusText field according to the selection.
      * @param event - ActionEvent - the button pressed
      */
-    public void resultBrowseHandler(ActionEvent event)
-    {
+    public void resultBrowseHandler(ActionEvent event) {
         String path = browse(event);
-        if(path != "") {
+        if (path != "") {
             resultText.setText(path);
         }
     }
@@ -137,8 +126,7 @@ public class GUIController implements Observer {
     /**
      * Handles th "stemming" checkbox. Forwards the selection to the viewModel.
      */
-    public void stemmingHandler()
-    {
+    public void stemmingHandler() {
         //TODO: finish handling.
         viewModel.stemmingSelection(stemmingCheckBox.isSelected());
     }
@@ -148,17 +136,17 @@ public class GUIController implements Observer {
      * checks if text boxes aren't empty, if they aren't sends their content to the viewModel,
      * if they are then it displays an error message for wrong inputs
      */
-    public void startHandler()
-    {
-        if (!corpusText.getText().equals("") && !resultText.getText().equals("")){
+    public void startHandler() {
+        if (!corpusText.getText().equals("") && !resultText.getText().equals("")) {
             //TODO: send paths to viewModel, THE MODEL should know if a dictionary was loaded already
-            AlertBox.display("Inverted Index Creation","Inverted Index Creation", "The Inverted Index and the dictionary\nare being created.\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n","Got it!" , "default background" );
+            AlertBox.display("Inverted Index Creation", "Inverted Index Creation", "The Inverted Index and the dictionary\nare being created.\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n", "Got it!", "default background");
 
-            double startTime  = System.currentTimeMillis();
+            //Set timer
+            double startTime = System.currentTimeMillis();
             viewModel.start(corpusText.getText(), resultText.getText());
             double endTime = System.currentTimeMillis();
 
-            String time = "Total indexing time: "+ (endTime-startTime)/1000 + " sec\n";
+            String time = "Total indexing time: " + (endTime - startTime) / 1000 + " sec\n";
 
             int uniqueTermsCount = viewModel.getUniqueTermsCount();
             String termsCount = "Total number of unique terms: " + uniqueTermsCount + "\n";
@@ -167,9 +155,9 @@ public class GUIController implements Observer {
             String documentsCount = "Total number of documents processed: " + documentsProcessedCount + "\n";
 
 
-            AlertBox.display("Inverted Index Creation","Inverted Index Created Successfully", "The Inverted Index and the dictionary\nwere successfully created\n\n"+time+termsCount+documentsCount,"    Yeah!\nBack to menu" , "default background" );
-        }else {
-            AlertBox.display("Wrong Inputs","Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n","Back to menu" , "default background" );
+            AlertBox.display("Inverted Index Creation", "Inverted Index Created Successfully", "The Inverted Index and the dictionary\nwere successfully created\n\n" + time + termsCount + documentsCount, "    Yeah!\nBack to menu", "default background");
+        } else {
+            AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n", "Back to menu", "default background");
         }
     }
 
@@ -177,24 +165,20 @@ public class GUIController implements Observer {
      * Handles the "load" button. sends the path in the "resultText: text box to the view model.
      * If the viewModel loads the dictionary to the memory successfully then displays a success message,
      * else, displays error message.
+     *
      * @param event - ActionEvent - the button pressed
      */
     public void loadHandler(ActionEvent event) {
 
         String path = resultText.getText();
-        if(path == null || path.equals(""))
-        {
-            AlertBox.display("Wrong Input","Wrong Input", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
+        if (path == null || path.equals("")) {
+            AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
 
-        }
-        else
-        {
-            if(viewModel.loadDictionary(path)) {
-                AlertBox.display("Succeed","Succeed", "Loading dictionary successful\n\n\n\n\n","Close" , "default background");
-            }
-            else
-            {
-                AlertBox.display("Failed","Failed", "Please check your inputs and try again\n\n\n\n\n","Close" , "default background");
+        } else {
+            if (viewModel.loadDictionary(path)) {
+                AlertBox.display("Succeed", "Succeed", "Loading dictionary successful\n\n\n\n\n", "Close", "default background");
+            } else {
+                AlertBox.display("Failed", "Failed", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
             }
         }
     }
@@ -203,9 +187,9 @@ public class GUIController implements Observer {
     /**
      * Handles the "about" button. Displays an about window with the creators details.
      */
-    public void aboutHandler (){
+    public void aboutHandler() {
         String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
-        AlertBox.display("About","About us:", sAbout,"Close" ,"default background");
+        AlertBox.display("About", "About us:", sAbout, "Close", "default background");
     }
 
 
@@ -214,7 +198,7 @@ public class GUIController implements Observer {
      * Calls exitHandler to orderly close the application.
      * @param event - ActionEvent - exit button was pressed
      */
-    public void exit(ActionEvent event){
+    public void exit(ActionEvent event) {
         exitHandler(event);
     }
 
@@ -223,17 +207,16 @@ public class GUIController implements Observer {
      * Closes the application in an orderly fashion.
      * @param event - Event
      */
-    public void exitHandler(Event event)
-    {
+    public void exitHandler(Event event) {
         //Decide whether to close the application based on the user input
         Boolean closeWindow = true;
-        closeWindow = ExitConfirmBox.display("confirmBoxButton","Are you sure you \n want to exit?");
+        closeWindow = ExitConfirmBox.display("confirmBoxButton", "Are you sure you \n want to exit?");
         //closing the main window - depends on the button used to close (exit button or the 'X' sign)
-        if (closeWindow){
-            if(event instanceof WindowEvent){
+        if (closeWindow) {
+            if (event instanceof WindowEvent) {
                 //'X' was pressed
-                close((WindowEvent)event);
-            }else{
+                close((WindowEvent) event);
+            } else {
                 //"exit" button was pressed
                 close((ActionEvent) event);
             }
@@ -244,9 +227,9 @@ public class GUIController implements Observer {
      * Closes a stage based on an ActionEvent
      * @param actionEvent - ActionEvent - "exit" button was pressed
      */
-    private static void close (ActionEvent actionEvent){
+    private static void close(ActionEvent actionEvent) {
         Node source = (Node) actionEvent.getSource();
-        Stage stage  = (Stage) source.getScene().getWindow();
+        Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
 
@@ -254,8 +237,8 @@ public class GUIController implements Observer {
      * Closes a stage based on an WindowEvent
      * @param windowEvent - WindowEvent - 'X' was pressed
      */
-    private static void close (WindowEvent windowEvent){
-        Stage stage  = (Stage) windowEvent.getSource();
+    private static void close(WindowEvent windowEvent) {
+        Stage stage = (Stage) windowEvent.getSource();
         stage.close();
     }
 

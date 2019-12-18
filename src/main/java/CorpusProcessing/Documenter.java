@@ -17,13 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 //TODO:Maybe should be singleton
 public class Documenter {
 
-    // private static final int NUMBEROFDOCUMENTSPERFILE = (int) Math.pow(2, 12);
-    // private static final int NUMBEROFCATEGORIES = 27;
-    // private static final int TRIOBUFFERSIZE = 10000;
-    private static int fileIndex = 0;
-
-
-//    private static final int LOADERSPOOLSIZE = 2;
 
     private static int postingEntriesIndex = 0;
     private static int invertedIndexIndex = 0;
@@ -222,7 +215,6 @@ public class Documenter {
         try {
             file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
-            List<String> allPosting = new LinkedList<>();
             for (int i = 0; i < listWithoutEntity.size(); i++) {
                 fileWriter.write(listWithoutEntity.get(i) + "\n");
             }
@@ -236,7 +228,6 @@ public class Documenter {
 
     /**
      * Saves an individual posting file.
-     *
      * @param posting
      * @param filePath
      */
@@ -353,7 +344,7 @@ public class Documenter {
 
     public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
-        Map<String, Pair<Integer, String>> dictionary = new HashMap<>();
+        Map<String, Pair<Integer, String>> dictionary = new TreeMap<>();
         try {
             reader = new BufferedReader((new FileReader(dictionaryPath + "\\Dictionary\\dictionary")));
             String line = "";
@@ -371,46 +362,6 @@ public class Documenter {
         return dictionary;
     }
 
-/*
-    public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile(String path) {
-        Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
-        BufferedReader bufferedReader = null;
-
-        try {
-            bufferedReader = new BufferedReader((new FileReader(path)));
-            String line = "";
-            while((line = bufferedReader.readLine()) !=null)
-            {
-                int indexOfTilde = line.indexOf('~');
-                String term = line.substring(0 , indexOfTilde);
-                line = line.substring(indexOfTilde+1);
-                PriorityQueue<Pair<String, Integer>> pairs =new PriorityQueue<>(new PairComparator());
-                while(line.length()>1) //until the last character '|'
-                {
-                    String pair = line.substring(1, line.indexOf(">"));
-                    String key = pair.substring(0,pair.indexOf(','));
-                    String value=pair.substring(pair.indexOf(',')+1);
-                    Pair pairToAdd = new Pair(key , Integer.parseInt(value));
-                    pairs.add(pairToAdd);
-                    line = line.substring(line.indexOf('|'));
-                    if(line.length() > 1)
-                    {
-                        line = line.substring(1);
-                    }
-                }
-                postingResult.put(term, pairs);
-
-            }
-            bufferedReader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return postingResult;
-    }
-
-
- */
 
     public static ArrayList<String> loadPostingFile(String path) {
         ArrayList<String> stringArrayList = new ArrayList<>();

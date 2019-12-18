@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,8 +23,8 @@ public class RunnableParse implements Runnable {
     private int documentsCount;
 
 
-    public RunnableParse(String pathToPostingDirectories , boolean useStemmer) {
-        this.entities =new HashSet<>();
+    public RunnableParse(String pathToPostingDirectories, boolean useStemmer) {
+        this.entities = new HashSet<>();
         this.singleAppearanceEntities = new HashSet<>();
         this.indexer = new Indexer(pathToPostingDirectories);
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
@@ -51,8 +50,8 @@ public class RunnableParse implements Runnable {
     @Override
     public void run() {
         //FIXME: for debugging!!!
-        double startTime = System.currentTimeMillis()/1000;
-        String timePrint = "Thread: "+Thread.currentThread().getId()+" StartTime: "+startTime;
+        double startTime = System.currentTimeMillis() / 1000;
+        String timePrint = "Thread: " + Thread.currentThread().getId() + " StartTime: " + startTime;
 
 
         ArrayList<ArrayList<Trio>> entirePostingEntries = new ArrayList<>();
@@ -69,7 +68,6 @@ public class RunnableParse implements Runnable {
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
                     ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
-                    //TODO: check if the function add create a new object in memory - in that case , we should delete the original postingsEntries.
                     postingEntriesListsOfFile.add(postingsEntries);
                     this.documentsCount++;
                 }
@@ -80,7 +78,7 @@ public class RunnableParse implements Runnable {
 
                 //insert all posting entries of the file to entirePostingEntries
 
-                    entirePostingEntries.add(postingEntriesListsOfFile.get(0));
+                entirePostingEntries.add(postingEntriesListsOfFile.get(0));
 
                 //check if we can merge two posting list to one
                 if (entirePostingEntries.size() >= 2) {
@@ -116,20 +114,17 @@ public class RunnableParse implements Runnable {
         }
 
         //FIXME: NEED TO DELETE ITS ONLY FOR DEBUGGING
-        double endTime = System.currentTimeMillis()/1000;
-        timePrint = timePrint+" EndTime: " +endTime + " Total: "+(endTime-startTime);
+        double endTime = System.currentTimeMillis() / 1000;
+        timePrint = timePrint + " EndTime: " + endTime + " Total: " + (endTime - startTime);
         System.out.println(timePrint);
 
         //entirePostingEntries contains all the sorted trios from all the documents - per thread
         //build posting file for all the documents in the thread
         this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
-
-
-        //Documenter.savePostingEntries(entirePostingEntries.get(0));
     }
 
 
-    public void saveAndClearEntitiesSets(){
+    public void saveAndClearEntitiesSets() {
         Documenter.saveEntitiesSets(this.entities, this.singleAppearanceEntities);
         this.entities = new HashSet<>();
         this.singleAppearanceEntities = new HashSet<>();

@@ -287,7 +287,7 @@ public class Parse {
                     token = token.substring(token.indexOf('/') + 1);
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term));
+                            terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
                             terms.add(term);
                         }

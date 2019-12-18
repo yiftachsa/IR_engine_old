@@ -9,8 +9,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 public class GUI extends Application {
@@ -18,6 +16,7 @@ public class GUI extends Application {
     private GUIController controller;
     private MyModel model;
     private MyViewModel viewModel;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -27,19 +26,17 @@ public class GUI extends Application {
 
         model = new MyModel();
 
-        viewModel =  new MyViewModel(model);
+        viewModel = new MyViewModel(model);
         model.addObserver(viewModel);
 
-//        Path p = Paths.get("./src/main/resources/GUI.fxml");
-//        System.out.println(p.toFile().getAbsolutePath());
         primaryStage.setTitle("Information Retrieval Engine");
         URL url = getClass().getResource("../GUI.fxml");
-        FXMLLoader fxmlLoader = new FXMLLoader();//(getClass().getResource("GUI.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader();
 
         Parent root = fxmlLoader.load(url.openStream());
 
 
-        Scene scene = new Scene(root , 400 , 330);
+        Scene scene = new Scene(root, 400, 330);
         primaryStage.setScene(scene);
         primaryStage.setMinHeight(330);
         primaryStage.setMinWidth(400);
