@@ -284,7 +284,7 @@ public class TestsPart1 {
         }
         return result;
     }
-
+/*
     private static boolean Mapper_Test1() {
         boolean result = false;
         ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
@@ -296,6 +296,8 @@ public class TestsPart1 {
 
         return result;
     }
+
+
 
     private static boolean Mapper_Test2_mergeAndSortTwoPostingEntriesLists() {
         boolean result = false;
@@ -310,6 +312,8 @@ public class TestsPart1 {
         }
         return result;
     }
+
+
 
     private static boolean Model_MergerThreads_test1() {
         ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
@@ -363,7 +367,7 @@ public class TestsPart1 {
 
         return false;
     }
-
+*/
 
     public static void Model_Test2_entireCorpus(){
         String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";

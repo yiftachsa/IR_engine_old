@@ -108,7 +108,7 @@ public class MyModel extends Observable implements IModel {
         String corpusPath = dataPath + "\\corpus";
 
         //Initializing the Documenter
-        Documenter.start(resultPath, stemming);
+        Documenter.start(resultPath);
         //Initializing the stop words set
         Parse.loadStopWords(stopwordsPath);
         //Initializing this.indexer

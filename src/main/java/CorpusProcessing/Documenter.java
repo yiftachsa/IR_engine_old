@@ -17,26 +17,22 @@ import java.util.concurrent.locks.ReentrantLock;
 //TODO:Maybe should be singleton
 public class Documenter {
 
-
-    private static int postingEntriesIndex = 0;
     private static int invertedIndexIndex = 0;
 
     private static ArrayList<String> documentsDetails = new ArrayList<>();
 
     private static ReentrantLock documentsDetailsMutex;
     private static ReentrantLock invertedIndexMutex;
-    private static ReentrantLock postingEntriesMutex;
 
     private static String filesPath;
 
-    private static int numberOfPostingPortions = 0;
-    private static AtomicInteger longestPostingEntriesFile = new AtomicInteger(0);
-
-
-    public static void start(String path, boolean stemming) {
+    /**
+     * Initializes the fields and the directories required for the indexing process
+     * @param path - String - the results path
+     */
+    public static void start(String path) {
         filesPath = path + "";
         documentsDetailsMutex = new ReentrantLock();
-        postingEntriesMutex = new ReentrantLock();
         invertedIndexMutex = new ReentrantLock();
         new File(filesPath).mkdir();
         new File(filesPath + "\\Entities").mkdir();
@@ -49,32 +45,6 @@ public class Documenter {
         }
         new File(filesPath + "\\Dictionary").mkdir();
     }
-
-    public static int getNumberOfPostingPortions() {
-        return numberOfPostingPortions;
-    }
-
-    public static int getPostingEntriesIndex() {
-        return postingEntriesIndex;
-    }
-
-    public static int getDocumentsDetailsSize() {
-        return documentsDetails.size();
-    }
-
-    public static int getLongestPostingEntriesFile() {
-        return longestPostingEntriesFile.get();
-    }
-
-    /**
-     * Returns the path of the posting entries files
-     *
-     * @return - String - the path of the posting entries files
-     */
-    public static String getFilePathToPostingEntries() {
-        return filesPath + "\\postingEntries";
-    }
-
 
     /**
      * Receives details about a document and adds it to the field documentsDetails list.
@@ -89,12 +59,6 @@ public class Documenter {
             documentsDetailsMutex.lock();
             documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length);
             documentsDetailsMutex.unlock();
-            /*
-            if (documentsDetails.size() >= NUMBEROFDOCUMENTSPERFILE) {
-                //WRITE TO DISK! 
-                saveDocumentsDetailsToFile();
-            }
-             */
         }
     }
 
@@ -113,82 +77,13 @@ public class Documenter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //fileIndex++;
-        //documentsDetails = new ArrayList<>();
     }
+
 
     /**
-     * @param postingEntriesList
+     * Saves all the postings to the disk
+     * @param postingArray - Map<String, PriorityQueue<Pair<String, Integer>>>[] - postings
      */
-    public static void savePostingEntries(ArrayList<Trio> postingEntriesList) {
-        if (filesPath != null) {
-
-            postingEntriesMutex.lock();
-            String filePath = filesPath + "\\postingEntries\\" + postingEntriesIndex;
-            postingEntriesIndex++;
-            postingEntriesMutex.unlock();
-
-            try {
-                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-                ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-                outputStream.writeObject(postingEntriesList);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if (longestPostingEntriesFile.get() < postingEntriesList.size()) {
-                longestPostingEntriesFile.set(postingEntriesList.size());
-            }
-
-        }
-    }
-
-    public static ArrayList<Trio> loadPostingEntree(int postingEntreeIndex) {
-        FileInputStream fileInputStream = null;
-        ArrayList<Trio> trioArrayList = null;
-
-        try {
-            fileInputStream = new FileInputStream(filesPath + "\\postingEntries\\" + postingEntreeIndex);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            trioArrayList = (ArrayList<Trio>) objectInputStream.readObject();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        return trioArrayList;
-    }
-
-
-    static void savePostingPortions(ArrayList<Trio> allPostingEntriesPortions, int fileNumber) {
-        if (filesPath != null) {
-            String filePath = filesPath + "\\postingPortions\\" + fileNumber;
-            try {
-                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-                ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-                outputStream.writeObject(allPostingEntriesPortions);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        numberOfPostingPortions = fileNumber;
-    }
-
-    public static int getInvertedIndexIndex() {
-        return invertedIndexIndex;
-    }
-
-    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>> posting) {
-        //todo: fill this function!
-    }
-
     public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>>[] postingArray) {
 
         if (filesPath != null) {
@@ -205,18 +100,21 @@ public class Documenter {
             for (int i = 0; i < postingArray.length; i++) {
                 savePostingFile(postingArray[i], filePath + "\\" + (char) ((int) startChar + i) + "\\postingFile" + fileIndex);
             }
-
         }
-
     }
 
-    public static void saveFinalPostingFile(ArrayList<String> listWithoutEntity, String filePath) {
+    /**
+     * Saves a given final posting file to the given path
+     * @param posting - ArrayList<String> - posting
+     * @param filePath - String - path
+     */
+    public static void saveFinalPostingFile(ArrayList<String> posting, String filePath) {
         File file = new File(filePath);
         try {
             file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
-            for (int i = 0; i < listWithoutEntity.size(); i++) {
-                fileWriter.write(listWithoutEntity.get(i) + "\n");
+            for (int i = 0; i < posting.size(); i++) {
+                fileWriter.write(posting.get(i) + "\n");
             }
             fileWriter.flush();
             fileWriter.close();
@@ -227,9 +125,10 @@ public class Documenter {
 
 
     /**
-     * Saves an individual posting file.
-     * @param posting
-     * @param filePath
+     * Saves an individual posting file as text.
+     *
+     * @param posting - PriorityQueue<Pair<String, Integer>>> - posting
+     * @param filePath - String - path
      */
     public static void savePostingFile(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
         File file = new File(filePath);
@@ -278,6 +177,11 @@ public class Documenter {
         }
     }
 
+    /**
+     * Receives a path and loads the Entities from it (loads a Tree<Set> object).
+     * @param path - String - path
+     * @return - TreeSet<String> - entities
+     */
     public static TreeSet<String> loadEntities(String path) {
         String entitiesPath = path + "\\Entities\\Entities";
         FileInputStream fileInputStream;
@@ -305,22 +209,13 @@ public class Documenter {
         if (documentsDetails.size() > 0) {
             saveDocumentsDetailsToFile();
         }
-        saveDocumentationFiles();
-        deleteAllTemporaryFiles();
     }
 
-    private static void deleteAllTemporaryFiles() {
-        //TODO:Delete all temp Files
-    }
-
-    private static void saveDocumentationFiles() {
-        //TODO: save all the counters and the information needed for the reconstruction of the dictionary (if necessary)
-    }
-
-    public static void saveEntitiesSets(HashSet<String> entities, HashSet<String> singleAppearanceEntities) {
-        //TODO: Save all the given lists as objects
-    }
-
+    /**
+     * Saves a given dictionary to disk.
+     *
+     * @param dictionary - Map<String, Pair<Integer, String>>
+     */
     public static void saveDictionary(Map<String, Pair<Integer, String>> dictionary) {
         if (filesPath != null) {
             //WRITE TO DISK! 
@@ -342,9 +237,10 @@ public class Documenter {
     }
 
     /**
-     * Receives a path to a directory containing a dictionary, 
-     * @param dictionaryPath
-     * @return
+     * Receives a path to a directory containing a dictionary, parses the text file and returns the reconstructed dictionary.
+     *
+     * @param dictionaryPath - String - a path containing a dictionary
+     * @return - Map<String, Pair<Integer, String>> - dictionary
      */
     public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
@@ -368,6 +264,7 @@ public class Documenter {
 
     /**
      * Receives a path and loads all the posting files in it.
+     *
      * @param path - String - a path to a directory containing posting files
      * @return - ArrayList<String> - list of String lines from all the posting lists
      */
@@ -400,6 +297,7 @@ public class Documenter {
 
     /**
      * delete indexing files from the directory based on the given path
+     *
      * @param path - String - path to a directory containing the indexing files
      * @return - boolean - true if the deletion was complected successfully
      */
