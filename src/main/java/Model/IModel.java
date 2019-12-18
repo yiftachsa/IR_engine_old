@@ -37,6 +37,23 @@ public interface IModel {
      */
     void start(String corpusPath, String resultPath);
 
+    /**
+     * Returns a String representation of the dictionary in memory.
+     * If there is no dictionary loaded to the main memory the result will be null.
+     * @return - String - dictionary representation or null, if no dictionary is loaded.
+     */
     String getDictionary();
-    //FIXME:expend the JavaDocs
+
+
+    /**
+     * The dictionary size, the number of the unique terms
+     * @return - int -  the number of the unique terms
+     */
+    int getUniqueTermsCount();
+
+    /**
+     * Returns the number of the documents processed
+     * @return - int - the number of the documents processed
+     */
+    int getDocumentsProcessedCount();
 }

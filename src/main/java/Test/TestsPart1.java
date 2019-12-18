@@ -4,7 +4,6 @@ import CorpusProcessing.*;
 import Model.MyModel;
 import javafx.util.Pair;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -63,7 +62,7 @@ public class TestsPart1 {
     private static boolean Mapper_Test1() {
         boolean result = false;
         ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries = Mapper.processBagOfWords("Doc1", bagOfWords);
         for (Trio trio : postingsEntries) {
             System.out.println(trio);
@@ -76,7 +75,7 @@ public class TestsPart1 {
         boolean result = false;
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> mergedList = Mapper.mergeAndSortTwoPostingEntriesLists(postingsEntries1, postingsEntries2);
@@ -93,7 +92,7 @@ public class TestsPart1 {
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
         ArrayList<String> bagOfWords3 = new ArrayList<String>(Arrays.asList("C", "F", "h", "m"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> postingsEntries3 = Mapper.processBagOfWords("Doc3", bagOfWords3);
@@ -141,11 +140,14 @@ public class TestsPart1 {
 
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\TestIREngine";
+        double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
-
+        double endTime = System.currentTimeMillis()/1000;
+        String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
+        System.out.println(timePrint);
 
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
         final int NUMBEROFDOCUMENTPERPARSER = 5;
@@ -208,17 +210,9 @@ public class TestsPart1 {
          */
     }
 
-
     public static void Model_Test2_100DocsTest(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
-        MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
-    }
-
-    public static void Model_Test2_300DocsTest(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\Output";
+        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
+        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
     }

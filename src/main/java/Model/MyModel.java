@@ -4,28 +4,28 @@ import CorpusProcessing.*;
 import javafx.util.Pair;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-//import IR_engine.CorpusProcessing;
 
 public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
     private Indexer indexer;
+    /**
+     * The number of the parallel threads processing the files.
+     */
     private static final int NUMBEROFDOCUMENTPROCESSORS = 4;
-    private static final int NUMBEROFDOCUMENTPERPARSER = 8;
-    private static final int POSTINGMERGERSPOOLSIZE = 1;
-
-
-/*  setChanged();
-    notifyObservers();*/
+    /**
+     * The number of documents being processed at once by a single thread.
+     */
+    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
+    /**
+     * The number of the parallel threads merging the posting files.
+     */
+    private static final int POSTINGMERGERSPOOLSIZE = 3;
 
     /**
      * Constructor
@@ -37,15 +37,31 @@ public class MyModel extends Observable implements IModel {
     @Override
     public void setStemming(boolean selected) {
         stemming = selected;
-
     }
+
+    /**
+     * Returns the result directory path based on the stemming selection.
+     * A different directory will be created for each option.
+     *
+     * @param path - String - given path
+     * @return - String - result directory path
+     */
+    private String getResultPath(String path) {
+        if (stemming) {
+            path = path + "\\Stemmed";
+        } else {
+            path = path + "\\UnStemmed";
+        }
+        return path;
+    }
+
 
     @Override
     public boolean loadDictionary(String path) {
-        //TODO: load dictionary from path to object
-        //TODO: check stemming!!!!
-        this.indexer = new Indexer(Documenter.loadDictionary(path), path , Documenter.loadEntities(path));
-        if ((this.indexer != null)){
+        path = getResultPath(path);
+
+        this.indexer = new Indexer(Documenter.loadDictionary(path), path, Documenter.loadEntities(path));
+        if ((this.indexer != null)) {
             return this.indexer.getDictionaryStatus();
         }
         return false;
@@ -59,7 +75,10 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public boolean getDictionaryStatus() {
-        return indexer.getDictionaryStatus();
+        if (this.indexer != null) {
+            return indexer.getDictionaryStatus();
+        }
+        return false;
     }
 
     @Override
@@ -69,52 +88,51 @@ public class MyModel extends Observable implements IModel {
         for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
             String key = entry.getKey();
             Pair<Integer, String> pair = entry.getValue();
-            String outLine = key + "," + pair.getKey() + "," + pair.getValue() + "\n";
+            String outLine = key + "~" + pair.getKey();
             stringBuilder.append(outLine);
         }
         return stringBuilder.toString();
     }
 
     @Override
-    public void start(String corpusPath, String resultPath) {
-
-        double startTime = System.currentTimeMillis();
-
-
-        if (!testPath(corpusPath) || !testPath(resultPath)) {
+    public void start(String dataPath, String resultPath) {
+        //Checking paths
+        if (!testPath(dataPath) || !testPath(resultPath)) {
             setChanged();
-            notifyObservers("Bad input"); //TODO: Maybe replace with enum
+            notifyObservers("Bad input");
         }
 
         //From now on the paths are assumed to be valid
-        Documenter.start(resultPath);
+        resultPath = getResultPath(resultPath);
+        String stopwordsPath = dataPath + "\\stop-words";
+        String corpusPath = dataPath + "\\corpus";
 
-        //initializing the stop words set
-        Parse.loadStopWords(corpusPath + "\\stop-words");
-        File Corpus = new File(corpusPath + "\\corpus");
-        File[] directories = Corpus.listFiles();
-
-        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS); //FIXME:MAGIC NUMBER
-        Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
-        RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
-
-
-        generatePostingFilesParallel(directories, threads, runnableParses, resultPath );
-
-        //merge all the indexers from the RunnableParse
+        //Initializing the Documenter
+        Documenter.start(resultPath, stemming);
+        //Initializing the stop words set
+        Parse.loadStopWords(stopwordsPath);
+        //Initializing this.indexer
         this.indexer = new Indexer(resultPath);
 
+        File Corpus = new File(corpusPath);
+        File[] directories = Corpus.listFiles();
+
+        RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
+        //Start the parallel processing and indexing of the files;
+        generatePostingFilesParallel(directories, runnableParses, resultPath);
 
         //merge all the parsers from the RunnableParse
         HashSet<String> allSingleAppearanceEntities = getExcludedEntitiesAndSaveEntities(runnableParses);
 
-        // merge all posting files within each directory
-        this.mergeAllPostingFiles(resultPath , runnableParses, allSingleAppearanceEntities);
+        int totalDocumentsCount = getTotalDocumentsCount(runnableParses);
+        this.indexer.setDocumentsCount(totalDocumentsCount);
 
-        //finished with "threads" and "runnableParses" we can delete them now.
-        threads = null;
+        // merge all posting files within each directory - Parallel
+        this.mergeAllPostingFiles(resultPath, runnableParses, allSingleAppearanceEntities);
+
+        //finished with "runnableParses" we can call garbage collector to delete (just in case its still in the memory).
         runnableParses = null;
-        System.gc(); // CHECK IF NEEDED
+        System.gc();
 
         Documenter.saveDictionary(this.indexer.getDictionary());
 
@@ -125,28 +143,58 @@ public class MyModel extends Observable implements IModel {
 
     }
 
-    private void generatePostingFilesParallel(File[] directories, Thread[] threads, RunnableParse[] runnableParses , String resultPath) {
+    /**
+     * Sums all the documents counters from all the runnable parses
+     *
+     * @param runnableParses - RunnableParse[]
+     * @return - int - total
+     */
+    private int getTotalDocumentsCount(RunnableParse[] runnableParses) {
+        int total = 0;
+        for (int i = 0; i < runnableParses.length; i++) {
+            total = total + runnableParses[i].getDocumentsCount();
+        }
+        return total;
+    }
 
+    /**
+     * Generates the temporary posting files and the partial dictionaries.
+     * Initializes the given RunnableParse[] and assigns each RunnableParse documents to parse from "directories"
+     * Saves the generated posting files to the given "resultPath"
+     *
+     * @param directories    - File[] - the directories containing the files that will be index.
+     * @param runnableParses - RunnableParse[] - will be used for further processing (dictionary creation)
+     * @param resultPath     - String - the path that the posting files will be written to.
+     */
+    private void generatePostingFilesParallel(File[] directories, RunnableParse[] runnableParses, String resultPath) {
+        Thread[] threads = new Thread[runnableParses.length];
         int currentDirectoryIndex = 0;
+
+        //Initialize each RunnableParse and begin its first documents processing
         for (int i = 0; i < threads.length; i++) {
             RunnableParse runnableParse = new RunnableParse(resultPath, stemming);
-
+            //Assigning files to a RunnableParse
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
+
             runnableParses[i] = runnableParse;
             currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
 
             threads[i] = new Thread(runnableParse);
             threads[i].start();
         }
+
+        //Assigning all the files in given "directories"
         while (currentDirectoryIndex < directories.length - NUMBEROFDOCUMENTPERPARSER) {
             int finishedThreadIndex = getFinishedThreadIndex(threads);
             RunnableParse runnableParse = runnableParses[finishedThreadIndex];
-
+            //Assigning files to a RunnableParse
             runnableParse.setFilesToParse(Arrays.copyOfRange(directories, currentDirectoryIndex, currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER));
+
             threads[finishedThreadIndex] = new Thread(runnableParse);
             threads[finishedThreadIndex].start();
             currentDirectoryIndex = currentDirectoryIndex + NUMBEROFDOCUMENTPERPARSER;
         }
+
         //parsing the last files
         int numberOfDocumentsLeft = directories.length - currentDirectoryIndex;
         if (numberOfDocumentsLeft > 0) {
@@ -156,6 +204,7 @@ public class MyModel extends Observable implements IModel {
             threads[finishedThreadIndex] = new Thread(runnableParse);
             threads[finishedThreadIndex].start();
         }
+
         //Waiting for all the threads to finished
         for (int i = 0; i < threads.length; i++) {
             try {
@@ -167,7 +216,13 @@ public class MyModel extends Observable implements IModel {
 
     }
 
-
+    /**
+     * Receives all the runnableParses that finished creating the temporary posting files and the partial dictionary,
+     * saves a unified entities list and returns a list of all the single appearances entities.
+     *
+     * @param runnableParses - RunnableParse[] - runnableParses that finished processing the initial processing of the files
+     * @return - HashSet<String> - a list of all the single appearances entities.
+     */
     private HashSet<String> getExcludedEntitiesAndSaveEntities(RunnableParse[] runnableParses) {
         TreeSet<String> entitiesTreeSet = new TreeSet<>();
         LinkedList<String> singleAppearanceEntitiesList = new LinkedList<>();
@@ -176,23 +231,29 @@ public class MyModel extends Observable implements IModel {
             entitiesTreeSet.addAll(runnableParses[i].getEntities());
             singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
         }
+
         //merge-sorting single entities
         HashSet<String>[] multipleAndUniqueEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
         entitiesTreeSet.addAll(multipleAndUniqueEntities[0]);
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
 
-      //  this.indexer.setEntities(entitiesTreeSet); //FIXME: THROW EXCEPTION
+        this.indexer.setEntities(entitiesTreeSet);
 
         return multipleAndUniqueEntities[1];
     }
 
-
-    private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> singleAppearanceEntitiesList) {
+    /**
+     * Receives a list of Strings and returns SETs of the duplicated strings and of the ones that appear only once.
+     *
+     * @param StringList - LinkedList<String> StringList - list of strings
+     * @return - HashSet<String>[] - [duplicated strings set, unique strings set]
+     */
+    private HashSet<String>[] getUniqueAndDuplicatedEntitiesSets(LinkedList<String> StringList) {
         HashSet<String> uniqueEntities = new HashSet<>();
         HashSet<String> duplicatedEntities = new HashSet<>();
 
-        for (String currentEntity : singleAppearanceEntitiesList) {
+        for (String currentEntity : StringList) {
             if (uniqueEntities.contains(currentEntity)) {
                 duplicatedEntities.add(currentEntity);
             } else {
@@ -207,6 +268,13 @@ public class MyModel extends Observable implements IModel {
         result[1] = uniqueEntities;
         return result;
     }
+
+    /**
+     * Receives Thread[] and returns the index of the thread that has finished.
+     *
+     * @param threads - Thread[] - array of threads, not null
+     * @return - int - the index of the finished thread
+     */
     private int getFinishedThreadIndex(Thread[] threads) {
         while (true) {
             for (int i = 0; i < threads.length; i++) {
@@ -235,49 +303,43 @@ public class MyModel extends Observable implements IModel {
         return isDirectory;
     }
 
-
-    public boolean isStemming() {
-        return stemming;
-    }
-
     /**
-     * Receive resultPath mergers all the posting files of all the posting files directories.
-     * @param resultPath
-     * @param singleAppearanceEntities
+     * Mergers all the posting files of all the posting files directories from the given resultPath.
+     * Merges the dictionaries from all the separate runnableParses.
+     * Removes all the single appearance entities from the unified dictionary.
+     * @param resultPath - String - the path of the temporary posting files
+     * @param singleAppearanceEntities - HashSet<String> - a set of string to be removed from the dictionary.
      */
     private void mergeAllPostingFiles(String resultPath, RunnableParse[] runnableParses, HashSet<String> singleAppearanceEntities) {
         Map<String, Pair<Integer, String>>[] dictionaries = getAllDictionaries(runnableParses);
+        final int THREADSLEEPTIMER = 250; //in milliseconds
 
         //Merge all individual dictionaries
-        for(Map<String, Pair<Integer, String>> dictionary : dictionaries){
+        for (Map<String, Pair<Integer, String>> dictionary : dictionaries) {
             this.indexer.addPartialDictionary(dictionary);
         }
 
         //The indexer have a single unified dictionary
         this.indexer.removeAllSingleAppearances(singleAppearanceEntities);
-        System.out.println("Finished to build Dictionary");
+
         //Merge posting files
-        int index= 0;
-        //todo: add threads - parallel
         ExecutorService postingMergersPool = Executors.newFixedThreadPool(POSTINGMERGERSPOOLSIZE);
         ArrayList<Future> postingMergerFutures = new ArrayList<>();
 
         char startCharacter = '`';
         int invertedIndexDirectoriesCount = Indexer.getINVERTEDINDEXDIRECTORIESCOUNT();
-        for (int i = 0; i < invertedIndexDirectoriesCount ; i++) {
-            String path = resultPath + "\\PostingFiles\\" + (char)((int) startCharacter + i);
-            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path , this.indexer.getDictionary())));
+        for (int i = 0; i < invertedIndexDirectoriesCount; i++) {
+            String path = resultPath + "\\PostingFiles\\" + (char) ((int) startCharacter + i);
+            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path, this.indexer.getDictionary())));
         }
+
         //waiting for threads to finish
-        while(postingMergerFutures.size() > 0){
-            if(postingMergerFutures.get(0).isDone())
-            {
+        while (postingMergerFutures.size() > 0) {
+            if (postingMergerFutures.get(0).isDone()) {
                 postingMergerFutures.remove(0);
-            }
-            else
-            {
+            } else {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(THREADSLEEPTIMER);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -286,6 +348,11 @@ public class MyModel extends Observable implements IModel {
         postingMergersPool.shutdown();
     }
 
+    /**
+     * Returns an array of all the dictionaries from the given RunnableParses.
+     * @param runnableParses - RunnableParse[] - runnableParses that finished processing the initial processing of the files
+     * @return - Map<String, Pair<Integer, String>>[] - array of dictionaries
+     */
     private Map<String, Pair<Integer, String>>[] getAllDictionaries(RunnableParse[] runnableParses) {
         Map<String, Pair<Integer, String>>[] allDictionaries = new TreeMap[NUMBEROFDOCUMENTPROCESSORS];
 
@@ -295,6 +362,15 @@ public class MyModel extends Observable implements IModel {
         return allDictionaries;
     }
 
+    @Override
+    public int getDocumentsProcessedCount() {
+        return this.indexer.getDocumentsCount();
+    }
+
+    @Override
+    public int getUniqueTermsCount() {
+        return this.indexer.getDictionarySize();
+    }
 }
 
 

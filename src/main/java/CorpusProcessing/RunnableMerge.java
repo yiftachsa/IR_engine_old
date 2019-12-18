@@ -12,20 +12,28 @@ public class RunnableMerge implements Runnable {
     private String path;
     private Map<String, Pair<Integer, String>> dictionary;
 
-
+    /**
+     * Constructor
+     * @param path - String
+     * @param dictionary - Map<String, Pair<Integer, String>>
+     */
     public RunnableMerge(String path, Map<String, Pair<Integer, String>> dictionary) {
         this.path = path;
         this.dictionary = dictionary;
     }
 
+
+    //merges all the posting within the path
     @Override
     public void run() {
 
-        ArrayList<String> listWithoutEntity = Documenter.loadPostingFile2(this.path);
-        System.out.println("Finished reading");
-        Collections.sort(listWithoutEntity , String.CASE_INSENSITIVE_ORDER);
-        System.out.println("Finished Sorting");
-        /*
+        ArrayList<String> stringArrayList = Documenter.loadPostingFile(this.path);
+        ArrayList<String> listWithoutEntity =  new ArrayList<>();
+
+
+        Collections.sort(stringArrayList , String.CASE_INSENSITIVE_ORDER);
+
+
         for (int i = 0; i < stringArrayList.size(); i++) {
             String s = stringArrayList.get(i);
             if(this.dictionary.containsKey(s.substring(0,s.indexOf('!'))));
@@ -33,19 +41,10 @@ public class RunnableMerge implements Runnable {
                 listWithoutEntity.add(stringArrayList.get(i));
             }
         }
-        */
-        System.out.println("Finished put all records without entities");
         for (int i = listWithoutEntity.size()-1; i > 0 ; i--) {
             String firstRecord = listWithoutEntity.get(i);
             String seconedRecord =listWithoutEntity.get(i-1);
-            String  firstTerm= firstRecord.substring(0,firstRecord.indexOf("!"));
-
-            if(!(this.dictionary.containsKey(firstTerm)))
-            {
-                listWithoutEntity.set(i,"knjue"); //todo: find better!!
-                continue;
-            }
-
+            String firstTerm = firstRecord.substring(0,firstRecord.indexOf("!"));
             String seconedTerm = seconedRecord.substring(0,seconedRecord.indexOf("!"));
             String firstPairs = firstRecord.substring(firstRecord.indexOf("!")+1);
             String seconedPairs = seconedRecord.substring(seconedRecord.indexOf("!")+1);
@@ -61,12 +60,11 @@ public class RunnableMerge implements Runnable {
                     seconedTerm = seconedTerm +"!"+seconedPairs + "|" + firstPairs;
 
                 }
-                listWithoutEntity.set(i , "knjue");
+                listWithoutEntity.remove(i);
                 listWithoutEntity.set(i-1,seconedTerm);
             }
         }
         Documenter.deleteAllFilesFromDirectory(this.path);
-        Documenter.savePostingFile4(listWithoutEntity, this.path+"\\posting");
-
+        Documenter.saveFinalPostingFile(listWithoutEntity, this.path+"\\posting");
     }
 }

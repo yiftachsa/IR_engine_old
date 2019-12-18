@@ -8,38 +8,40 @@ public class Trio implements Comparable<Trio> , Serializable {
     private String docid;
     private int frequency;
 
+    /**
+     * Constructor
+     * @param term - String
+     * @param docId - String
+     * @param frequency - int - term frequency
+     */
     public Trio(String term, String docId, int frequency) {
         this.term = term;
         this.docid = docId;
         this.frequency = frequency;
     }
 
+    /**
+     * Returns the term field
+     * @return - String - the term field
+     */
     public String getTerm() {
         return term;
     }
 
-    public void incrementFrequency(){
-        frequency++;
-    }
-
-    public void setTerm(String term) {
-        this.term = term;
-    }
-
+    /**
+     * Returns the docID field
+     * @return - String - the docID field
+     */
     public String getDocid() {
         return docid;
     }
 
-    public void setDocid(String docid) {
-        this.docid = docid;
-    }
-
+    /**
+     * Returns the frequency field
+     * @return - int - the frequency field
+     */
     public int getFrequency() {
         return frequency;
-    }
-
-    public void setFrequency(int frequency) {
-        this.frequency = frequency;
     }
 
     @Override

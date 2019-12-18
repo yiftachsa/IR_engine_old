@@ -1,10 +1,6 @@
 package ViewModel;
 
 import Model.IModel;
-import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
-
-import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -42,10 +38,7 @@ public class MyViewModel extends Observable implements Observer {
      * @return - boolean - true if the loading completed successfully, else false
      */
     public boolean loadDictionary(String path) {
-        //TODO: load dictionary from path to object
-        //TODO: check stemming!!!!
         return model.loadDictionary(path);
-
     }
 
     /**
@@ -68,13 +61,17 @@ public class MyViewModel extends Observable implements Observer {
     }
 
     /**
-     *
-     * @return
+     * Returns a String representation of the dictionary in memory.
+     * If there is no dictionary loaded to the main memory the result will be null.
+     * A dictionary MUST be loaded to the memory.
+     * @return - String - dictionary representation or null, if no dictionary is loaded.
      */
     public String getDictionary() {
-        return model.getDictionary();
+        if(model.getDictionaryStatus()) {
+            return model.getDictionary();
+        }
+        return "";
     }
-    //FIXME:expend the JavaDocs
 
     /**
      * Forwards the text fields from the user to the model.
@@ -83,5 +80,22 @@ public class MyViewModel extends Observable implements Observer {
      */
     public void start(String corpusPath, String resultPath) {
         model.start(corpusPath , resultPath);
+    }
+
+
+    /**
+     * Returns the number of the unique terms
+     * @return - int - the number of the unique terms
+     */
+    public int getUniqueTermsCount() {
+        return model.getUniqueTermsCount();
+    }
+
+    /**
+     * Returns the number of the documents processed
+     * @return - int - the number of the documents processed
+     */
+    public int getDocumentsProcessedCount() {
+        return model.getDocumentsProcessedCount();
     }
 }

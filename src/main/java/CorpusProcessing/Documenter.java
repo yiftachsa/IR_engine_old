@@ -1,18 +1,12 @@
 package CorpusProcessing;
 
 import javafx.util.Pair;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,13 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 //TODO:Maybe should be singleton
 public class Documenter {
 
-    // private static final int NUMBEROFDOCUMENTSPERFILE = (int) Math.pow(2, 12);
-    // private static final int NUMBEROFCATEGORIES = 27;
-    // private static final int TRIOBUFFERSIZE = 10000;
-    private static int fileIndex = 0;
-
-
-//    private static final int LOADERSPOOLSIZE = 2;
 
     private static int postingEntriesIndex = 0;
     private static int invertedIndexIndex = 0;
@@ -46,11 +33,12 @@ public class Documenter {
     private static AtomicInteger longestPostingEntriesFile = new AtomicInteger(0);
 
 
-    public static void start(String path) {
+    public static void start(String path, boolean stemming) {
         filesPath = path + "";
         documentsDetailsMutex = new ReentrantLock();
         postingEntriesMutex = new ReentrantLock();
         invertedIndexMutex = new ReentrantLock();
+        new File(filesPath).mkdir();
         new File(filesPath + "\\Entities").mkdir();
         new File(filesPath + "\\DocumentsDetails").mkdir();
         new File(filesPath + "\\PostingFiles").mkdir();
@@ -197,48 +185,8 @@ public class Documenter {
         return invertedIndexIndex;
     }
 
-
-
-
-    public static void saveInvertedIndexes(HashMap<String, HashMap<String, List<Pair<String, Integer>>>> allRecordsSplitByFolders) {
-        invertedIndexMutex.lock();
-        int fileIndex = invertedIndexIndex;
-        invertedIndexIndex++;
-        invertedIndexMutex.unlock();
-
-        String filePath = filesPath + "\\PostingFiles";
-        char startChar = '`';
-
-        for (HashMap.Entry<String, HashMap<String, List<Pair<String , Integer>>>> records : allRecordsSplitByFolders.entrySet())
-        {
-            savePostingFilePerFolder(records.getValue(), filePath + "\\" +records.getKey().toLowerCase()  + "\\postingFile" + fileIndex);
-
-        }
-
-
-
-    }
-
-    private static void savePostingFilePerFolder(HashMap<String, List<Pair<String, Integer>>> records, String path) {
-
-        File file = new File(path);
-        try {
-            file.createNewFile();
-            FileWriter fileWriter = new FileWriter(file);
-            List<String> allPosting = new LinkedList<>();
-            for (HashMap.Entry<String, List<Pair<String, Integer>>> record : records.entrySet()){
-                String recordToWrite = "";
-                recordToWrite  = record.getKey()+"!";
-                for (int i = 0; i < record.getValue().size(); i++) {
-                    recordToWrite =  recordToWrite+"<" + record.getValue().get(i).getKey() + "," + record.getValue().get(i).getValue() + ">|";
-                }
-                fileWriter.write(recordToWrite+ "\n");
-            }
-            fileWriter.flush();
-            fileWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>> posting) {
+        //todo: fill this function!
     }
 
     public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>>[] postingArray) {
@@ -255,86 +203,35 @@ public class Documenter {
             char startChar = '`';
 
             for (int i = 0; i < postingArray.length; i++) {
-                savePostingFile1(postingArray[i], filePath + "\\" + (char) ((int) startChar + i) + "\\postingFile" + fileIndex);
+                savePostingFile(postingArray[i], filePath + "\\" + (char) ((int) startChar + i) + "\\postingFile" + fileIndex);
             }
 
         }
 
     }
 
-    /**
-     * Saves an individual posting file.
-     *
-     * @param posting
-     * @param filePath
-     */
-    public static void savePostingFile(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
-        BufferedWriter writer;
+    public static void saveFinalPostingFile(ArrayList<String> listWithoutEntity, String filePath) {
+        File file = new File(filePath);
         try {
-            writer = new BufferedWriter(new FileWriter(filePath));
-            for (SortedMap.Entry<String, PriorityQueue<Pair<String, Integer>>> postingLine : posting.entrySet()) {
-                String term = postingLine.getKey();
-                PriorityQueue<Pair<String, Integer>> pairs = postingLine.getValue();
-                String out = term + "~";
-                for (Pair<String, Integer> pair : pairs) {
-                    out = out + "<" + pair.getKey() + "," + pair.getValue() + ">|";
-                }
-                writer.write(out);
-                writer.newLine();
+            file.createNewFile();
+            FileWriter fileWriter = new FileWriter(file);
+            for (int i = 0; i < listWithoutEntity.size(); i++) {
+                fileWriter.write(listWithoutEntity.get(i) + "\n");
             }
-            writer.close();
+            fileWriter.flush();
+            fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /*
-    byte[] buffer = "Help I am trapped in a fortune cookie factory\n".getBytes();
-    int number_of_lines = 400000;
 
-    FileChannel rwChannel = new RandomAccessFile("textfile.txt", "rw").getChannel();
-    ByteBuffer wrBuf = rwChannel.map(FileChannel.MapMode.READ_WRITE, 0, buffer.length * number_of_lines);
-    for (int i = 0; i < number_of_lines; i++)
-    {
-        wrBuf.put(buffer);
-    }
-    rwChannel.close();
-
+    /**
+     * Saves an individual posting file.
+     * @param posting
+     * @param filePath
      */
-    public static void savePostingFile3(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
-
-        List<String> allPosting = new LinkedList<>();
-        for (SortedMap.Entry<String, PriorityQueue<Pair<String, Integer>>> postingLine : posting.entrySet()) {
-            String term = postingLine.getKey();
-            PriorityQueue<Pair<String, Integer>> pairs = postingLine.getValue();
-            String out = term + "~";
-            for (Pair<String, Integer> pair : pairs) {
-                out = out + "<" + pair.getKey() + "," + pair.getValue() + ">|";
-            }
-            allPosting.add(out);
-        }
-        if (posting.size() != 0) {
-            String s = "";
-            for (String post : allPosting) {
-                s = s + post + "\n";
-            }
-            s = s.substring(0, s.length() - 1);
-            FileChannel rwChannel = null;
-            try {
-                rwChannel = new RandomAccessFile("textfile.txt", "rw").getChannel();
-                ByteBuffer wrBuf = rwChannel.map(FileChannel.MapMode.READ_WRITE, 0, s.length());
-
-                wrBuf.put(s.getBytes());
-
-                rwChannel.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    public static void savePostingFile1(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
+    public static void savePostingFile(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
         File file = new File(filePath);
         try {
             file.createNewFile();
@@ -433,7 +330,7 @@ public class Documenter {
                 for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
                     String key = entry.getKey();
                     Pair<Integer, String> pair = entry.getValue();
-                    String outLine = key + "," + pair.getKey() + "," + pair.getValue(); //TODO: Maybe use a different delimiter then ","
+                    String outLine = key + "~" + pair.getKey() + "," + pair.getValue(); //TODO: Maybe use a different delimiter then ","
                     writer.write(outLine);
                     writer.newLine();
                 }
@@ -447,13 +344,15 @@ public class Documenter {
 
     public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
-        Map<String, Pair<Integer, String>> dictionary = new HashMap<>();
+        Map<String, Pair<Integer, String>> dictionary = new TreeMap<>();
         try {
             reader = new BufferedReader((new FileReader(dictionaryPath + "\\Dictionary\\dictionary")));
             String line = "";
             while ((line = reader.readLine()) != null) {
+                String term = line.substring(0, line.indexOf('~'));
+                line = line.substring(line.indexOf('~') + 1);
                 String[] entreeDetails = line.split(",");
-                dictionary.put(entreeDetails[0], new Pair<>(Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
+                dictionary.put(term, new Pair<>(Integer.parseInt(entreeDetails[0]), entreeDetails[1]));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -464,75 +363,7 @@ public class Documenter {
     }
 
 
-    public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile(String path) {
-        Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
-        BufferedReader bufferedReader = null;
-
-        try {
-            bufferedReader = new BufferedReader((new FileReader(path)));
-            String line = "";
-            while ((line = bufferedReader.readLine()) != null) {
-                int indexOfTilde = line.indexOf('~');
-                String term = line.substring(0, indexOfTilde);
-                line = line.substring(indexOfTilde + 1);
-                PriorityQueue<Pair<String, Integer>> pairs = new PriorityQueue<>(new PairComparator());
-                while (line.length() > 1) //until the last character '|'
-                {
-                    String pair = line.substring(1, line.indexOf(">"));
-                    String key = pair.substring(0, pair.indexOf(','));
-                    String value = pair.substring(pair.indexOf(',') + 1);
-                    Pair pairToAdd = new Pair(key, Integer.parseInt(value));
-                    pairs.add(pairToAdd);
-                    line = line.substring(line.indexOf('|'));
-                    if (line.length() > 1) {
-                        line = line.substring(1);
-                    }
-                }
-                postingResult.put(term, pairs);
-
-            }
-            bufferedReader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return postingResult;
-    }
-
-    public static Map<String, PriorityQueue<Pair<String, Integer>>> loadPostingFile1(String path) {
-        Map<String, PriorityQueue<Pair<String, Integer>>> postingResult = new TreeMap<>();
-
-        File file = new File(path);
-        try {
-            List<String> stringList = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
-            for (String line : stringList) {
-
-                int indexOfTilde = line.indexOf('~');
-                String term = line.substring(0, indexOfTilde);
-                line = line.substring(indexOfTilde + 1);
-                PriorityQueue<Pair<String, Integer>> pairs = new PriorityQueue<>(new PairComparator());
-                while (line.length() > 1) //until the last character '|'
-                {
-                    String pair = line.substring(1, line.indexOf(">"));
-                    String key = pair.substring(0, pair.indexOf(','));
-                    String value = pair.substring(pair.indexOf(',') + 1);
-                    Pair pairToAdd = new Pair(key, Integer.parseInt(value));
-                    pairs.add(pairToAdd);
-                    line = line.substring(line.indexOf('|'));
-                    if (line.length() > 1) {
-                        line = line.substring(1);
-                    }
-                }
-                postingResult.put(term, pairs);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return postingResult;
-    }
-
-
-    public static ArrayList<String> loadPostingFile2(String path) {
+    public static ArrayList<String> loadPostingFile(String path) {
         ArrayList<String> stringArrayList = new ArrayList<>();
         File folder = new File(path);
         try {
@@ -545,6 +376,8 @@ public class Documenter {
         }
         return stringArrayList;
     }
+
+
     /**
      * Deletes all the files from a given directory
      *
@@ -560,38 +393,23 @@ public class Documenter {
 
 
     public static boolean deleteIndexingFilesFromDirectory(String path) {
-        File entitiesDirectory = new File(filesPath + "\\Entities");
-        File documentsDetailsDirectory = new File(filesPath + "\\DocumentsDetails");
-        File postingFilesDirectory = new File(filesPath + "\\PostingFiles");
-        File dictionaryDirectory = new File(filesPath + "\\Dictionary");
-        boolean clearSuccessful = true;
-        clearSuccessful = clearSuccessful && entitiesDirectory.delete();
-        clearSuccessful = clearSuccessful && documentsDetailsDirectory.delete();
-        clearSuccessful = clearSuccessful && postingFilesDirectory.delete();
-        clearSuccessful = clearSuccessful && dictionaryDirectory.delete();
-        return clearSuccessful;
-    }
-
-    public static void savePostingFile4(ArrayList<String> listWithoutEntity, String filePath) {
-        System.out.println("start saving");
-        File file = new File(filePath);
-        try {
-            file.createNewFile();
-            FileWriter fileWriter = new FileWriter(file);
-            for (int i = 0; i < listWithoutEntity.size(); i++) {
-                if(!listWithoutEntity.get(i).equals("knjue")) {
-                    fileWriter.write(listWithoutEntity.get(i) + "\n");
-                }
-            }
-            fileWriter.flush();
-            fileWriter.close();
-            System.out.println("finished saving");
-        } catch (IOException e) {
-            e.printStackTrace();
+//        File entitiesDirectory = new File(path + "\\Entities");
+//        File documentsDetailsDirectory = new File(path + "\\DocumentsDetails");
+        File stemmedDirectory = new File(path + "\\Stemmed");
+        File unstemmedDirectory = new File(path + "\\UnStemmed");
+        if (!stemmedDirectory.exists() || !unstemmedDirectory.exists()) {
+            return false;
         }
 
+        boolean clearSuccessful = true;
+        try {
+            FileUtils.deleteDirectory(stemmedDirectory);
+            FileUtils.deleteDirectory(unstemmedDirectory);
+        } catch (IOException e) {
+            clearSuccessful = false;
+        }
 
+        return clearSuccessful;
     }
-
 }
 

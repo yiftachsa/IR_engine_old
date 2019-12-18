@@ -85,9 +85,10 @@ public class Parse {
      * @param query - String - user Query.
      * @return
      */
-    public HashMap<String , Pair<String , Integer>>  parseQuery(String query) {
+    public ArrayList<String> parseQuery(String query) {
         String[] tokens = query.split(" ");
-        HashMap<String , Pair<String , Integer>>  terms = parseText(tokens, useStemmer ,"");
+        ArrayList<String> terms = parseText(tokens, useStemmer);
+
         return terms;
     }
 
@@ -97,9 +98,9 @@ public class Parse {
      * @param document - Document
      * @return ArrayList<String> of all the terms in the document after parse
      */
-    public    HashMap<String , Pair<String , Integer>>  parseDocument(Document document) {
+    public ArrayList<String> parseDocument(Document document) {
         String[] tokens = document.getText().split(" ");
-        HashMap<String , Pair<String , Integer>> terms = parseText(tokens, useStemmer , document.getId());
+        ArrayList<String> terms = parseText(tokens, useStemmer);
         return terms;
     }
 
@@ -110,8 +111,8 @@ public class Parse {
      * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
      * @return - ArrayList<String> - all the words from the text of the document after parsing
      */
-    public HashMap<String , Pair<String , Integer>> parseText(String[] tokens, boolean useStemmer , String docID) {
-        HashMap<String , Pair<String , Integer>> terms = new HashMap<>();
+    public ArrayList<String> parseText(String[] tokens, boolean useStemmer) {
+        ArrayList<String> terms = new ArrayList<>();
 
         //Start of parsing
         for (int i = 0; i < tokens.length; i++) {
@@ -140,60 +141,19 @@ public class Parse {
                         firstNextToken = strip(tokens[i + 1]);
                     }
                     result = generateTokenDollar(token, firstNextToken);
-                    if(terms.containsKey(result.getKey()))
-                    {
-                        int frequency =terms.get(result.getKey()).getValue();
-                        terms.put(result.getKey() , new Pair<>(docID ,frequency+1));
-                    }
-                    else
-                    {
-                        terms.put(result.getKey() ,new Pair<>(docID ,1));
-                    }
+                    terms.add(result.getKey());
                     i = i + result.getValue();
                 }
                 //Percentage
                 else if (token.matches(".*%.*")) {
-                    if(terms.containsKey(token))
-                    {
-                        int frequency =terms.get(token).getValue();
-                        terms.put(token , new Pair<>(docID , frequency+1));
-                    }
-                    else
-                    {
-                        terms.put(token, new Pair<>(docID , 1));
-                    }
+                    terms.add(token);
                 }
 
                 //Number/s with hyphens
                 else if (token.matches(".*-.*")) {
-
-                    if(terms.containsKey(token))
-                    {
-                        int frequency =terms.get(token).getValue();
-                        terms.put(token , new Pair<>(docID , frequency+1));
-                    }
-                    else
-                    {
-                        terms.put(token, new Pair<>(docID , 1));
-                    }
-                    if(terms.containsKey(token.substring(0, token.indexOf("-"))))
-                    {
-                        int frequency =terms.get(token.substring(0, token.indexOf("-"))).getValue();
-                        terms.put(token.substring(0, token.indexOf("-")) , new Pair<>(docID , frequency+1));
-                    }
-                    else
-                    {
-                        terms.put(token.substring(0, token.indexOf("-")), new Pair<>(docID ,1));
-                    }
-                    if(terms.containsKey(token.substring(token.indexOf("-") + 1)))
-                    {
-                        int frequency =terms.get(token.substring(token.indexOf("-") + 1)).getValue();
-                        terms.put((token.substring(token.indexOf("-") + 1)), new Pair<>(docID , frequency+1));
-                    }
-                    else
-                    {
-                        terms.put(token.substring(token.indexOf("-") + 1), new Pair<>(docID ,1));
-                    }
+                    terms.add(token);
+                    terms.add(token.substring(0, token.indexOf("-")));
+                    terms.add(token.substring(token.indexOf("-") + 1));
                 }
                 //Numbers dependent on next token
                 else {
@@ -204,85 +164,36 @@ public class Parse {
                     //Fractions
                     if (token.matches("\\d+/\\d+")) {
                         if (firstNextToken.equals("dollars") || firstNextToken.equals("Dollars")) { //<<<Fraction Dollars>>>
-                            if(terms.containsKey(token + " Dollars"))
-                            {
-                                int frequency =terms.get(token + " Dollars").getValue();
-                                terms.put( token + " Dollars", new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token + " Dollars", new Pair<>(docID ,1));
-                            }
+                            terms.add(token + " Dollars");
                             i++;
                         } else { // <<<Fraction>>>
-                            if(terms.containsKey(token))
-                            {
-                                int frequency =terms.get(token).getValue();
-                                terms.put( token, new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token, new Pair<>(docID  ,1));
-                            }
+                            terms.add(token);
                         }
                     }
                     //Percentage
                     else if (firstNextToken.equals("percent") || firstNextToken.equals("percentage")) {
                         token = token + "%";
-                        if(terms.containsKey(token))
-                        {
-                            int frequency =terms.get(token).getValue();
-                            terms.put( token, new Pair<>(docID , frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(token, new Pair<>(docID ,1 ));
-                        }
+                        terms.add(token);
                         i++;
                     }
                     //Date
                     else if (token.matches("\\d+") && MONTHMAP.containsKey(firstNextToken)) // <<<DD Month>>>
                     {
                         result = generateTokenDayMonth(token, firstNextToken);
-                        if(terms.containsKey(result.getKey()))
-                        {
-                            int frequency =terms.get(result.getKey()).getValue();
-                            terms.put(result.getKey(), new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(result.getKey(), new Pair<>(docID ,  1));
-                        }
+                        terms.add(result.getKey());
                         i = i + result.getValue();
                     }
                     //Simple numbers and Prices
                     //Thousand
                     else if (firstNextToken.equals("thousand") || firstNextToken.equals("Thousand")) { // <<<Number Thousand>>>
                         token = token + "K";
-                        if(terms.containsKey(token))
-                        {
-                            int frequency =terms.get(token).getValue();
-                            terms.put( token, new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(token, new Pair<>( docID ,1));
-                        }
-
+                        terms.add(token);
                         i++;
                     }
                     //Trillion Dollars
                     else if (firstNextToken.equals("Trillion") || firstNextToken.equals("trillion")) { // <<<Price trillion U.S. Dollars>>>
                         token = token + "000000 M Dollars";
-                        if(terms.containsKey(token))
-                        {
-                            int frequency =terms.get(token).getValue();
-                            terms.put( token, new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(token, new Pair<>(docID , 1));
-                        }
+                        terms.add(token);
                         i = i + 3;
                     }
                     //Prices - Dollars
@@ -290,15 +201,7 @@ public class Parse {
                         result = generateTokenPrice(token);
                         token = result.getKey();
                         if (!token.equals("")) {
-                            if(terms.containsKey(token))
-                            {
-                                int frequency =terms.get(token).getValue();
-                                terms.put( token, new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token, new Pair<>(docID ,1));
-                            }
+                            terms.add(token);
                             i = i + result.getValue();
                         }
                     }
@@ -313,15 +216,7 @@ public class Parse {
                             thirdNextToken = strip(tokens[i + 3]);
                         }
                         result = generateTokenLargeNumbers(token, firstNextToken, secondNextToken, thirdNextToken);
-                        if(terms.containsKey(result.getKey()))
-                        {
-                            int frequency =terms.get(result.getKey()).getValue();
-                            terms.put( result.getKey(), new Pair<>(docID , frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(result.getKey(),new Pair<>(docID , 1));
-                        }
+                        terms.add(result.getKey());
                         i = i + result.getValue();
                     }
                     //Number Fraction
@@ -331,42 +226,16 @@ public class Parse {
                             secondNextToken = strip(tokens[i + 2]);
                         }
                         if (secondNextToken.equals("dollars") || secondNextToken.equals("Dollars")) { //<<<Price Fraction Dollars>>>
-                            if(terms.containsKey(token + " " + firstNextToken + " Dollars"))
-                            {
-                                int frequency =terms.get(token + " " + firstNextToken + " Dollars").getValue();
-                                terms.put( token + " " + firstNextToken + " Dollars", new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token + " " + firstNextToken + " Dollars", new Pair<>(docID , 1));
-                            }
+                            terms.add(token + " " + firstNextToken + " Dollars");
                             i = i + 2;
                         } else {
-                            if(terms.containsKey(token + " " + firstNextToken))
-                            {
-                                int frequency =terms.get(token + " " + firstNextToken).getValue();
-                                terms.put(token + " " + firstNextToken, new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token + " " + firstNextToken, new Pair<>(docID , 1));
-                            }
+                            terms.add(token + " " + firstNextToken); // <<<Number Fraction>>>
                             i++;
                         }
                     } else //<<<Simple Number>>>
                     {
                         if (token.matches("^[0-9]+$"))
-                        {
-                            if(terms.containsKey(generateTokenSimpleNumber(token)))
-                            {
-                                int frequency =terms.get(generateTokenSimpleNumber(token)).getValue();
-                                terms.put(generateTokenSimpleNumber(token), new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(generateTokenSimpleNumber(token), new Pair<>(docID,1));
-                            }
-                        }
+                            terms.add(generateTokenSimpleNumber(token));
                         else continue; //todo:check!
                     }
                 }
@@ -378,15 +247,7 @@ public class Parse {
                     firstNextToken = strip(tokens[i + 1]);
                 }
                 result = generateTokenMonth(token, firstNextToken);
-                if(terms.containsKey(result.getKey()))
-                {
-                    int frequency =terms.get(result.getKey()).getValue();
-                    terms.put( result.getKey(), new Pair<>(docID ,frequency+1));
-                }
-                else
-                {
-                    terms.put(result.getKey(), new Pair<>(docID , 1));
-                }
+                terms.add(result.getKey());
                 i = i + result.getValue();
             }
             //Between number and number - less memory complexity if left here instead of in a separate function.
@@ -409,34 +270,9 @@ public class Parse {
 
                         if (thirdNextToken.matches("\\d+")) {
                             token = firstNextToken + "-" + thirdNextToken;
-
-                            if(terms.containsKey(token))
-                            {
-                                int frequency =terms.get(token).getValue();
-                                terms.put( token, new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(token, new Pair<>(docID ,1));
-                            }
-                            if(terms.containsKey(firstNextToken))
-                            {
-                                int frequency =terms.get(firstNextToken).getValue();
-                                terms.put( firstNextToken, new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(firstNextToken, new Pair<>(docID ,1));
-                            }
-                            if(terms.containsKey(thirdNextToken))
-                            {
-                                int frequency =terms.get(thirdNextToken).getValue();
-                                terms.put( thirdNextToken, new Pair<>(docID , frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(thirdNextToken, new Pair<>(docID , 1));
-                            }
+                            terms.add(token);
+                            terms.add(firstNextToken);
+                            terms.add(thirdNextToken);
                             i = i + 3;
                         }
                     }
@@ -451,49 +287,17 @@ public class Parse {
                     token = token.substring(token.indexOf('/') + 1);
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            if(terms.containsKey(Stemmer.stem(term).toLowerCase()))
-                            {
-                                int frequency =terms.get(Stemmer.stem(term.toLowerCase())).getValue();
-                                terms.put( Stemmer.stem(term.toLowerCase()), new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(Stemmer.stem(term.toLowerCase()), new Pair<>(docID ,1));
-                            }
+                            terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
-                            if(terms.containsKey(term))
-                            {
-                                int frequency =terms.get(term).getValue();
-                                terms.put( term, new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(term, new Pair<>(docID , 1));
-                            }
+                            terms.add(term);
                         }
                     }
                 }
                 if (!isStopWord(token.toLowerCase())) {
                     if (useStemmer) {
-                        if(terms.containsKey(Stemmer.stem(token).toLowerCase()))
-                        {
-                            int frequency =terms.get(Stemmer.stem(token.toLowerCase())).getValue();
-                            terms.put( Stemmer.stem(token.toLowerCase()), new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(Stemmer.stem(token.toLowerCase()), new Pair<>(docID , 1));
-                        }
+                        terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
-                        if(terms.containsKey(token))
-                        {
-                            int frequency =terms.get(token).getValue();
-                            terms.put( token, new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(token, new Pair<>(docID , 1));
-                        }
+                        terms.add(token);
                     }
                 }
             }
@@ -503,43 +307,12 @@ public class Parse {
                 for (String term : resultHyphenList) {
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            if(terms.containsKey(Stemmer.stem(term.toLowerCase())))
-                            {
-                                int frequency =terms.get(Stemmer.stem(term.toLowerCase())).getValue();
-                                terms.put(Stemmer.stem(term.toLowerCase()), new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(Stemmer.stem(term.toLowerCase()), new Pair<>(docID ,1));
-                            }
-
+                            terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
                             if (term.matches("^[A-Z].*"))
-                            {
-                                if(terms.containsKey(term.toUpperCase()))
-                                {
-                                    int frequency =terms.get(term.toUpperCase()).getValue();
-                                    terms.put( term.toUpperCase(), new Pair<>(docID ,frequency+1));
-                                }
-                                else
-                                {
-                                    terms.put(term.toUpperCase(), new Pair<>(docID ,1));
-                                }
-
-                            }
+                                terms.add(term.toUpperCase());
                             else
-                            {
-                                if(terms.containsKey(term))
-                                {
-                                    int frequency =terms.get(term).getValue();
-                                    terms.put( term, new Pair<>(docID ,frequency+1));
-                                }
-                                else
-                                {
-                                    terms.put(term, new Pair<>(docID ,1));
-                                }
-
-                            }
+                                terms.add(term);
                         }
                     }
                 }
@@ -581,25 +354,9 @@ public class Parse {
                     }
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            if(terms.containsKey(Stemmer.stem(term.toLowerCase())))
-                            {
-                                int frequency =terms.get(Stemmer.stem(term.toLowerCase())).getValue();
-                                terms.put( Stemmer.stem(term.toLowerCase()), new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(Stemmer.stem(term.toLowerCase()), new Pair<>(docID , 1));
-                            }
+                            terms.add(Stemmer.stem(term.toLowerCase()));
                         } else {
-                            if(terms.containsKey(term))
-                            {
-                                int frequency =terms.get(term).getValue();
-                                terms.put( term, new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(term, new Pair<>(docID ,1));
-                            }
+                            terms.add(term);
                         }
                         if (!entities.contains(term)) {
                             if (!singleAppearanceEntities.contains(term)) {
@@ -615,25 +372,9 @@ public class Parse {
                         for (String string : entityTokensCandidates) {
                             if (!isStopWord(string.toLowerCase()))
                                 if (useStemmer) {
-                                    if(terms.containsKey(Stemmer.stem(string.toLowerCase())))
-                                    {
-                                        int frequency =terms.get(Stemmer.stem(string.toLowerCase())).getValue();
-                                        terms.put( Stemmer.stem(string.toLowerCase()), new Pair<>(docID ,frequency+1));
-                                    }
-                                    else
-                                    {
-                                        terms.put(Stemmer.stem(string.toLowerCase()), new Pair<>(docID ,1));
-                                    }
+                                    terms.add(Stemmer.stem(string.toLowerCase()));
                                 } else {
-                                    if(terms.containsKey(string))
-                                    {
-                                        int frequency =terms.get(string).getValue();
-                                        terms.put( string, new Pair<>(docID ,frequency+1));
-                                    }
-                                    else
-                                    {
-                                        terms.put(string, new Pair<>(docID ,1));
-                                    }
+                                    terms.add(string);
                                 }
                         }
                     }
@@ -668,15 +409,7 @@ public class Parse {
                     }
                     for (String entityToken : entityTokens) {
                         if (!isStopWord(entityToken.toLowerCase())) {
-                            if(terms.containsKey(entityToken.toUpperCase()))
-                            {
-                                int frequency =terms.get(entityToken.toUpperCase()).getValue();
-                                terms.put( entityToken.toUpperCase(), new Pair<>(docID ,frequency+1));
-                            }
-                            else
-                            {
-                                terms.put(entityToken.toUpperCase(), new Pair<>(docID , 1));
-                            }
+                            terms.add(entityToken.toUpperCase());
                         }
                     }
                 }
@@ -684,25 +417,9 @@ public class Parse {
             } else {
                 if (token.matches("^[a-z]+$") && !isStopWord(token.toLowerCase()))
                     if (useStemmer) {
-                        if(terms.containsKey(Stemmer.stem(token.toLowerCase())))
-                        {
-                            int frequency =terms.get(Stemmer.stem(token.toLowerCase())).getValue();
-                            terms.put( Stemmer.stem(token.toLowerCase()), new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(Stemmer.stem(token.toLowerCase()), new Pair<>(docID ,1));
-                        }
+                        terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
-                        if(terms.containsKey(token))
-                        {
-                            int frequency =terms.get(token).getValue();
-                            terms.put( token, new Pair<>(docID ,frequency+1));
-                        }
-                        else
-                        {
-                            terms.put(token, new Pair<>(docID ,1));
-                        }
+                        terms.add(token);
                     }
             }
         }
@@ -773,7 +490,7 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n') {
                 continue;
             } else {
                 result = result + character;
