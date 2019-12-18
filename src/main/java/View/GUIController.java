@@ -73,7 +73,7 @@ public class GUIController implements Observer {
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
             String dictionaryToDisplay = viewModel.getDictionary();
-            AlertBox.display("Dictionary", "", "\n\n\n\n\n", "Back to menu", "default background");
+            AlertBox.display("Dictionary", "", dictionaryToDisplay, "Back to menu", "default background");
 
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
@@ -87,7 +87,7 @@ public class GUIController implements Observer {
      */
     public void corpusBrowseHandler(ActionEvent event) {
         String path = browse(event);
-        if (path.equals("")) {
+        if (!path.equals("")) {
             corpusText.setText(path);
         }
     }
@@ -99,7 +99,7 @@ public class GUIController implements Observer {
      */
     public void resultBrowseHandler(ActionEvent event) {
         String path = browse(event);
-        if (path.equals("")) {
+        if (!path.equals("")) {
             resultText.setText(path);
         }
     }

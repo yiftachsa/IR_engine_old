@@ -88,7 +88,7 @@ public class MyModel extends Observable implements IModel {
         for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
             String term = entry.getKey();
             DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
-            String outLine = term + "~" + dictionaryEntryTrio.getCumulativeFrequency();
+            String outLine = term + "~" + dictionaryEntryTrio.getCumulativeFrequency()+"\n";
             stringBuilder.append(outLine);
         }
         return stringBuilder.toString();
