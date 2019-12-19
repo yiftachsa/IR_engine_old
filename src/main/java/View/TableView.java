@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 public class TableView {
     /**
@@ -18,7 +19,7 @@ public class TableView {
  * @param title - String - the stage title
  * @param buttonText - String
  */
-public static void display(String title, String buttonText) {
+public static void display(String title, LinkedList<Pair<String,String>> dictionary, String buttonText) {
     Stage window = new Stage();
     window.setTitle(title);
     Parent root = null;
@@ -32,18 +33,18 @@ public static void display(String title, String buttonText) {
 
     javafx.scene.control.TableView tableView = (javafx.scene.control.TableView) root.lookup("#tableView");
 
-    TableColumn<String, Pair<SimpleStringProperty,SimpleStringProperty >> column1 = new TableColumn("Term");
-    column1.setCellValueFactory(new PropertyValueFactory<>("term"));
+    TableColumn<String, Pair<String,String>> column1 = new TableColumn("Term");
+    column1.setCellValueFactory(new PropertyValueFactory<>("key"));
 
-    TableColumn<String, Pair<SimpleStringProperty,SimpleStringProperty >> column2 = new TableColumn("Cumulative frequency");
-    column2.setCellValueFactory(new PropertyValueFactory<>("cumulative frequency"));
+    TableColumn<String, Pair<String,String>> column2 = new TableColumn("Cumulative frequency");
+    column2.setCellValueFactory(new PropertyValueFactory<>("value"));
 
     tableView.getColumns().add(column1);
     tableView.getColumns().add(column2);
 
-
-    Pair<SimpleStringProperty,SimpleStringProperty > pair = new Pair<>(new SimpleStringProperty("abc"),new SimpleStringProperty("123"));
-    tableView.getItems().add(pair);
+    for (Pair<String,String> pair: dictionary){
+        tableView.getItems().add(pair);
+    }
 
     Button closeButton = (Button) root.lookup("#closeButton");
     closeButton.setText(buttonText);
