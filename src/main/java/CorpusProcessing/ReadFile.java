@@ -77,31 +77,38 @@ public class ReadFile {
                         }
                     } else if (currentLine.contains("<DATE>")) { //FT
                         documentDate = currentLine.substring(6);
+
                         //HEADLINE EXTRACTION
                         do {
                             currentLine = iterator.next();
-                        } while (!currentLine.equals("<HEADLINE>"));
-                        currentLine = iterator.next();
-                        while (!currentLine.equals("</HEADLINE>")) {
-                            documentHeader = documentHeader + currentLine + " \n ";
+                        } while (!currentLine.equals("<HEADLINE>") && !currentLine.equals("<TEXT>"));
+                        if(!currentLine.equals("<TEXT>")) {
                             currentLine = iterator.next();
+                            while (!currentLine.equals("</HEADLINE>")) {
+                                documentHeader = documentHeader + currentLine + " \n ";
+                                currentLine = iterator.next();
+                            }
                         }
                     }
-
 
                     //Document text extraction
                     if (!currentLine.equals("<TEXT>")) { //FIXME:
-                        while (!(iterator.next().equals("<TEXT>"))) {
+                        do {
+                            currentLine = iterator.next();
                         }
-                    }
+                        while (!(currentLine.equals("<TEXT>")) && !(currentLine.equals("</DOC>")));
 
+                    }
+                    //&& !(iterator.next().equals("</DOC>")
                     String documentText = "";
-                    currentLine = iterator.next();
-                    while (!currentLine.equals("</TEXT>")) {
-                        if (!currentLine.equals("<P>") && !currentLine.equals("</P>")) {
-                            documentText = documentText + currentLine + " \n ";
-                        }
+                    if (!currentLine.equals("</DOC>")) {
                         currentLine = iterator.next();
+                        while (!currentLine.equals("</TEXT>") && !currentLine.equals("</DOC>")) {
+                            if (!currentLine.equals("<P>") && !currentLine.equals("</P>")) {
+                                documentText = documentText + currentLine + " \n ";
+                            }
+                            currentLine = iterator.next();
+                        }
                     }
                     //Document creation
                     documents.add(new Document(documentId, documentHeader, documentDate, documentText));

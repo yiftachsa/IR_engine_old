@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.File;
+import java.util.Dictionary;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -73,8 +74,7 @@ public class GUIController implements Observer {
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
             String dictionaryToDisplay = viewModel.getDictionary();
-            AlertBox.display("Dictionary", "", dictionaryToDisplay, "Back to menu", "default background");
-
+            TableView.display("Dictionary","close");
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
         }
