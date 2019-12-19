@@ -3,9 +3,6 @@ package Test;
 import CorpusProcessing.*;
 import Model.MyModel;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,20 +11,17 @@ import java.util.concurrent.*;
 public class TestsPart1 {
 
     public static void main(String[] args) {
-        Parse parser = new Parse(new HashSet<>(), new HashSet<>(), false);
+        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
 
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
-        Parse_parseDocument_Test1_parseDocument(parser);
-        //loadDocuments();
-        //Parse_parseDocument_Test1_parseDocument(parser);
-        //loadDocuments();
+     //   Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        // Model_Test2_entireCorpus();
-        //Model_Test2_100DocsTest();
+   //     Model_Test2_entireCorpus();
+        Model_Test2_100DocsTest();
     }
 
 
@@ -53,7 +47,7 @@ public class TestsPart1 {
 
     private static void parseTest(Parse parser) {
         parse_parseQuery_Test1_generateTokenDollar(parser);
-        parse_parseQuery_Test2_generateTokenMonth(parser);
+         parse_parseQuery_Test2_generateTokenMonth(parser);
         parse_parseQuery_Test3_Percentage(parser);
         parse_parseQuery_Test4_Thousand(parser);
         parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
@@ -65,40 +59,6 @@ public class TestsPart1 {
         parse_parseQuery_Test11_generateTokensEntity(parser);
         parse_parseQuery_Test12_stemmer(parser);
     }
-
-    public static void loadDocuments() {
-        ObjectInputStream objectInputStream = null;
-        ConcurrentHashMap<String, String> hashMap = null;
-        try {
-            objectInputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\yiftachs\\0"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            hashMap = (ConcurrentHashMap<String, String>) objectInputStream.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        ArrayList<String> result = new ArrayList<>();
-
-        ArrayList<String> ourDocumentDetails = Documenter.loadDocumentsDetailsFromFile("C:\\Users\\yiftachs\\Data\\output\\UnStemmed");
-        ArrayList<String> docNames = new ArrayList<>();
-        for (String docDetails: ourDocumentDetails){
-            docNames.add(docDetails.substring(0,docDetails.indexOf(",")));
-        }
-
-        for (ConcurrentHashMap.Entry<String, String> entry : hashMap.entrySet()) {
-            if(!docNames.contains(entry.getKey())){
-                result.add(entry.getKey());
-            }
-        }
-
-        System.out.println("done");
-    }
-
 
     /**
      * Tests generateTokenDollar
@@ -316,7 +276,7 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\Users\\yiftachs\\Data\\Corpus\\corpus\\FT923_39\\FT923_39";
+        String filePath = "C:\\Users\\Merav\\Desktop\\test.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
         for (String term : bagOfWords) {
@@ -409,14 +369,14 @@ public class TestsPart1 {
     }
 */
 
-    public static void Model_Test2_entireCorpus() {
-        String corpusPath = "C:\\Users\\yiftachs\\Data\\Corpus";
-        String resultPath = "C:\\Users\\yiftachs\\Data\\output";
-        double startTime = System.currentTimeMillis() / 1000;
+    public static void Model_Test2_entireCorpus(){
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath, resultPath);
-        double endTime = System.currentTimeMillis() / 1000;
-        String timePrint = "StartTime: " + startTime + " EndTime: " + endTime + " Total: " + (endTime - startTime);
+        myModel.start(corpusPath,resultPath);
+        double endTime = System.currentTimeMillis()/1000;
+        String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
         System.out.println(timePrint);
 
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
@@ -480,28 +440,29 @@ public class TestsPart1 {
          */
     }
 
-    public static void Model_Test2_100DocsTest() {
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
+    public static void Model_Test2_100DocsTest(){
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath, resultPath);
+        myModel.start(corpusPath,resultPath);
     }
 
 
-    private static int totalPostingEntries(int numberOfFilesPerThread) {
+
+    private static int totalPostingEntries(int numberOfFilesPerThread){
         final int totalFilesInCorpus = 1815;
-        int totalPostingEntries = totalFilesInCorpus / numberOfFilesPerThread;
+        int totalPostingEntries = totalFilesInCorpus/numberOfFilesPerThread;
         return totalPostingEntries;
     }
 
 
-    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread) {
+    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread){
         int totalFilesInTest = testsTimes.length * numberOfFilesPerThread;
         double totalTestTime = 0;
         for (int i = 0; i < testsTimes.length; i++) {
             totalTestTime = totalTestTime + testsTimes[i];
         }
-        double averageTimePerFile = totalTestTime / totalFilesInTest;
+        double averageTimePerFile = totalTestTime/totalFilesInTest;
         return averageTimePerFile;
     }
 

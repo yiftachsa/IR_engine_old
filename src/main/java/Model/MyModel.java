@@ -25,7 +25,7 @@ public class MyModel extends Observable implements IModel {
     /**
      * The number of the parallel threads merging the posting files.
      */
-    private static final int POSTINGMERGERSPOOLSIZE = 3;
+    private static final int POSTINGMERGERSPOOLSIZE = 1;
 
     /**
      * Constructor
