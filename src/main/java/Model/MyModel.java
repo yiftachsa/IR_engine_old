@@ -62,7 +62,7 @@ public class MyModel extends Observable implements IModel {
 
         Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
         TreeSet<String> entities = Documenter.loadEntities(path);
-        if(dictionary == null || entities == null){
+        if (dictionary == null || entities == null) {
             return false;
         }
         this.indexer = new Indexer(dictionary, entities);
@@ -87,16 +87,16 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public String getDictionary() {
-        StringBuilder stringBuilder = new StringBuilder();
+    public LinkedList<Pair<String, String>> getDictionary() {
+        LinkedList<Pair<String, String>> resultDictionary = new LinkedList<>();
         Map<String, DictionaryEntryTrio> dictionary = this.indexer.getDictionary();
         for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
             String term = entry.getKey();
             DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
-            String outLine = term + "~" + dictionaryEntryTrio.getCumulativeFrequency()+"\n";
-            stringBuilder.append(outLine);
+            Pair<String, String> pair = new Pair<>(term, dictionaryEntryTrio.getCumulativeFrequency() + "");
+            resultDictionary.add(pair);
         }
-        return stringBuilder.toString();
+        return resultDictionary;
     }
 
     @Override
@@ -115,7 +115,7 @@ public class MyModel extends Observable implements IModel {
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        if(!Parse.loadStopWords(stopwordsPath)){
+        if (!Parse.loadStopWords(stopwordsPath)) {
             setChanged();
             notifyObservers("Bad input");
         }
@@ -315,7 +315,8 @@ public class MyModel extends Observable implements IModel {
      * Mergers all the posting files of all the posting files directories from the given resultPath.
      * Merges the dictionaries from all the separate runnableParses.
      * Removes all the single appearance entities from the unified dictionary.
-     * @param resultPath - String - the path of the temporary posting files
+     *
+     * @param resultPath               - String - the path of the temporary posting files
      * @param singleAppearanceEntities - HashSet<String> - a set of string to be removed from the dictionary.
      */
     private void mergeAllPostingFiles(String resultPath, RunnableParse[] runnableParses, HashSet<String> singleAppearanceEntities) {
@@ -358,6 +359,7 @@ public class MyModel extends Observable implements IModel {
 
     /**
      * Returns an array of all the dictionaries from the given RunnableParses.
+     *
      * @param runnableParses - RunnableParse[] - runnableParses that finished processing the initial processing of the files
      * @return - Map<String, DictionaryEntryTrio>[] - array of dictionaries
      */
