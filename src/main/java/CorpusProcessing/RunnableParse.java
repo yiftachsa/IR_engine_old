@@ -100,7 +100,7 @@ public class RunnableParse implements Runnable {
 
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
-                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
+                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(document.getId(), document.getDate(), bagOfWords);
                     postingEntriesListsOfFile.add(postingsEntries);
                     this.documentsCount++;
                 }

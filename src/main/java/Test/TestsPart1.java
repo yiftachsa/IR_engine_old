@@ -16,12 +16,13 @@ public class TestsPart1 {
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
+        Parse_parseDocument_Test1_parseDocument(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
         //Model_Test2_entireCorpus();
-        Model_Test2_100DocsTest();
+        //Model_Test2_100DocsTest();
     }
 
 
@@ -276,7 +277,7 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10\\test.txt";
+        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
         for (String term : bagOfWords) {
