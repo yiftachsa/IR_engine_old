@@ -763,9 +763,9 @@ public class Parse {
     /**
      * Receives a path to directory containing stop-word file and loads it to the "stopwords" Hash-set
      *
-     * @param stopWordsPath
+     * @param stopWordsPath - boolean - true if the stop words were loaded successfully
      */
-    public static void loadStopWords(String stopWordsPath) {
+    public static boolean loadStopWords(String stopWordsPath) {
         if (stopwords == null) {
             stopwords = new HashSet<>();
             File file = new File(stopWordsPath);
@@ -778,10 +778,14 @@ public class Parse {
                 stopwords.add("");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                return false;
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
+            return true;
         }
+        return false;
     }
 
     /**

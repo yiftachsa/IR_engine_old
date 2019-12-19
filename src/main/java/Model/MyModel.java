@@ -110,7 +110,10 @@ public class MyModel extends Observable implements IModel {
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        Parse.loadStopWords(stopwordsPath);
+        if(!Parse.loadStopWords(stopwordsPath)){
+            setChanged();
+            notifyObservers("Bad input");
+        }
         //Initializing this.indexer
         this.indexer = new Indexer();
 
