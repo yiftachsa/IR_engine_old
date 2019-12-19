@@ -2,10 +2,9 @@ package Test;
 
 import CorpusProcessing.*;
 import Model.MyModel;
+import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
@@ -16,12 +15,12 @@ public class TestsPart1 {
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
-     //   Parse_parseDocument_Test1_parseDocument(parser);
+        //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-   //     Model_Test2_entireCorpus();
-        Model_Test2_100DocsTest();
+        Model_Test2_entireCorpus();
+        //Model_Test2_100DocsTest();
     }
 
 
@@ -276,11 +275,20 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\Users\\Merav\\Desktop\\test.txt";
+        String filePath = "C:\\Users\\yiftachs\\Data\\ReportFB.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        for (String term : bagOfWords) {
-            System.out.println(term);
+        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords("" , "" , bagOfWords);
+        test.sort(new Comparator<TermDocumentTrio>() {
+            @Override
+            public int compare(TermDocumentTrio o1, TermDocumentTrio o2) {
+                return o1.getTerm().compareTo(o2.getTerm());
+            }
+        });
+
+
+        for (TermDocumentTrio trio : test) {
+            System.out.println(trio.getTerm() + " , "+trio.getFrequency());
         }
         return result;
     }
@@ -370,15 +378,17 @@ public class TestsPart1 {
 */
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
-        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        String corpusPath = "C:\\Users\\yiftachs\\Data\\Corpus";
+        String resultPath = "C:\\Users\\yiftachs\\Data\\output";
         double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
+        myModel.setStemming(false);
+        myModel.loadDictionary(resultPath);
         double endTime = System.currentTimeMillis()/1000;
         String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
         System.out.println(timePrint);
 
+        countNumberTerms(myModel.getDictionary());
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
         final int NUMBEROFDOCUMENTPERPARSER = 5;
 
@@ -448,6 +458,17 @@ public class TestsPart1 {
     }
 
 
+    private static void countNumberTerms(LinkedList<Pair<String, Integer>> dictionary){
+        LinkedList<String> numbers = new LinkedList<>();
+        for (Pair<String, Integer> pair: dictionary){
+            String term = pair.getKey();
+            if (term.matches("[0-9]{1,13}(\\.[0-9]*)?")){
+                numbers.add(term);
+            }
+        }
+        System.out.println(numbers.size());
+
+    }
 
     private static int totalPostingEntries(int numberOfFilesPerThread){
         final int totalFilesInCorpus = 1815;

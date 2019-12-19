@@ -43,9 +43,9 @@ public interface IModel {
     /**
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
-     * @return - LinkedList<Pair<String,String>> - dictionary representation or null, if no dictionary is loaded.
+     * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    LinkedList<Pair<String,String>> getDictionary();
+    LinkedList<Pair<String, Integer>> getDictionary();
 
 
     /**

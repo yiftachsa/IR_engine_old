@@ -84,6 +84,14 @@ public class Parse {
     }
 
     /**
+     * Returns true if the stop words are loaded
+     * @return - boolean - true if the stop words are loaded
+     */
+    public static boolean getStopwordsStatus() {
+        return stopwords!=null;
+    }
+
+    /**
      * Receives Query  , splits it into tokens and parses it.
      * Return LinkedList of Strings after parse
      *
@@ -241,7 +249,7 @@ public class Parse {
                     {
                         if (token.matches("[0-9]{1,13}(\\.[0-9]*)?"))
                             terms.add(generateTokenSimpleNumber(token));
-                        else continue; //todo:check!
+                        else continue;
                     }
                 }
             }
@@ -428,7 +436,7 @@ public class Parse {
                                 }
                         }
                     }
-                    i = i + entityTokensCandidates.size() - 1;//TODO:CHECK
+                    i = i + entityTokensCandidates.size() - 1;
                 }
             } else if (token.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*")) {
                 LinkedList<String> entityTokensCandidates = new LinkedList<>();
@@ -498,8 +506,8 @@ public class Parse {
             }
         }
         //Removing dot in the end of the token
-        if ( (result.charAt(0) == '.' ||result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
-            result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
+        if ( !result.isEmpty() && (result.charAt(0) == '.' ||result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) ) {
+            result = result.substring(0, result.length() - 1);
         }
 
         while( (result.indexOf('-') == 0))
@@ -550,7 +558,7 @@ public class Parse {
         token = token.replaceAll(",", ""); //remove commas 1,000 -> 1000
 
         if (token.matches("\\d+\\.?\\d*")) {
-            double numberToken = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            double numberToken = Double.parseDouble(token);
             if (numberToken >= Kilo && numberToken < Million) //token between Kilo and Million
             {
                 numberToken = numberToken / Kilo;
@@ -662,7 +670,7 @@ public class Parse {
             } else { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 if (token.matches("^\\d+$")) {
-                    double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+                    double value = Double.parseDouble(token);
                     if (value >= Million) {
                         value = value / Million;
                         token = doubleDecimalFormat(value) + " M Dollars";
@@ -702,7 +710,7 @@ public class Parse {
         token = token.replaceAll(",", "");
         if ((token.matches("^[0-9]*$"))) {
 
-            double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            double value = Double.parseDouble(token);
             if (value >= Million) {
                 value = value / Million;
                 token = doubleDecimalFormat(value) + " M Dollars";
@@ -820,6 +828,7 @@ public class Parse {
                     stopwords.add(line);
                 }
                 stopwords.add("");
+                stopwords.add("<");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 return false;

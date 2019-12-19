@@ -19,12 +19,12 @@ public class TableView {
  * @param title - String - the stage title
  * @param buttonText - String
  */
-public static void display(String title, LinkedList<Pair<String,String>> dictionary, String buttonText) {
+public static void display(String title, LinkedList<Pair<String,Integer>> dictionary, String buttonText) {
     Stage window = new Stage();
     window.setTitle(title);
     Parent root = null;
     try {
-        root = FXMLLoader.load(AlertBox.class.getResource("../TableView.fxml"));
+        root = FXMLLoader.load(AlertBox.class.getClassLoader().getResource("TableView.fxml"));
     } catch (
             IOException e) {
         System.out.println("Couldn't open the \"ExitConfirmBox.fxml\" fxml file");
@@ -42,7 +42,7 @@ public static void display(String title, LinkedList<Pair<String,String>> diction
     tableView.getColumns().add(column1);
     tableView.getColumns().add(column2);
 
-    for (Pair<String,String> pair: dictionary){
+    for (Pair<String,Integer> pair: dictionary){
         tableView.getItems().add(pair);
     }
 

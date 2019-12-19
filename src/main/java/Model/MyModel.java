@@ -25,7 +25,7 @@ public class MyModel extends Observable implements IModel {
     /**
      * The number of the parallel threads merging the posting files.
      */
-    private static final int POSTINGMERGERSPOOLSIZE = 1;
+    private static final int POSTINGMERGERSPOOLSIZE = 3;
 
     /**
      * Constructor
@@ -87,13 +87,13 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public LinkedList<Pair<String, String>> getDictionary() {
-        LinkedList<Pair<String, String>> resultDictionary = new LinkedList<>();
+    public LinkedList<Pair<String, Integer>> getDictionary() {
+        LinkedList<Pair<String, Integer>> resultDictionary = new LinkedList<>();
         Map<String, DictionaryEntryTrio> dictionary = this.indexer.getDictionary();
         for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
             String term = entry.getKey();
             DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
-            Pair<String, String> pair = new Pair<>(term, dictionaryEntryTrio.getCumulativeFrequency() + "");
+            Pair<String, Integer> pair = new Pair<>(term, dictionaryEntryTrio.getCumulativeFrequency());
             resultDictionary.add(pair);
         }
         return resultDictionary;
@@ -109,15 +109,18 @@ public class MyModel extends Observable implements IModel {
 
         //From now on the paths are assumed to be valid
         resultPath = getResultPath(resultPath);
-        String stopwordsPath = dataPath + "\\stop-words";
+        String stopwordsPath = dataPath + "\\stop_words.txt";
         String corpusPath = dataPath + "\\corpus";
+
 
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        if (!Parse.loadStopWords(stopwordsPath)) {
-            setChanged();
-            notifyObservers("Bad input");
+        if(!Parse.getStopwordsStatus()) {
+            if (!Parse.loadStopWords(stopwordsPath)) {
+                setChanged();
+                notifyObservers("Bad input");
+            }
         }
         //Initializing this.indexer
         this.indexer = new Indexer();

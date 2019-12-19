@@ -82,10 +82,6 @@ public class RunnableParse implements Runnable {
 
     @Override
     public void run() {
-        //FIXME: for debugging!!!
-        double startTime = System.currentTimeMillis() / 1000;
-        String timePrint = "Thread: " + Thread.currentThread().getId() + " StartTime: " + startTime;
-
 
         ArrayList<ArrayList<TermDocumentTrio>> entirePostingEntries = new ArrayList<>();
         ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
@@ -145,11 +141,6 @@ public class RunnableParse implements Runnable {
         while (entirePostingEntries.size() > 1) {
             entirePostingEntries.add(Mapper.mergeAndSortTwoPostingEntriesLists(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
         }
-
-        //FIXME: NEED TO DELETE ITS ONLY FOR DEBUGGING
-        double endTime = System.currentTimeMillis() / 1000;
-        timePrint = timePrint + " EndTime: " + endTime + " Total: " + (endTime - startTime);
-        System.out.println(timePrint);
 
         //entirePostingEntries contains all the sorted trios from all the documents - per thread
         //build posting file for all the documents in the thread

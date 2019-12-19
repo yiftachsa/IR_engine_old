@@ -75,7 +75,7 @@ public class GUIController implements Observer {
      */
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
-            LinkedList<Pair<String,String>> dictionaryToDisplay = viewModel.getDictionary();
+            LinkedList<Pair<String, Integer>> dictionaryToDisplay = viewModel.getDictionary();
             TableView.display("Dictionary",dictionaryToDisplay,"close");
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
