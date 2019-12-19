@@ -37,6 +37,12 @@ public class Indexer {
     }
 
 
+    /**
+     * Receives a list of TermDocumentTrio and builds inverted indices from them.
+     * Generates individual posting file for each starting letter.
+     * Saves the generated posting files (temporary inverted indices).
+     * @param postingEntries - ArrayList<TermDocumentTrio> - posting entries trios
+     */
     public void buildInvertedIndex(ArrayList<TermDocumentTrio> postingEntries) {
 
         //this array contains in each cell the directory title - [`,a,b,c,d,e,...,z]
