@@ -67,7 +67,7 @@ public class RunnableParse implements Runnable {
      *
      * @return - Map<String, Pair<Integer, String>> - dictionary
      */
-    public Map<String, Pair<Integer, String>> getDictionary() {
+    public Map<String, DictionaryEntryTrio> getDictionary() {
         return this.indexer.getDictionary();
     }
 
@@ -87,20 +87,20 @@ public class RunnableParse implements Runnable {
         String timePrint = "Thread: " + Thread.currentThread().getId() + " StartTime: " + startTime;
 
 
-        ArrayList<ArrayList<Trio>> entirePostingEntries = new ArrayList<>();
+        ArrayList<ArrayList<TermDocumentTrio>> entirePostingEntries = new ArrayList<>();
         ExecutorService mergersPool = Executors.newFixedThreadPool(MERGERSPOOLSIZE);
-        ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
+        ArrayList<Future<ArrayList<TermDocumentTrio>>> futures = new ArrayList<>();
 
         for (File directory : filesToParse) {
             String filePath = directory.listFiles()[0].getAbsolutePath();
             if (Files.isReadable(Paths.get(filePath))) {
                 ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
 
-                ArrayList<ArrayList<Trio>> postingEntriesListsOfFile = new ArrayList<>();
+                ArrayList<ArrayList<TermDocumentTrio>> postingEntriesListsOfFile = new ArrayList<>();
 
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
-                    ArrayList<Trio> postingsEntries = Mapper.processBagOfWords(document.getId(), bagOfWords);
+                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(document.getId(), document.getDate(), bagOfWords);
                     postingEntriesListsOfFile.add(postingsEntries);
                     this.documentsCount++;
                 }
@@ -115,13 +115,13 @@ public class RunnableParse implements Runnable {
 
                 //check if we can merge two posting list to one
                 if (entirePostingEntries.size() >= 2) {
-                    Future<ArrayList<Trio>> future = mergersPool.submit(new CallableMerge(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
+                    Future<ArrayList<TermDocumentTrio>> future = mergersPool.submit(new CallableMerge(entirePostingEntries.remove(0), entirePostingEntries.remove(0)));
                     futures.add(future);
                 }
                 //Getting result from callableMerge
                 if (futures.size() > 0) {
                     if (futures.get(0).isDone()) {
-                        Future<ArrayList<Trio>> future = futures.remove(0);
+                        Future<ArrayList<TermDocumentTrio>> future = futures.remove(0);
                         try {
                             entirePostingEntries.add(future.get());
                         } catch (Exception e) {
@@ -131,7 +131,7 @@ public class RunnableParse implements Runnable {
                 }
             }
         }
-        for (Future<ArrayList<Trio>> future : futures) {
+        for (Future<ArrayList<TermDocumentTrio>> future : futures) {
             while (!future.isDone()) ;
             try {
                 entirePostingEntries.add(future.get());

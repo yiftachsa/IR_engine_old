@@ -84,11 +84,11 @@ public class MyModel extends Observable implements IModel {
     @Override
     public String getDictionary() {
         StringBuilder stringBuilder = new StringBuilder();
-        Map<String, Pair<Integer, String>> dictionary = this.indexer.getDictionary();
-        for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
-            String key = entry.getKey();
-            Pair<Integer, String> pair = entry.getValue();
-            String outLine = key + "~" + pair.getKey();
+        Map<String, DictionaryEntryTrio> dictionary = this.indexer.getDictionary();
+        for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
+            String term = entry.getKey();
+            DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
+            String outLine = term + "~" + dictionaryEntryTrio.getCumulativeFrequency()+"\n";
             stringBuilder.append(outLine);
         }
         return stringBuilder.toString();
@@ -311,11 +311,11 @@ public class MyModel extends Observable implements IModel {
      * @param singleAppearanceEntities - HashSet<String> - a set of string to be removed from the dictionary.
      */
     private void mergeAllPostingFiles(String resultPath, RunnableParse[] runnableParses, HashSet<String> singleAppearanceEntities) {
-        Map<String, Pair<Integer, String>>[] dictionaries = getAllDictionaries(runnableParses);
+        Map<String, DictionaryEntryTrio>[] dictionaries = getAllDictionaries(runnableParses);
         final int THREADSLEEPTIMER = 250; //in milliseconds
 
         //Merge all individual dictionaries
-        for (Map<String, Pair<Integer, String>> dictionary : dictionaries) {
+        for (Map<String, DictionaryEntryTrio> dictionary : dictionaries) {
             this.indexer.addPartialDictionary(dictionary);
         }
 
@@ -351,10 +351,10 @@ public class MyModel extends Observable implements IModel {
     /**
      * Returns an array of all the dictionaries from the given RunnableParses.
      * @param runnableParses - RunnableParse[] - runnableParses that finished processing the initial processing of the files
-     * @return - Map<String, Pair<Integer, String>>[] - array of dictionaries
+     * @return - Map<String, DictionaryEntryTrio>[] - array of dictionaries
      */
-    private Map<String, Pair<Integer, String>>[] getAllDictionaries(RunnableParse[] runnableParses) {
-        Map<String, Pair<Integer, String>>[] allDictionaries = new TreeMap[NUMBEROFDOCUMENTPROCESSORS];
+    private Map<String, DictionaryEntryTrio>[] getAllDictionaries(RunnableParse[] runnableParses) {
+        Map<String, DictionaryEntryTrio>[] allDictionaries = new TreeMap[NUMBEROFDOCUMENTPROCESSORS];
 
         for (int i = 0; i < runnableParses.length; i++) {
             allDictionaries[i] = runnableParses[i].getDictionary();

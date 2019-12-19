@@ -53,10 +53,10 @@ public class Documenter {
      * @param uniqTermsCount   - int - the number of uniq terms in the document
      * @param length           - int - the total number of terms in the document
      */
-    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length) {
+    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate) {
         if (filesPath != null) {
             documentsDetailsMutex.lock();
-            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length);
+            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length +","+documentDate);
             documentsDetailsMutex.unlock();
         }
     }
@@ -213,18 +213,18 @@ public class Documenter {
     /**
      * Saves a given dictionary to disk.
      *
-     * @param dictionary - Map<String, Pair<Integer, String>>
+     * @param dictionary - Map<String, DictionaryEntryTrio>
      */
-    public static void saveDictionary(Map<String, Pair<Integer, String>> dictionary) {
+    public static void saveDictionary(Map<String, DictionaryEntryTrio> dictionary) {
         if (filesPath != null) {
             //WRITE TO DISK! 
             BufferedWriter writer = null;
             try {
                 writer = new BufferedWriter(new FileWriter(filesPath + "\\Dictionary\\dictionary"));
-                for (Map.Entry<String, Pair<Integer, String>> entry : dictionary.entrySet()) {
-                    String key = entry.getKey();
-                    Pair<Integer, String> pair = entry.getValue();
-                    String outLine = key + "~" + pair.getKey() + "," + pair.getValue();
+                for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
+                    String term = entry.getKey();
+                    DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
+                    String outLine = term + "~" + dictionaryEntryTrio.getDocumentFrequency() + "," + dictionaryEntryTrio.getCumulativeFrequency() + "," + dictionaryEntryTrio.getPostingIndex();
                     writer.write(outLine);
                     writer.newLine();
                 }
@@ -239,11 +239,11 @@ public class Documenter {
      * Receives a path to a directory containing a dictionary, parses the text file and returns the reconstructed dictionary.
      *
      * @param dictionaryPath - String - a path containing a dictionary
-     * @return - Map<String, Pair<Integer, String>> - dictionary
+     * @return - Map<String, DictionaryEntryTrio> - dictionary
      */
-    public static Map<String, Pair<Integer, String>> loadDictionary(String dictionaryPath) {
+    public static Map<String, DictionaryEntryTrio> loadDictionary(String dictionaryPath) {
         BufferedReader reader = null;
-        Map<String, Pair<Integer, String>> dictionary = new TreeMap<>();
+        Map<String, DictionaryEntryTrio> dictionary = new TreeMap<>();
         try {
             reader = new BufferedReader((new FileReader(dictionaryPath + "\\Dictionary\\dictionary")));
             String line = "";
@@ -251,7 +251,7 @@ public class Documenter {
                 String term = line.substring(0, line.indexOf('~'));
                 line = line.substring(line.indexOf('~') + 1);
                 String[] entreeDetails = line.split(",");
-                dictionary.put(term, new Pair<>(Integer.parseInt(entreeDetails[0]), entreeDetails[1]));
+                dictionary.put(term, new DictionaryEntryTrio(Integer.parseInt(entreeDetails[0]),Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

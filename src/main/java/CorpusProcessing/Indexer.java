@@ -1,6 +1,5 @@
 package CorpusProcessing;
 
-import javafx.collections.transformation.SortedList;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -9,9 +8,9 @@ public class Indexer {
 
     /**
      * Corpus dictionary
-     * entry: term-->{document frequency,posting file index}
+     * entry: term-->{document frequency, cumulative frequency, posting file index}
      */
-    private Map<String, Pair<Integer, String>> dictionary;
+    private Map<String, DictionaryEntryTrio> dictionary;
 
     private TreeSet<String> entities;
 
@@ -29,16 +28,16 @@ public class Indexer {
     /**
      * Constructor
      *
-     * @param dictionary - Map<String, Pair<Integer, String>>
+     * @param dictionary - Map<String, DictionaryEntryTrio>
      * @param entities   - TreeSet<String>
      */
-    public Indexer(Map<String, Pair<Integer, String>> dictionary, TreeSet<String> entities) {
+    public Indexer(Map<String, DictionaryEntryTrio> dictionary, TreeSet<String> entities) {
         this.dictionary = dictionary;
         this.entities = entities;
     }
 
 
-    public void buildInvertedIndex(ArrayList<Trio> postingEntries) {
+    public void buildInvertedIndex(ArrayList<TermDocumentTrio> postingEntries) {
 
         //this array contains in each cell the directory title - [`,a,b,c,d,e,...,z]
         String[] invertedIndexDirectoriesTitles = {"`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
@@ -49,7 +48,6 @@ public class Indexer {
         for (int i = 0; i < posting.length; i++) {
             posting[i] = new TreeMap<>();
         }
-        //the posting entries is sorted by ascii, the inverted index wont be like that its will be AaBb..
 
         //Enter to dictionary
         int invertedArrayIndex = 26;
@@ -58,26 +56,31 @@ public class Indexer {
         boolean isLowerCaseLetters = true;
 
         for (int i = postingEntries.size() - 1; i >= 0; i--) {
-            Trio postingEntry = postingEntries.get(i);
+            TermDocumentTrio postingEntry = postingEntries.get(i);
             String term = postingEntry.getTerm();
             String docId = postingEntry.getDocid();
             int termFrequency = postingEntry.getFrequency();
             if (!term.equals("")) {
                 if (isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
                     if (dictionary.containsKey(term)) {
-                        int newFrequency = dictionary.get(term).getKey() + 1;
-                        //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
-                        if (posting[invertedArrayIndex].get(term) == null) {
 
+                        int newDocumentFrequency = dictionary.get(term).getDocumentFrequency() + 1;
+                        int newCumulativeFrequency = dictionary.get(term).getCumulativeFrequency() + termFrequency;
+
+                        //The function put override the previous value;
+                        dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+                        //dictionary.put(term, new Pair<Integer, String>(newDocumentFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+
+                        if (posting[invertedArrayIndex].get(term) == null) {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(term, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newFrequency));
+                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newDocumentFrequency));
                         }
                     } else {
-                        dictionary.put(term, new Pair<Integer, String>(1, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+                        dictionary.put(term, new DictionaryEntryTrio(1, termFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+
                         PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
@@ -86,34 +89,38 @@ public class Indexer {
                     String lowerCaseTerm = term.toLowerCase();
                     //the dictionary already contains the term in lower case
                     if (dictionary.containsKey(lowerCaseTerm)) {
-                        int newFrequency = dictionary.get(lowerCaseTerm).getKey() + 1;
-                        dictionary.put(lowerCaseTerm, new Pair<Integer, String>(newFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+
+                        int newDocumentFrequency = dictionary.get(lowerCaseTerm).getDocumentFrequency() + 1;
+                        int newCumulativeFrequency = dictionary.get(lowerCaseTerm).getCumulativeFrequency() + termFrequency;
+
+                        dictionary.put(lowerCaseTerm, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+
                         if (posting[invertedArrayIndex].get(lowerCaseTerm) == null) {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
+                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newDocumentFrequency));
                         }
-                        //posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
-                    }
-                    //the dictionary already contains the term in upper case
-                    else if (dictionary.containsKey(term)) {
-                        int newFrequency = dictionary.get(term).getKey() + 1;
-                        String postingDirectory = dictionary.get(term).getValue();
+                    } else if (dictionary.containsKey(term)) {//the dictionary already contains the term in upper case
+                        DictionaryEntryTrio entry = dictionary.get(term);
+                        int newDocumentFrequency = entry.getDocumentFrequency() + 1;
+                        int newCumulativeFrequency = entry.getCumulativeFrequency() + termFrequency;
+
+                        String postingDirectory = entry.getPostingIndex();
                         //The function put override the previous value;
-                        dictionary.put(term, new Pair<Integer, String>(newFrequency, postingDirectory));
+                        dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, postingDirectory));
                         if (posting[invertedArrayIndex].get(lowerCaseTerm) == null) {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newFrequency));
+                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newDocumentFrequency));
                         }
                     }
                     //the dictionary doesn't contain the term
                     else {
-                        dictionary.put(term, new Pair<Integer, String>(1, invertedIndexDirectoriesTitles[invertedArrayIndex]));
+                        dictionary.put(term, new DictionaryEntryTrio(1, termFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                         postingLine.add(new Pair<>(docId, termFrequency));
                         posting[invertedArrayIndex].put(term, postingLine);
@@ -161,7 +168,7 @@ public class Indexer {
         return dictionary.containsKey(key);
     }
 
-    public Map<String, Pair<Integer, String>> getDictionary() {
+    public Map<String, DictionaryEntryTrio> getDictionary() {
         return dictionary;
     }
 
@@ -172,33 +179,42 @@ public class Indexer {
     /**
      * Receives a partial dictionary and merges it into the dictionary field of this Indexer
      *
-     * @param partialDictionary - Map<String, Pair<Integer, String>> - dictionary to be merged
+     * @param partialDictionary - Map<String, DictionaryEntryTrio> - dictionary to be merged
      */
-    public void addPartialDictionary(Map<String, Pair<Integer, String>> partialDictionary) {
+    public void addPartialDictionary(Map<String, DictionaryEntryTrio> partialDictionary) {
         if (this.dictionary.size() == 0) {
             this.dictionary = partialDictionary;
         } else {
-            for (Map.Entry<String, Pair<Integer, String>> dictionaryEntree : partialDictionary.entrySet()) {
-                String term = dictionaryEntree.getKey();
-                Pair<Integer, String> pair = dictionaryEntree.getValue();
+            for (Map.Entry<String, DictionaryEntryTrio> dictionaryEntry : partialDictionary.entrySet()) {
+                String term = dictionaryEntry.getKey();
+                DictionaryEntryTrio dictionaryEntryTrio = dictionaryEntry.getValue();
 
                 if (this.dictionary.containsKey(term)) {
-                    int newFrequency = this.dictionary.get(term).getKey() + pair.getKey();
+                    DictionaryEntryTrio entry = this.dictionary.get(term);
+                    int newDocumentFrequency = entry.getDocumentFrequency() + dictionaryEntryTrio.getDocumentFrequency();
+                    int newCumulativeFrequency = entry.getCumulativeFrequency() + dictionaryEntryTrio.getCumulativeFrequency();
+
                     //The function put override the previous value;
-                    this.dictionary.put(term, new Pair<Integer, String>(newFrequency, pair.getValue()));
+                    this.dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, dictionaryEntryTrio.getPostingIndex()));
+
                 } else if (this.dictionary.containsKey(term.toLowerCase())) {
-                    int newFrequency = this.dictionary.get(term.toLowerCase()).getKey() + pair.getKey();
+                    DictionaryEntryTrio entry = this.dictionary.get(term.toLowerCase());
+                    int newDocumentFrequency = entry.getDocumentFrequency() + dictionaryEntryTrio.getDocumentFrequency();
+                    int newCumulativeFrequency = entry.getCumulativeFrequency() + dictionaryEntryTrio.getCumulativeFrequency();
+
                     //The function put override the previous value;
-                    this.dictionary.put(term.toLowerCase(), new Pair<Integer, String>(newFrequency, pair.getValue()));
+                    this.dictionary.put(term.toLowerCase(), new DictionaryEntryTrio(newDocumentFrequency,newCumulativeFrequency, dictionaryEntryTrio.getPostingIndex()));
                 } else if (this.dictionary.containsKey(term.toUpperCase())) {
                     String existingTerm = term.toUpperCase();
-                    Pair<Integer, String> existingPair = this.dictionary.get(existingTerm);
-                    int newFrequency = existingPair.getKey() + pair.getKey();
+                    DictionaryEntryTrio existingTrio = this.dictionary.get(existingTerm);
+
+                    int newDocumentFrequency = existingTrio.getDocumentFrequency() + dictionaryEntryTrio.getDocumentFrequency();
+                    int newCumulativeFrequency = existingTrio.getCumulativeFrequency() + dictionaryEntryTrio.getCumulativeFrequency();
 
                     this.dictionary.remove(existingTerm);
-                    this.dictionary.put(term, new Pair<Integer, String>(newFrequency, pair.getValue()));
+                    this.dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, dictionaryEntryTrio.getPostingIndex()));
                 } else {
-                    dictionary.put(term, pair);
+                    dictionary.put(term, dictionaryEntryTrio);
                 }
             }
         }

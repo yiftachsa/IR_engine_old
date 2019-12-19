@@ -26,34 +26,71 @@ public class ReadFile {
             Iterator<String> iterator = fileText.iterator();
             while (iterator.hasNext()) {
                 String currentLine = iterator.next();
+
                 if (currentLine.equals("<DOC>")) {
                     //Document ID extraction
                     documentId = iterator.next();
                     //Removing the tags
-                    documentId = documentId.substring(documentId.indexOf('>')+1);
-                   documentId = documentId.substring(0, documentId.indexOf('<'));
-                    documentId.replaceAll(" ", "");
+                    documentId = documentId.substring(documentId.indexOf(">") + 1, documentId.length() - 1);
+                    documentId = documentId.substring(0, documentId.indexOf("<"));
+                    documentId = documentId.replaceAll(" ", "");
                     //Document header extraction
-                    String iterText = "";
+                    //String iterText = "";
                     String documentHeader = "";
+                    String documentDate = "";
+
+
                     do {
-                        iterText = iterator.next();
-                    } while (!(iterText.equals("<HEADER>")) && !(iterText.equals("<TEXT>")) && !(iterText.equals("</DOC>")));
+                        currentLine = iterator.next();
+                    } while (!(currentLine.equals("<HEADER>")) && !(currentLine.equals("<DATE>")) && !(currentLine.equals("<TEXT>")) && !(currentLine.equals("</DOC>")) && !(currentLine.contains("<DATE>")));
 
-                    if (iterText.equals("</DOC>")) {
-                        documents.add(new Document(documentId, documentHeader, ""));
+
+                    if (currentLine.equals("</DOC>")) {
+                        documents.add(new Document(documentId, documentHeader, "", ""));
                         continue;
-                    }
-
-                    if (iterText.equals("<HEADER>")) {
+                    } else if (currentLine.equals("<DATE>")) { //LA
+                        iterator.next(); //<P>
+                        documentDate = iterator.next();
+                        //HEADLINE EXTRACTION
+                        do {
+                            currentLine = iterator.next();
+                        } while (!currentLine.equals("<HEADLINE>") && !currentLine.equals("</DOC>"));
+                        if (currentLine.equals("</DOC>")) {
+                            documents.add(new Document(documentId, documentHeader, documentDate, ""));
+                            continue;
+                        }
+                        currentLine = iterator.next();
+                        while (!currentLine.equals("</HEADLINE>")) {
+                            if (!currentLine.equals("<P>") && !currentLine.equals("</P>")) {
+                                documentHeader = documentHeader + currentLine + " \n ";
+                            }
+                            currentLine = iterator.next();
+                        }
+                    } else if (currentLine.equals("<HEADER>")) { //FB
                         currentLine = iterator.next();
                         while (!currentLine.equals("</HEADER>")) {
-                            documentHeader = documentHeader + currentLine + "\n";
+                            documentHeader = documentHeader + currentLine + " \n ";
+                            if (currentLine.contains("<DATE1>")) {
+                                documentDate = currentLine.substring(9, currentLine.length() - 9);
+                            }
+                            currentLine = iterator.next();
+                        }
+                    } else if (currentLine.contains("<DATE>")) { //FT
+                        documentDate = currentLine.substring(6);
+                        //HEADLINE EXTRACTION
+                        do {
+                            currentLine = iterator.next();
+                        } while (!currentLine.equals("<HEADLINE>"));
+                        currentLine = iterator.next();
+                        while (!currentLine.equals("</HEADLINE>")) {
+                            documentHeader = documentHeader + currentLine + " \n ";
                             currentLine = iterator.next();
                         }
                     }
+
+
                     //Document text extraction
-                    if (!iterText.equals("<TEXT>")) {
+                    if (!currentLine.equals("<TEXT>")) { //FIXME:
                         while (!(iterator.next().equals("<TEXT>"))) {
                         }
                     }
@@ -61,15 +98,13 @@ public class ReadFile {
                     String documentText = "";
                     currentLine = iterator.next();
                     while (!currentLine.equals("</TEXT>")) {
-//                        if (currentLine.contains("<P>")) {
-//                            currentLine = iterator.next();
-//                            continue;
-//                        }
-                        documentText = documentText + currentLine + "\n";
+                        if (!currentLine.equals("<P>") && !currentLine.equals("</P>")) {
+                            documentText = documentText + currentLine + " \n ";
+                        }
                         currentLine = iterator.next();
                     }
                     //Document creation
-                    documents.add(new Document(documentId, documentHeader, documentText));
+                    documents.add(new Document(documentId, documentHeader, documentDate, documentText));
                 }
             }
         } catch (IOException e) {
