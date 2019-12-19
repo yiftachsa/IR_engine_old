@@ -125,7 +125,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë")||token.contains("í") ||token.contains("ó") || token.contains("ø")) {
                 continue;
             }
 
@@ -292,7 +292,16 @@ public class Parse {
                     token = token.substring(token.indexOf('/') + 1);
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term.toLowerCase()));
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
                             terms.add(term);
                         }
@@ -300,7 +309,16 @@ public class Parse {
                 }
                 if (!isStopWord(token.toLowerCase())) {
                     if (useStemmer) {
-                        terms.add(Stemmer.stem(token.toLowerCase()));
+                        String checkLowerUpper = token.toLowerCase();
+                        String afterStemming = Stemmer.stem(checkLowerUpper);
+                        if(checkLowerUpper.equals(token))
+                        {
+                            terms.add(afterStemming);
+                        }
+                        else
+                        {
+                            terms.add(afterStemming.toUpperCase());
+                        }
                     } else {
                         terms.add(token);
                     }
@@ -312,7 +330,16 @@ public class Parse {
                 for (String term : resultHyphenList) {
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term.toLowerCase()));
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
                             if (term.matches("^[A-Z].*"))
                                 terms.add(term.toUpperCase());
@@ -359,7 +386,16 @@ public class Parse {
                     }
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term.toLowerCase()));
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
                             terms.add(term);
                         }
@@ -377,7 +413,16 @@ public class Parse {
                         for (String string : entityTokensCandidates) {
                             if (!isStopWord(string.toLowerCase()))
                                 if (useStemmer) {
-                                    terms.add(Stemmer.stem(string.toLowerCase()));
+                                    String checkLowerUpper = string.toLowerCase();
+                                    String afterStemming = Stemmer.stem(checkLowerUpper);
+                                    if(checkLowerUpper.equals(string))
+                                    {
+                                        terms.add(afterStemming);
+                                    }
+                                    else
+                                    {
+                                        terms.add(afterStemming.toUpperCase());
+                                    }
                                 } else {
                                     terms.add(string);
                                 }
@@ -453,7 +498,7 @@ public class Parse {
             }
         }
         //Removing dot in the end of the token
-        if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
+        if ( (result.charAt(0) == '.' ||result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
         }
 
@@ -732,16 +777,16 @@ public class Parse {
         }
         else if (token.matches(".*-.*-.*")) {
             resultList.add(token);
-            resultList.add(token.substring(0, token.indexOf("-")));
-            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")));
-            resultList.add(token.substring(token.lastIndexOf("-") + 1));
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.lastIndexOf("-") + 1).replaceAll("-",""));
 
         }
         //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
         else if (token.matches(".*-.*")) {
             resultList.add(token);
-            resultList.add(token.substring(0, token.indexOf("-")));
-            resultList.add(token.substring(token.indexOf("-") + 1));
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.indexOf("-") + 1).replaceAll("-",""));
         }
         return resultList;
     }
