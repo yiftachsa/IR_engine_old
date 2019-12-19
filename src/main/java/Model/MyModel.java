@@ -60,7 +60,12 @@ public class MyModel extends Observable implements IModel {
     public boolean loadDictionary(String path) {
         path = getResultPath(path);
 
-        this.indexer = new Indexer(Documenter.loadDictionary(path), Documenter.loadEntities(path));
+        Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
+        TreeSet<String> entities = Documenter.loadEntities(path);
+        if(dictionary == null || entities == null){
+            return false;
+        }
+        this.indexer = new Indexer(dictionary, entities);
         if ((this.indexer != null)) {
             return this.indexer.getDictionaryStatus();
         }

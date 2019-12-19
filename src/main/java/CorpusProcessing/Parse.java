@@ -239,7 +239,7 @@ public class Parse {
                         }
                     } else //<<<Simple Number>>>
                     {
-                        if (token.matches("^[0-9]+$"))
+                        if (token.matches("[0-9]{1,13}(\\.[0-9]*)?"))
                             terms.add(generateTokenSimpleNumber(token));
                         else continue; //todo:check!
                     }
@@ -446,7 +446,7 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n') {
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n' || character == '`' || character == '|' || character == '_'|| character == '+') {
                 continue;
             } else {
                 result = result + character;
@@ -456,11 +456,10 @@ public class Parse {
         if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
         }
-        else
-        {
-           while( (result.indexOf('-') == 0))
+
+        while( (result.indexOf('-') == 0))
                result = result.substring(1);
-        }
+
         return result;
     }
 

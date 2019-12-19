@@ -27,6 +27,7 @@ public class Documenter {
 
     /**
      * Initializes the fields and the directories required for the indexing process
+     *
      * @param path - String - the results path
      */
     public static void start(String path) {
@@ -56,7 +57,7 @@ public class Documenter {
     public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate) {
         if (filesPath != null) {
             documentsDetailsMutex.lock();
-            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length +","+documentDate);
+            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate);
             documentsDetailsMutex.unlock();
         }
     }
@@ -78,9 +79,33 @@ public class Documenter {
         }
     }
 
+    /**
+     * Loads the documentsDetails field to file
+     *
+     * @param path - String - path
+     * @return - ArrayList<String> - documents details
+     */
+    public static ArrayList<String> loadDocumentsDetailsFromFile(String path) {
+        documentsDetails = new ArrayList<>();
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(path + "\\DocumentsDetails\\DocumentsDetails"));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                documentsDetails.add(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return documentsDetails;
+    }
+
 
     /**
      * Saves all the postings to the disk
+     *
      * @param postingArray - Map<String, PriorityQueue<Pair<String, Integer>>>[] - postings
      */
     public static void saveInvertedIndex(Map<String, PriorityQueue<Pair<String, Integer>>>[] postingArray) {
@@ -104,7 +129,8 @@ public class Documenter {
 
     /**
      * Saves a given final posting file to the given path
-     * @param posting - ArrayList<String> - posting
+     *
+     * @param posting  - ArrayList<String> - posting
      * @param filePath - String - path
      */
     public static void saveFinalPostingFile(ArrayList<String> posting, String filePath) {
@@ -126,7 +152,7 @@ public class Documenter {
     /**
      * Saves an individual posting file as text.
      *
-     * @param posting - PriorityQueue<Pair<String, Integer>>> - posting
+     * @param posting  - PriorityQueue<Pair<String, Integer>>> - posting
      * @param filePath - String - path
      */
     public static void savePostingFile(Map<String, PriorityQueue<Pair<String, Integer>>> posting, String filePath) {
@@ -178,6 +204,7 @@ public class Documenter {
 
     /**
      * Receives a path and loads the Entities from it (loads a Tree<Set> object).
+     *
      * @param path - String - path
      * @return - TreeSet<String> - entities
      */
@@ -251,7 +278,7 @@ public class Documenter {
                 String term = line.substring(0, line.indexOf('~'));
                 line = line.substring(line.indexOf('~') + 1);
                 String[] entreeDetails = line.split(",");
-                dictionary.put(term, new DictionaryEntryTrio(Integer.parseInt(entreeDetails[0]),Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
+                dictionary.put(term, new DictionaryEntryTrio(Integer.parseInt(entreeDetails[0]), Integer.parseInt(entreeDetails[1]), entreeDetails[2]));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
