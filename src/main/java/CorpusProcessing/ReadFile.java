@@ -30,8 +30,9 @@ public class ReadFile {
                     //Document ID extraction
                     documentId = iterator.next();
                     //Removing the tags
-                    documentId = documentId.substring(8, documentId.length() - 1);
-                    documentId = documentId.substring(0, documentId.length() - 8);
+                    documentId = documentId.substring(documentId.indexOf('>')+1);
+                   documentId = documentId.substring(0, documentId.indexOf('<'));
+                    documentId.replaceAll(" ", "");
                     //Document header extraction
                     String iterText = "";
                     String documentHeader = "";

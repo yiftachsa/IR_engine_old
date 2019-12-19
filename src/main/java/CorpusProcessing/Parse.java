@@ -125,12 +125,48 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--")) {
+            if (token.length() == 0 ||token.isEmpty() || token.equals("\n+") || token.equals("\t+") || token.equals("") || token.equals("--") || token.contains("ø") ) {
                 continue;
+            }
+            else if(token.contains("\n") && token.indexOf("\n")!=token.length()-1)
+            {
+                tokens[i] = token.substring(token.indexOf("\n")+1);
+                token=token.substring(0,token.indexOf("\n"));
+                i--;
+            }
+            if(token.length()<=0)
+            {
+                continue;
+            }
+            else if(token.charAt(0) == '<')
+            {
+                if(token.contains(">"))
+                {
+                    token = token.substring(token.lastIndexOf('>'));
+                    {
+                        if (token.length() ==0 || token.equals(""))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            token = token.substring(1);
+                        }
+                    }
+                }
             }
 
             //Striping irrelevant symbols
             token = strip(token);
+            if(token.indexOf(".")>=0 && token.indexOf(".")<token.length()-1)
+            {
+               if(!(token.charAt(0)>='1' && token.charAt(0)<='9' && (token.charAt(token.indexOf(".")+1)>='1' && token.charAt(token.indexOf(".")+1)<='9'))){
+                   tokens[i] =  token.substring(token.indexOf('.')+1);
+                   token = token.substring(0,token.indexOf('.'));
+                   i--;
+               }
+
+            }
 
             //Numbers
             if (token.matches(".*\\d.*")) { //Token contains numbers
@@ -239,7 +275,7 @@ public class Parse {
                         }
                     } else //<<<Simple Number>>>
                     {
-                        if (token.matches("^[0-9]+$"))
+                        if (token.matches("[0-9]{1,13}(\\.[0-9]*)?"))
                             terms.add(generateTokenSimpleNumber(token));
                         else continue; //todo:check!
                     }
@@ -446,7 +482,7 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n') {
+            else if (character == '|' ||character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n' || character == '`'|| character == '_' ) {
                 continue;
             } else {
                 result = result + character;
@@ -456,11 +492,15 @@ public class Parse {
         if ( (result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
             result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
         }
-        else
+        while( result.length() > 0 && (result.indexOf('-') == 0) && result.length() > 2 && !(result.charAt(1)>=0 && result.charAt(1) <= 9))
+            result = result.substring(1);
+        while( result.length() > 0 && (result.indexOf('/') == 0))
+            result = result.substring(1);
+        while(result.contains("//"))
         {
-           while( (result.indexOf('-') == 0))
-               result = result.substring(1);
+            result.replaceAll("//" , "/");
         }
+
         return result;
     }
 
