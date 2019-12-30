@@ -277,6 +277,7 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
+        
         String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
