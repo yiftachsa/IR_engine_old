@@ -30,7 +30,7 @@ public class GUI extends Application {
         model.addObserver(viewModel);
 
         primaryStage.setTitle("Information Retrieval Engine");
-        URL url = getClass().getResource("../GUI.fxml");
+        URL url = getClass().getClassLoader().getResource("GUI.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader();
 
         Parent root = fxmlLoader.load(url.openStream());

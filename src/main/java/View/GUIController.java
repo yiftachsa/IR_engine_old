@@ -13,8 +13,11 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Pair;
 
 import java.io.File;
+import java.util.Dictionary;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -77,9 +80,8 @@ public class GUIController implements Observer {
      */
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
-            String dictionaryToDisplay = viewModel.getDictionary();
-            AlertBox.display("Dictionary", "", dictionaryToDisplay, "Back to menu", "default background");
-
+            LinkedList<Pair<String, Integer>> dictionaryToDisplay = viewModel.getDictionary();
+            TableView.display("Dictionary",dictionaryToDisplay,"close");
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
         }

@@ -41,7 +41,7 @@ public class ExitConfirmBox {
         Parent root = null;
         //loading the fxml file for the scene
         try {
-            root = FXMLLoader.load(ExitConfirmBox.class.getResource("../ExitConfirmBox.fxml"));
+            root = FXMLLoader.load(ExitConfirmBox.class.getClassLoader().getResource("ExitConfirmBox.fxml"));
         } catch (IOException e) {
             System.out.println("Couldn't open the \"ExitConfirmBox.fxml\" fxml file");
             e.printStackTrace();

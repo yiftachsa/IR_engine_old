@@ -1,6 +1,9 @@
 package ViewModel;
 
 import Model.IModel;
+import javafx.util.Pair;
+
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -64,13 +67,13 @@ public class MyViewModel extends Observable implements Observer {
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
      * A dictionary MUST be loaded to the memory.
-     * @return - String - dictionary representation or null, if no dictionary is loaded.
+     * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    public String getDictionary() {
+    public LinkedList<Pair<String,Integer>> getDictionary() {
         if(model.getDictionaryStatus()) {
             return model.getDictionary();
         }
-        return "";
+        return null;
     }
 
     /**

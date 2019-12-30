@@ -60,7 +60,12 @@ public class MyModel extends Observable implements IModel {
     public boolean loadDictionary(String path) {
         path = getResultPath(path);
 
-        this.indexer = new Indexer(Documenter.loadDictionary(path), Documenter.loadEntities(path));
+        Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
+        TreeSet<String> entities = Documenter.loadEntities(path);
+        if (dictionary == null || entities == null) {
+            return false;
+        }
+        this.indexer = new Indexer(dictionary, entities);
         if ((this.indexer != null)) {
             return this.indexer.getDictionaryStatus();
         }
@@ -82,16 +87,16 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public String getDictionary() {
-        StringBuilder stringBuilder = new StringBuilder();
+    public LinkedList<Pair<String, Integer>> getDictionary() {
+        LinkedList<Pair<String, Integer>> resultDictionary = new LinkedList<>();
         Map<String, DictionaryEntryTrio> dictionary = this.indexer.getDictionary();
         for (Map.Entry<String, DictionaryEntryTrio> entry : dictionary.entrySet()) {
             String term = entry.getKey();
             DictionaryEntryTrio dictionaryEntryTrio = entry.getValue();
-            String outLine = term + "~" + dictionaryEntryTrio.getCumulativeFrequency()+"\n";
-            stringBuilder.append(outLine);
+            Pair<String, Integer> pair = new Pair<>(term, dictionaryEntryTrio.getCumulativeFrequency());
+            resultDictionary.add(pair);
         }
-        return stringBuilder.toString();
+        return resultDictionary;
     }
 
     @Override
@@ -104,13 +109,19 @@ public class MyModel extends Observable implements IModel {
 
         //From now on the paths are assumed to be valid
         resultPath = getResultPath(resultPath);
-        String stopwordsPath = dataPath + "\\stop-words";
+        String stopwordsPath = dataPath + "\\stop_words.txt";
         String corpusPath = dataPath + "\\corpus";
+
 
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        Parse.loadStopWords(stopwordsPath);
+        if(!Parse.getStopwordsStatus()) {
+            if (!Parse.loadStopWords(stopwordsPath)) {
+                setChanged();
+                notifyObservers("Bad input");
+            }
+        }
         //Initializing this.indexer
         this.indexer = new Indexer();
 
@@ -307,7 +318,8 @@ public class MyModel extends Observable implements IModel {
      * Mergers all the posting files of all the posting files directories from the given resultPath.
      * Merges the dictionaries from all the separate runnableParses.
      * Removes all the single appearance entities from the unified dictionary.
-     * @param resultPath - String - the path of the temporary posting files
+     *
+     * @param resultPath               - String - the path of the temporary posting files
      * @param singleAppearanceEntities - HashSet<String> - a set of string to be removed from the dictionary.
      */
     private void mergeAllPostingFiles(String resultPath, RunnableParse[] runnableParses, HashSet<String> singleAppearanceEntities) {
@@ -350,6 +362,7 @@ public class MyModel extends Observable implements IModel {
 
     /**
      * Returns an array of all the dictionaries from the given RunnableParses.
+     *
      * @param runnableParses - RunnableParse[] - runnableParses that finished processing the initial processing of the files
      * @return - Map<String, DictionaryEntryTrio>[] - array of dictionaries
      */
