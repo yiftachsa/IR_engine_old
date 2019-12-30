@@ -28,10 +28,15 @@ public class GUIController implements Observer {
     @FXML
     private TextField resultText;
     @FXML
+    private TextField queriesText;
+    @FXML
+    private TextField queryText;
+    @FXML
     private CheckBox stemmingCheckBox;
 
     /**
      * Sets the view model private field
+     *
      * @param viewModel - MyViewModel
      */
     public void setViewModel(MyViewModel viewModel) {
@@ -83,6 +88,7 @@ public class GUIController implements Observer {
     /**
      * Handles the "Browse..." button in the corpus line.
      * Displays a folder selection window and updates the corpusText field according to the selection.
+     *
      * @param event - ActionEvent - the button pressed
      */
     public void corpusBrowseHandler(ActionEvent event) {
@@ -95,6 +101,7 @@ public class GUIController implements Observer {
     /**
      * Handles the "Browse..." button in the corpus line.
      * Displays a folder selection window and updates the corpusText field according to the selection.
+     *
      * @param event - ActionEvent - the button pressed
      */
     public void resultBrowseHandler(ActionEvent event) {
@@ -104,8 +111,16 @@ public class GUIController implements Observer {
         }
     }
 
+    public void queriesBrowseHandler(ActionEvent event) {
+        String path = browse(event);
+        if (!path.equals("")) {
+            queriesText.setText(path);
+        }
+    }
+
     /**
      * Displays a folder selection window and returns the absolute path of the folder chosen.
+     *
      * @param event - ActionEvent - the button that was pressed
      * @return - String - the absolute path of the directory chosen or an empty String
      */
@@ -157,6 +172,23 @@ public class GUIController implements Observer {
         }
     }
 
+    public void runQueryHandler(ActionEvent actionEvent) {
+        String query = queryText.getText();
+        if (query.isEmpty()){
+            AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again.\n\t\tNo query was entered\n\n\n\n", "Back to menu", "default background");
+        }
+        else if (false){ //TODO: Check if the dictionary has been loaded to memory
+
+        }else {
+            //TODO: Send to myViewModel
+            //TODO: Display results. TextField or plain alert box
+        }
+
+    }
+
+    public void runQueriesHandler(ActionEvent actionEvent) {
+    }
+
     /**
      * Handles the "load" button. sends the path in the "resultText: text box to the view model.
      * If the viewModel loads the dictionary to the memory successfully then displays a success message,
@@ -192,6 +224,7 @@ public class GUIController implements Observer {
     /**
      * Closes the main stage.
      * Calls exitHandler to orderly close the application.
+     *
      * @param event - ActionEvent - exit button was pressed
      */
     public void exit(ActionEvent event) {
@@ -201,6 +234,7 @@ public class GUIController implements Observer {
     /**
      * Handles the 'x' button being pressed.
      * Closes the application in an orderly fashion.
+     *
      * @param event - Event
      */
     public void exitHandler(Event event) {
@@ -221,6 +255,7 @@ public class GUIController implements Observer {
 
     /**
      * Closes a stage based on an ActionEvent
+     *
      * @param actionEvent - ActionEvent - "exit" button was pressed
      */
     private static void close(ActionEvent actionEvent) {
@@ -231,13 +266,13 @@ public class GUIController implements Observer {
 
     /**
      * Closes a stage based on an WindowEvent
+     *
      * @param windowEvent - WindowEvent - 'X' was pressed
      */
     private static void close(WindowEvent windowEvent) {
         Stage stage = (Stage) windowEvent.getSource();
         stage.close();
     }
-
 }
 
 
