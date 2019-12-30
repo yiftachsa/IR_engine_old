@@ -179,8 +179,8 @@ public class GUIController implements Observer {
         if (query.isEmpty()){
             AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again.\n\t\tNo query was entered\n\n\n\n", "Back to menu", "default background");
         }
-        else if (false){ //TODO: Check if the dictionary has been loaded to memory
-
+        else if (!viewModel.getDictionaryStatus()){ //TODO: Check if the dictionary has been loaded to memory
+            AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
         }else {
             //TODO: Send to myViewModel
             //TODO: Display results. TextField or plain alert box
