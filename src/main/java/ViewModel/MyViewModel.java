@@ -3,6 +3,7 @@ package ViewModel;
 import Model.IModel;
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -100,5 +101,13 @@ public class MyViewModel extends Observable implements Observer {
      */
     public int getDocumentsProcessedCount() {
         return model.getDocumentsProcessedCount();
+    }
+
+    public ArrayList<String> runQuery(String query) {
+        return model.runQuery(query);
+    }
+
+    public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
+        return model.runQueries(queriesPath);
     }
 }

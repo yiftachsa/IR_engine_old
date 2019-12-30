@@ -11,15 +11,13 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 
 import java.io.File;
-import java.util.Dictionary;
-import java.util.LinkedList;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class GUIController implements Observer {
 
@@ -81,7 +79,7 @@ public class GUIController implements Observer {
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
             LinkedList<Pair<String, Integer>> dictionaryToDisplay = viewModel.getDictionary();
-            TableView.display("Dictionary",dictionaryToDisplay,"close");
+            TableView.display("Dictionary", dictionaryToDisplay, "close");
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
         }
@@ -94,7 +92,7 @@ public class GUIController implements Observer {
      * @param event - ActionEvent - the button pressed
      */
     public void corpusBrowseHandler(ActionEvent event) {
-        String path = browse(event);
+        String path = browseDirectoryChooser(event);
         if (!path.equals("")) {
             corpusText.setText(path);
         }
@@ -107,17 +105,40 @@ public class GUIController implements Observer {
      * @param event - ActionEvent - the button pressed
      */
     public void resultBrowseHandler(ActionEvent event) {
-        String path = browse(event);
+        String path = browseDirectoryChooser(event);
         if (!path.equals("")) {
             resultText.setText(path);
         }
     }
 
+    /**
+     * Handles the "Browse..." button in the queries line.
+     * Displays a folder selection window and updates the queriesText field according to the selection.
+     *
+     * @param event - ActionEvent - the button pressed
+     */
     public void queriesBrowseHandler(ActionEvent event) {
-        String path = browse(event);
+        String path = browseFileChooser(event);
         if (!path.equals("")) {
             queriesText.setText(path);
         }
+    }
+    /**
+     * Displays a file selection window and returns the absolute path of the file chosen.
+     *
+     * @param event - ActionEvent - the button that was pressed
+     * @return - String - the absolute path of the file chosen or an empty String
+     */
+    private String browseFileChooser(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        Button browseButton = (Button) event.getSource();
+        Scene scene = browseButton.getScene();
+        Stage stage = (Stage) scene.getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            return file.getAbsolutePath();
+        }
+        return "";
     }
 
     /**
@@ -126,7 +147,7 @@ public class GUIController implements Observer {
      * @param event - ActionEvent - the button that was pressed
      * @return - String - the absolute path of the directory chosen or an empty String
      */
-    private String browse(ActionEvent event) {
+    private String browseDirectoryChooser(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         Button browseButton = (Button) event.getSource();
         Scene scene = browseButton.getScene();
@@ -176,19 +197,31 @@ public class GUIController implements Observer {
 
     public void runQueryHandler(ActionEvent actionEvent) {
         String query = queryText.getText();
-        if (query.isEmpty()){
+        if (query.isEmpty()) {
             AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again.\n\t\tNo query was entered\n\n\n\n", "Back to menu", "default background");
-        }
-        else if (!viewModel.getDictionaryStatus()){ //TODO: Check if the dictionary has been loaded to memory
+        } else if (!viewModel.getDictionaryStatus()) {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
-        }else {
+        } else {
             //TODO: Send to myViewModel
+            ArrayList<String> rankedDocumentsNumbers = viewModel.runQuery(query);
             //TODO: Display results. TextField or plain alert box
+
         }
 
     }
 
-    public void runQueriesHandler(ActionEvent actionEvent) {
+    public void runQueriesHandler(ActionEvent event) {
+        String queriesPath = queriesText.getText();
+        if (queriesPath.isEmpty()) {
+            AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n", "Back to menu", "default background");
+        } else if (!viewModel.getDictionaryStatus()) {
+            AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
+        } else {
+            //TODO: Send to myViewModel
+            ArrayList<ArrayList<String>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath);
+            //TODO: Display results. TextField or plain alert box
+            //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
+        }
     }
 
     /**

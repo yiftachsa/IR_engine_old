@@ -4,6 +4,7 @@ import CorpusProcessing.*;
 import javafx.util.Pair;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -102,7 +103,7 @@ public class MyModel extends Observable implements IModel {
     @Override
     public void start(String dataPath, String resultPath) {
         //Checking paths
-        if (!testPath(dataPath) || !testPath(resultPath)) {
+        if (!testDirectoryPath(dataPath) || !testDirectoryPath(resultPath)) {
             setChanged();
             notifyObservers("Bad input");
         }
@@ -116,7 +117,7 @@ public class MyModel extends Observable implements IModel {
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        if(!Parse.getStopwordsStatus()) {
+        if (!Parse.getStopwordsStatus()) {
             if (!Parse.loadStopWords(stopwordsPath)) {
                 setChanged();
                 notifyObservers("Bad input");
@@ -300,9 +301,9 @@ public class MyModel extends Observable implements IModel {
      * Verifies that the path is of a reachable directory.
      *
      * @param folderPath - String - an absolute path
-     * @return - boolean - true if the solderPath is of a reachable directory, else false
+     * @return - boolean - true if the folderPath is of a reachable directory, else false
      */
-    private boolean testPath(String folderPath) {
+    private boolean testDirectoryPath(String folderPath) {
         boolean isDirectory;
         try {
             File directory = new File(folderPath);
@@ -312,6 +313,27 @@ public class MyModel extends Observable implements IModel {
             isDirectory = false;
         }
         return isDirectory;
+    }
+
+    /**
+     * Verifies that the path is of a reachable txt file.
+     *
+     * @param filePath - String - an absolute path
+     * @return - boolean - true if the filepath is of a txt readable file, else false
+     */
+    private boolean testFilePath(String filePath) {
+        boolean isFile;
+        try {
+            File file = new File(filePath);
+            isFile = file.isFile();
+            String fileType = filePath.substring(filePath.length() - 4);
+            if (!fileType.equals(".txt")) {
+                isFile = false;
+            }
+        } catch (Exception e) {
+            isFile = false;
+        }
+        return isFile;
     }
 
     /**
@@ -383,6 +405,21 @@ public class MyModel extends Observable implements IModel {
     @Override
     public int getUniqueTermsCount() {
         return this.indexer.getDictionarySize();
+    }
+
+    @Override
+    public ArrayList<String> runQuery(String query) {
+        //TODO
+        return null;
+    }
+
+    @Override
+    public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
+        ArrayList<ArrayList<String>> rankedDocuments = null;
+        if (testFilePath(queriesPath)) {
+            //TODO
+        }
+        return rankedDocuments;
     }
 }
 

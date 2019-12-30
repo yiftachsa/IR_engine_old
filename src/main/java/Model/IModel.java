@@ -2,8 +2,8 @@ package Model;
 
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Map;
 
 public interface IModel {
 
@@ -59,4 +59,8 @@ public interface IModel {
      * @return - int - the number of the documents processed
      */
     int getDocumentsProcessedCount();
+
+    ArrayList<String> runQuery(String query);
+
+    ArrayList<ArrayList<String>> runQueries(String queriesPath);
 }
