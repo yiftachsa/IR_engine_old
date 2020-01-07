@@ -92,7 +92,7 @@ public class ReadFile {
                     }
 
                     //Document text extraction
-                    if (!currentLine.equals("<TEXT>")) { //FIXME:
+                    if (!currentLine.equals("<TEXT>")) {
                         do {
                             currentLine = iterator.next();
                         }

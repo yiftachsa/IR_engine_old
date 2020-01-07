@@ -2,8 +2,8 @@ package Model;
 
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Map;
 
 public interface IModel {
 
@@ -43,9 +43,9 @@ public interface IModel {
     /**
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
-     * @return - LinkedList<Pair<String,String>> - dictionary representation or null, if no dictionary is loaded.
+     * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    LinkedList<Pair<String,String>> getDictionary();
+    LinkedList<Pair<String, Integer>> getDictionary();
 
 
     /**
@@ -59,4 +59,8 @@ public interface IModel {
      * @return - int - the number of the documents processed
      */
     int getDocumentsProcessedCount();
+
+    ArrayList<String> runQuery(String query);
+
+    ArrayList<ArrayList<String>> runQueries(String queriesPath);
 }

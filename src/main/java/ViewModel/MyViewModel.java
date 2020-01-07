@@ -3,6 +3,7 @@ package ViewModel;
 import Model.IModel;
 import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -67,9 +68,9 @@ public class MyViewModel extends Observable implements Observer {
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
      * A dictionary MUST be loaded to the memory.
-     * @return - LinkedList<Pair<String,String>> - dictionary representation or null, if no dictionary is loaded.
+     * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    public LinkedList<Pair<String,String>> getDictionary() {
+    public LinkedList<Pair<String,Integer>> getDictionary() {
         if(model.getDictionaryStatus()) {
             return model.getDictionary();
         }
@@ -100,5 +101,13 @@ public class MyViewModel extends Observable implements Observer {
      */
     public int getDocumentsProcessedCount() {
         return model.getDocumentsProcessedCount();
+    }
+
+    public ArrayList<String> runQuery(String query) {
+        return model.runQuery(query);
+    }
+
+    public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
+        return model.runQueries(queriesPath);
     }
 }

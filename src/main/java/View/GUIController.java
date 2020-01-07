@@ -11,15 +11,13 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 
 import java.io.File;
-import java.util.Dictionary;
-import java.util.LinkedList;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class GUIController implements Observer {
 
@@ -31,10 +29,15 @@ public class GUIController implements Observer {
     @FXML
     private TextField resultText;
     @FXML
+    private TextField queriesText;
+    @FXML
+    private TextField queryText;
+    @FXML
     private CheckBox stemmingCheckBox;
 
     /**
      * Sets the view model private field
+     *
      * @param viewModel - MyViewModel
      */
     public void setViewModel(MyViewModel viewModel) {
@@ -75,8 +78,8 @@ public class GUIController implements Observer {
      */
     public void displayDictionaryHandler() {
         if (viewModel.getDictionaryStatus()) {
-            LinkedList<Pair<String,String>> dictionaryToDisplay = viewModel.getDictionary();
-            TableView.display("Dictionary",dictionaryToDisplay,"close");
+            LinkedList<Pair<String, Integer>> dictionaryToDisplay = viewModel.getDictionary();
+            TableView.display("Dictionary", dictionaryToDisplay, "close");
         } else {
             AlertBox.display("Dictionary display failed", "Dictionary display failed", "\n\n\n\n\n", "Back to menu", "default background");
         }
@@ -85,10 +88,11 @@ public class GUIController implements Observer {
     /**
      * Handles the "Browse..." button in the corpus line.
      * Displays a folder selection window and updates the corpusText field according to the selection.
+     *
      * @param event - ActionEvent - the button pressed
      */
     public void corpusBrowseHandler(ActionEvent event) {
-        String path = browse(event);
+        String path = browseDirectoryChooser(event);
         if (!path.equals("")) {
             corpusText.setText(path);
         }
@@ -97,21 +101,53 @@ public class GUIController implements Observer {
     /**
      * Handles the "Browse..." button in the corpus line.
      * Displays a folder selection window and updates the corpusText field according to the selection.
+     *
      * @param event - ActionEvent - the button pressed
      */
     public void resultBrowseHandler(ActionEvent event) {
-        String path = browse(event);
+        String path = browseDirectoryChooser(event);
         if (!path.equals("")) {
             resultText.setText(path);
         }
     }
 
     /**
+     * Handles the "Browse..." button in the queries line.
+     * Displays a folder selection window and updates the queriesText field according to the selection.
+     *
+     * @param event - ActionEvent - the button pressed
+     */
+    public void queriesBrowseHandler(ActionEvent event) {
+        String path = browseFileChooser(event);
+        if (!path.equals("")) {
+            queriesText.setText(path);
+        }
+    }
+    /**
+     * Displays a file selection window and returns the absolute path of the file chosen.
+     *
+     * @param event - ActionEvent - the button that was pressed
+     * @return - String - the absolute path of the file chosen or an empty String
+     */
+    private String browseFileChooser(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        Button browseButton = (Button) event.getSource();
+        Scene scene = browseButton.getScene();
+        Stage stage = (Stage) scene.getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            return file.getAbsolutePath();
+        }
+        return "";
+    }
+
+    /**
      * Displays a folder selection window and returns the absolute path of the folder chosen.
+     *
      * @param event - ActionEvent - the button that was pressed
      * @return - String - the absolute path of the directory chosen or an empty String
      */
-    private String browse(ActionEvent event) {
+    private String browseDirectoryChooser(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         Button browseButton = (Button) event.getSource();
         Scene scene = browseButton.getScene();
@@ -159,6 +195,35 @@ public class GUIController implements Observer {
         }
     }
 
+    public void runQueryHandler(ActionEvent actionEvent) {
+        String query = queryText.getText();
+        if (query.isEmpty()) {
+            AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again.\n\t\tNo query was entered\n\n\n\n", "Back to menu", "default background");
+        } else if (!viewModel.getDictionaryStatus()) {
+            AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
+        } else {
+            //TODO: Send to myViewModel
+            ArrayList<String> rankedDocumentsNumbers = viewModel.runQuery(query);
+            //TODO: Display results. TextField or plain alert box
+
+        }
+
+    }
+
+    public void runQueriesHandler(ActionEvent event) {
+        String queriesPath = queriesText.getText();
+        if (queriesPath.isEmpty()) {
+            AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n", "Back to menu", "default background");
+        } else if (!viewModel.getDictionaryStatus()) {
+            AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
+        } else {
+            //TODO: Send to myViewModel
+            ArrayList<ArrayList<String>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath);
+            //TODO: Display results. TextField or plain alert box
+            //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
+        }
+    }
+
     /**
      * Handles the "load" button. sends the path in the "resultText: text box to the view model.
      * If the viewModel loads the dictionary to the memory successfully then displays a success message,
@@ -194,6 +259,7 @@ public class GUIController implements Observer {
     /**
      * Closes the main stage.
      * Calls exitHandler to orderly close the application.
+     *
      * @param event - ActionEvent - exit button was pressed
      */
     public void exit(ActionEvent event) {
@@ -203,6 +269,7 @@ public class GUIController implements Observer {
     /**
      * Handles the 'x' button being pressed.
      * Closes the application in an orderly fashion.
+     *
      * @param event - Event
      */
     public void exitHandler(Event event) {
@@ -223,6 +290,7 @@ public class GUIController implements Observer {
 
     /**
      * Closes a stage based on an ActionEvent
+     *
      * @param actionEvent - ActionEvent - "exit" button was pressed
      */
     private static void close(ActionEvent actionEvent) {
@@ -233,13 +301,13 @@ public class GUIController implements Observer {
 
     /**
      * Closes a stage based on an WindowEvent
+     *
      * @param windowEvent - WindowEvent - 'X' was pressed
      */
     private static void close(WindowEvent windowEvent) {
         Stage stage = (Stage) windowEvent.getSource();
         stage.close();
     }
-
 }
 
 
