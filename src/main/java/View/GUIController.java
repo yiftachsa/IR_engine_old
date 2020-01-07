@@ -197,13 +197,23 @@ public class GUIController implements Observer {
 
     public void runQueryHandler(ActionEvent actionEvent) {
         String query = queryText.getText();
+        Boolean preConditionsMet = true;
         if (query.isEmpty()) {
             AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again.\n\t\tNo query was entered\n\n\n\n", "Back to menu", "default background");
+            preConditionsMet = false;
         } else if (!viewModel.getDictionaryStatus()) {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
-        } else {
+            preConditionsMet = false;
+        } else if (!viewModel.getStopWordsStatus()) {
+            if (!viewModel.loadStopWords(corpusText.getText())) {
+                preConditionsMet = false;
+                AlertBox.display("No stop words loaded", "No stop words loaded", "Please enter corpus path\nto load the stop words list.\n\n\n\n\n", "Back to menu", "default background");
+            }
+        }
+
+        if(preConditionsMet){
             //TODO: Send to myViewModel
-            ArrayList<String> rankedDocumentsNumbers = viewModel.runQuery(query);
+            ArrayList<String> rankedDocuments = viewModel.runQuery(query);
             //TODO: Display results. TextField or plain alert box
 
         }

@@ -46,6 +46,11 @@ public class Documenter {
         new File(filesPath + "\\Dictionary").mkdir();
     }
 
+
+    public static ArrayList<String> getDocumentsDetails() {
+        return documentsDetails;
+    }
+
     /**
      * Receives details about a document and adds it to the field documentsDetails list.
      *
@@ -343,6 +348,37 @@ public class Documenter {
         }
 
         return clearSuccessful;
+    }
+
+    public static void saveDocumentEntities(HashMap<String, HashMap<String, Integer>> allDocumentsEntities) {
+
+        String filePath = filesPath + "\\Entities\\DocumentsEntities";
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            outputStream.writeObject(allDocumentsEntities);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static HashMap<String, HashMap<String, Integer>> loadDocumentEntities(String path) {
+        String entitiesPath = path + "\\Entities\\DocumentsEntities";
+        FileInputStream fileInputStream;
+        HashMap<String, HashMap<String, Integer>> allDocumentsEntities =null;
+
+        try {
+            fileInputStream = new FileInputStream(entitiesPath);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            allDocumentsEntities = (HashMap<String, HashMap<String, Integer>>) objectInputStream.readObject();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return allDocumentsEntities;
     }
 }
 
