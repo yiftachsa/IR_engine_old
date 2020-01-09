@@ -228,7 +228,7 @@ public class GUIController implements Observer {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
         } else {
             //TODO: Send to myViewModel
-            ArrayList<ArrayList<String>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath);
+            ArrayList<Pair<String , ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath);
             //TODO: Display results. TextField or plain alert box
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }

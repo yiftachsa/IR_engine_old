@@ -18,7 +18,7 @@ public class Indexer {
 
     private int documentsCount;
 
-    private  ArrayList<String> documentsDetails;
+    private HashMap<String, String> documentsDetails;
 
 
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
@@ -33,12 +33,13 @@ public class Indexer {
 
     /**
      * Constructor
-     * @param dictionary - Map<String, DictionaryEntryTrio>
-     * @param entities - TreeSet<String>
+     *
+     * @param dictionary           - Map<String, DictionaryEntryTrio>
+     * @param entities             - TreeSet<String>
      * @param allDocumentsEntities
      * @param documentDetails
      */
-    public Indexer(Map<String, DictionaryEntryTrio> dictionary, TreeSet<String> entities, HashMap<String, HashMap<String, Integer>> allDocumentsEntities, ArrayList<String> documentDetails) {
+    public Indexer(Map<String, DictionaryEntryTrio> dictionary, TreeSet<String> entities, HashMap<String, HashMap<String, Integer>> allDocumentsEntities, HashMap<String, String> documentDetails) {
         this.dictionary = dictionary;
         this.entities = entities;
         this.allDocumentsEntities = allDocumentsEntities;
@@ -50,6 +51,7 @@ public class Indexer {
      * Receives a list of TermDocumentTrio and builds inverted indices from them.
      * Generates individual posting file for each starting letter.
      * Saves the generated posting files (temporary inverted indices).
+     *
      * @param postingEntries - ArrayList<TermDocumentTrio> - posting entries trios
      */
     public void buildInvertedIndex(ArrayList<TermDocumentTrio> postingEntries) {
@@ -218,7 +220,7 @@ public class Indexer {
                     int newCumulativeFrequency = entry.getCumulativeFrequency() + dictionaryEntryTrio.getCumulativeFrequency();
 
                     //The function put override the previous value;
-                    this.dictionary.put(term.toLowerCase(), new DictionaryEntryTrio(newDocumentFrequency,newCumulativeFrequency, dictionaryEntryTrio.getPostingIndex()));
+                    this.dictionary.put(term.toLowerCase(), new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, dictionaryEntryTrio.getPostingIndex()));
                 } else if (this.dictionary.containsKey(term.toUpperCase())) {
                     String existingTerm = term.toUpperCase();
                     DictionaryEntryTrio existingTrio = this.dictionary.get(existingTerm);
@@ -266,17 +268,18 @@ public class Indexer {
         this.allDocumentsEntities = documentsEntities;
     }
 
-    public void setDocumentDetails(ArrayList<String> documentsDetails) {
+    public void setDocumentDetails(HashMap<String, String> documentsDetails) {
         this.documentsDetails = documentsDetails;
     }
 
     /**
      * Receive term and return df(term)
+     *
      * @param term - String - term in the dictionary
      * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return -1
      */
     public int getDocumentFrequency(String term) {
-        if(dictionary.containsKey(term)) {
+        if (dictionary.containsKey(term)) {
             return this.dictionary.get(term).getDocumentFrequency();
         }
         return -1;
@@ -284,17 +287,23 @@ public class Indexer {
 
     /**
      * Receive document ID and return the length of the document
+     *
      * @param documentID
      * @return
      */
     public int getDocumentLength(String documentID) {
-        //todo : change documentDetails to hashSet
-        //this.documentsDetails.get(documentID)
-        return -1;
+        //docId,maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate
+        String documentDetails = this.documentsDetails.get(documentID);
+        String[] splitDocumentDetails = documentDetails.split(",");
+        int documentLength = Integer.parseInt(splitDocumentDetails[2]);
+        return documentLength;
+
     }
 
     public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
-    //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
-    return  null;
+        //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
+        DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
+        ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term ,dictionaryEntryTrio.getPostingIndex());
+        return postingLine;
     }
 }

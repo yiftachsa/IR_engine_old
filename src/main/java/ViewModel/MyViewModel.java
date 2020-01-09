@@ -107,7 +107,7 @@ public class MyViewModel extends Observable implements Observer {
         return model.runQuery(query);
     }
 
-    public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
+    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath) {
         return model.runQueries(queriesPath);
     }
 

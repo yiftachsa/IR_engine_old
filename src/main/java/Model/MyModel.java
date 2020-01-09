@@ -66,12 +66,13 @@ public class MyModel extends Observable implements IModel {
         Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
         TreeSet<String> entities = Documenter.loadEntities(path);
         HashMap<String, HashMap<String, Integer>> allDocumentsEntities = Documenter.loadDocumentEntities(path);
-        ArrayList<String> documentDetails = Documenter.loadDocumentsDetailsFromFile(path);
+        HashMap<String , String> documentDetails = Documenter.loadDocumentsDetailsFromFile(path);
         if (dictionary == null || entities == null || allDocumentsEntities == null || documentDetails == null) {
             return false;
         }
         this.indexer = new Indexer(dictionary, entities, allDocumentsEntities, documentDetails);
         if ((this.indexer != null)) {
+            Documenter.setFilePath(path);
             return this.indexer.getDictionaryStatus();
         }
         return false;
@@ -460,54 +461,35 @@ public class MyModel extends Observable implements IModel {
     @Override
     public ArrayList<String> runQuery(String query) {
 
-        ArrayList<TermDocumentTrio> processedQuery = parseQuery(query);
-        /**
-         *  HashMap(DocID ,Pair(Document length , HasMap( Term , Document frequency)))
-         */
-        HashMap<String , Pair<Integer , HashMap<String , Integer>>> relevantDocumentsDetails = new HashMap<>();
-        for(TermDocumentTrio termTrio: processedQuery)
+        if(searcher == null)
         {
-            String term = termTrio.getTerm();
-            ArrayList<Pair<String, Integer>> allPairs = indexer.getTermPosting(term);
-            for (int i = 0; i < allPairs.size(); i++) {
-                String documentID = allPairs.get(i).getKey();
-                int df = allPairs.get(i).getValue();
-                HashMap<String , Integer> docTerms = new HashMap<>();
-                if(!relevantDocumentsDetails.containsKey(documentID))
-                {
-                    docTerms.put(term , df);
-                    Pair<Integer , HashMap<String , Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
-                    relevantDocumentsDetails.put(documentID,pair);
-                }
-                else
-                {
-                    docTerms.putAll(relevantDocumentsDetails.get(documentID).getValue());
-                    docTerms.put(term , df);
-                    Pair<Integer , HashMap<String , Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
-                    relevantDocumentsDetails.put(documentID,pair);
-                }
-            }
+            searcher = new Searcher();
         }
-        //fixme
-        return null;
-
-    }
-
-    private ArrayList<TermDocumentTrio> parseQuery(String query) {
         if(this.parse == null)
         {
             this.parse = new Parse(new HashSet<>(), new HashSet<>() , this.stemming);
         }
-        ArrayList<String> bagOfWords = parse.parseQuery(query);
-        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords("query", "", bagOfWords);
-        return processedQuery;
+        ArrayList<String> result = searcher.runQuery(query , this.indexer , this.parse);
+
+        //fixme
+        return null;
+
     }
+    
 
     @Override
-    public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
-        ArrayList<ArrayList<String>> rankedDocuments = null;
-        if (testFilePath(queriesPath)) {
-            //TODO
+    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath) {
+        ArrayList<Pair<String ,ArrayList<String>>> rankedDocuments = null;
+        if (!testFilePath(queriesPath)) {
+            setChanged();
+            notifyObservers("Bad input");
+            return null;
+        }
+        Query [] queries = ReadFile.separateFileToQueries(queriesPath);
+        for (int i = 0; i < queries.length; i++) {
+            String query = queries[i].getTitle() + " " + queries[i].getDescription();
+            ArrayList<String> currentQueryRankedDocuments = runQuery(query);
+            rankedDocuments.add(new Pair<>(queries[i].getNumber()+"", currentQueryRankedDocuments));
         }
         return rankedDocuments;
     }
