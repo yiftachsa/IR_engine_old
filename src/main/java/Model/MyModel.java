@@ -15,6 +15,8 @@ public class MyModel extends Observable implements IModel {
 
     private boolean stemming;
     private Indexer indexer;
+    private Parse parse;
+    private Searcher searcher;
     /**
      * The number of the parallel threads processing the files.
      */
@@ -63,14 +65,29 @@ public class MyModel extends Observable implements IModel {
 
         Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
         TreeSet<String> entities = Documenter.loadEntities(path);
-        if (dictionary == null || entities == null) {
+        HashMap<String, HashMap<String, Integer>> allDocumentsEntities = Documenter.loadDocumentEntities(path);
+        ArrayList<String> documentDetails = Documenter.loadDocumentsDetailsFromFile(path);
+        if (dictionary == null || entities == null || allDocumentsEntities == null || documentDetails == null) {
             return false;
         }
-        this.indexer = new Indexer(dictionary, entities);
+        this.indexer = new Indexer(dictionary, entities, allDocumentsEntities, documentDetails);
         if ((this.indexer != null)) {
             return this.indexer.getDictionaryStatus();
         }
         return false;
+    }
+
+    @Override
+    public boolean loadStopWords(String path) {
+        String stopwordsPath = path + "\\stop_words.txt";
+        if (!Parse.getStopwordsStatus()) {
+            if (!Parse.loadStopWords(stopwordsPath)) {
+                setChanged();
+                notifyObservers("Bad input");
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -86,6 +103,16 @@ public class MyModel extends Observable implements IModel {
         }
         return false;
     }
+
+    @Override
+    public boolean getStopWordsStatus() {
+        if (!Parse.getStopwordsStatus()) {
+            return false;
+        }
+        return true;
+    }
+
+
 
     @Override
     public LinkedList<Pair<String, Integer>> getDictionary() {
@@ -110,19 +137,14 @@ public class MyModel extends Observable implements IModel {
 
         //From now on the paths are assumed to be valid
         resultPath = getResultPath(resultPath);
-        String stopwordsPath = dataPath + "\\stop_words.txt";
+
         String corpusPath = dataPath + "\\corpus";
 
 
         //Initializing the Documenter
         Documenter.start(resultPath);
         //Initializing the stop words set
-        if (!Parse.getStopwordsStatus()) {
-            if (!Parse.loadStopWords(stopwordsPath)) {
-                setChanged();
-                notifyObservers("Bad input");
-            }
-        }
+        loadStopWords(dataPath);
         //Initializing this.indexer
         this.indexer = new Indexer();
 
@@ -149,6 +171,8 @@ public class MyModel extends Observable implements IModel {
         Documenter.saveDictionary(this.indexer.getDictionary());
 
         // now we have single posting file in each directory and we have a dictionary
+
+        indexer.setDocumentDetails(Documenter.getDocumentsDetails());
 
         //Closing all open ends
         Documenter.shutdown();
@@ -238,21 +262,47 @@ public class MyModel extends Observable implements IModel {
     private HashSet<String> getExcludedEntitiesAndSaveEntities(RunnableParse[] runnableParses) {
         TreeSet<String> entitiesTreeSet = new TreeSet<>();
         LinkedList<String> singleAppearanceEntitiesList = new LinkedList<>();
+        HashMap<String, HashMap<String, Integer>> allDocumentsEntities = new HashMap<>();
 
         for (int i = 0; i < runnableParses.length; i++) {
             entitiesTreeSet.addAll(runnableParses[i].getEntities());
             singleAppearanceEntitiesList.addAll(runnableParses[i].getSingleAppearanceEntities());
+            allDocumentsEntities.putAll(runnableParses[i].getDocumentsEntities());
         }
 
         //merge-sorting single entities
         HashSet<String>[] multipleAndUniqueEntities = getUniqueAndDuplicatedEntitiesSets(singleAppearanceEntitiesList);
         entitiesTreeSet.addAll(multipleAndUniqueEntities[0]);
+
+        //Remove from allDocumentsEntities all the unique terms
+        allDocumentsEntities = removeAllUniqueEntities(allDocumentsEntities, multipleAndUniqueEntities[1]);
+
         //Writing the entities
         Documenter.saveEntities(entitiesTreeSet);
+        Documenter.saveDocumentEntities(allDocumentsEntities);
 
         this.indexer.setEntities(entitiesTreeSet);
+        this.indexer.setDocumentEntities(allDocumentsEntities);
+
 
         return multipleAndUniqueEntities[1];
+    }
+
+    private HashMap<String, HashMap<String, Integer>> removeAllUniqueEntities(HashMap<String, HashMap<String, Integer>> allDocumentsEntities, HashSet<String> uniqueEntities) {
+
+        HashMap<String, HashMap<String, Integer>> allDocumentsEntitiesUpdate = new HashMap<>();
+        for (Map.Entry<String, HashMap<String, Integer>> mapEntry : allDocumentsEntities.entrySet()) {
+            HashMap<String, Integer> documentEntities = mapEntry.getValue();
+            HashMap<String, Integer> documentEntitiesUpdate = new HashMap<>();
+            for (Map.Entry<String, Integer> entityEntry : documentEntities.entrySet()) {
+                String entity = entityEntry.getKey();
+                if (!uniqueEntities.contains(entity)) {
+                    documentEntitiesUpdate.put(entity, entityEntry.getValue());
+                }
+            }
+            allDocumentsEntitiesUpdate.put(mapEntry.getKey(), documentEntitiesUpdate);
+        }
+        return allDocumentsEntitiesUpdate;
     }
 
     /**
@@ -409,8 +459,48 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public ArrayList<String> runQuery(String query) {
-        //TODO
+
+        ArrayList<TermDocumentTrio> processedQuery = parseQuery(query);
+        /**
+         *  HashMap(DocID ,Pair(Document length , HasMap( Term , Document frequency)))
+         */
+        HashMap<String , Pair<Integer , HashMap<String , Integer>>> relevantDocumentsDetails = new HashMap<>();
+        for(TermDocumentTrio termTrio: processedQuery)
+        {
+            String term = termTrio.getTerm();
+            ArrayList<Pair<String, Integer>> allPairs = indexer.getTermPosting(term);
+            for (int i = 0; i < allPairs.size(); i++) {
+                String documentID = allPairs.get(i).getKey();
+                int df = allPairs.get(i).getValue();
+                HashMap<String , Integer> docTerms = new HashMap<>();
+                if(!relevantDocumentsDetails.containsKey(documentID))
+                {
+                    docTerms.put(term , df);
+                    Pair<Integer , HashMap<String , Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
+                    relevantDocumentsDetails.put(documentID,pair);
+                }
+                else
+                {
+                    docTerms.putAll(relevantDocumentsDetails.get(documentID).getValue());
+                    docTerms.put(term , df);
+                    Pair<Integer , HashMap<String , Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
+                    relevantDocumentsDetails.put(documentID,pair);
+                }
+            }
+        }
+        //fixme
         return null;
+
+    }
+
+    private ArrayList<TermDocumentTrio> parseQuery(String query) {
+        if(this.parse == null)
+        {
+            this.parse = new Parse(new HashSet<>(), new HashSet<>() , this.stemming);
+        }
+        ArrayList<String> bagOfWords = parse.parseQuery(query);
+        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords("query", "", bagOfWords);
+        return processedQuery;
     }
 
     @Override

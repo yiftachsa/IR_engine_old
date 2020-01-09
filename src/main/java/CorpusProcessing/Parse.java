@@ -71,6 +71,8 @@ public class Parse {
     private HashSet<String> singleAppearanceEntities;
     private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
+    private HashMap<String,Integer> lastProcessedDocumentEntities; //HashMap of all entities identified in the last document parsed with their counter
+
     /**
      * Constructor
      * @param entities - HashSet<String>
@@ -117,6 +119,22 @@ public class Parse {
         return terms;
     }
 
+    public HashMap<String,Integer> getLastProcessedDocumentEntities(){
+        return this.lastProcessedDocumentEntities;
+    }
+
+    /**
+     * Updates the lastProcessedDocumentEntities Map with the entity and it's frequency in the document.
+     * @param entity - String - The entity to be added.
+     */
+    private void addDocumentEntity(String entity){
+        if(lastProcessedDocumentEntities.containsKey(entity)){
+            int counter = lastProcessedDocumentEntities.get(entity) + 1;
+            lastProcessedDocumentEntities.put(entity,counter);
+        }else {
+            lastProcessedDocumentEntities.put(entity,1);
+        }
+    }
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *
@@ -124,8 +142,10 @@ public class Parse {
      * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
      * @return - ArrayList<String> - all the words from the text of the document after parsing
      */
-    public ArrayList<String> parseText(String[] tokens, boolean useStemmer) {
+    public ArrayList<String> parseText(String[] tokens, boolean useStemmer/*Add Document num for entities*/) {
         ArrayList<String> terms = new ArrayList<>();
+
+        lastProcessedDocumentEntities = new HashMap<>();
 
         //Start of parsing
         for (int i = 0; i < tokens.length; i++) {
@@ -410,9 +430,11 @@ public class Parse {
                         if (!entities.contains(term)) {
                             if (!singleAppearanceEntities.contains(term)) {
                                 singleAppearanceEntities.add(term);
+                                addDocumentEntity(term);
                             } else {
                                 singleAppearanceEntities.remove(term);
                                 entities.add(term);
+                                addDocumentEntity(term);
                             }
                         }
                     }
@@ -460,9 +482,11 @@ public class Parse {
                     if (!entities.contains(entity)) {
                         if (!singleAppearanceEntities.contains(entity)) {
                             singleAppearanceEntities.add(entity);
+                            addDocumentEntity(entity);
                         } else {
                             singleAppearanceEntities.remove(entity);
                             entities.add(entity);
+                            addDocumentEntity(entity);
                         }
                     }
                     for (String entityToken : entityTokens) {

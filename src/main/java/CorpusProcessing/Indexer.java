@@ -14,7 +14,12 @@ public class Indexer {
 
     private TreeSet<String> entities;
 
+    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;
+
     private int documentsCount;
+
+    private  ArrayList<String> documentsDetails;
+
 
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
 
@@ -25,15 +30,19 @@ public class Indexer {
         this.dictionary = new TreeMap<>();
     }
 
+
     /**
      * Constructor
-     *
      * @param dictionary - Map<String, DictionaryEntryTrio>
-     * @param entities   - TreeSet<String>
+     * @param entities - TreeSet<String>
+     * @param allDocumentsEntities
+     * @param documentDetails
      */
-    public Indexer(Map<String, DictionaryEntryTrio> dictionary, TreeSet<String> entities) {
+    public Indexer(Map<String, DictionaryEntryTrio> dictionary, TreeSet<String> entities, HashMap<String, HashMap<String, Integer>> allDocumentsEntities, ArrayList<String> documentDetails) {
         this.dictionary = dictionary;
         this.entities = entities;
+        this.allDocumentsEntities = allDocumentsEntities;
+        this.documentsDetails = documentDetails;
     }
 
 
@@ -250,5 +259,42 @@ public class Indexer {
             return this.dictionary.size();
         }
         return 0;
+    }
+
+
+    public void setDocumentEntities(HashMap<String, HashMap<String, Integer>> documentsEntities) {
+        this.allDocumentsEntities = documentsEntities;
+    }
+
+    public void setDocumentDetails(ArrayList<String> documentsDetails) {
+        this.documentsDetails = documentsDetails;
+    }
+
+    /**
+     * Receive term and return df(term)
+     * @param term - String - term in the dictionary
+     * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return -1
+     */
+    public int getDocumentFrequency(String term) {
+        if(dictionary.containsKey(term)) {
+            return this.dictionary.get(term).getDocumentFrequency();
+        }
+        return -1;
+    }
+
+    /**
+     * Receive document ID and return the length of the document
+     * @param documentID
+     * @return
+     */
+    public int getDocumentLength(String documentID) {
+        //todo : change documentDetails to hashSet
+        //this.documentsDetails.get(documentID)
+        return -1;
+    }
+
+    public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
+    //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
+    return  null;
     }
 }

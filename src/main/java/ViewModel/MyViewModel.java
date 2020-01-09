@@ -110,4 +110,12 @@ public class MyViewModel extends Observable implements Observer {
     public ArrayList<ArrayList<String>> runQueries(String queriesPath) {
         return model.runQueries(queriesPath);
     }
+
+    public boolean getStopWordsStatus() {
+        return model.getStopWordsStatus();
+    }
+
+    public boolean loadStopWords(String path) {
+        return model.loadStopWords(path);
+    }
 }

@@ -63,4 +63,8 @@ public interface IModel {
     ArrayList<String> runQuery(String query);
 
     ArrayList<ArrayList<String>> runQueries(String queriesPath);
+
+    boolean getStopWordsStatus();
+
+    boolean loadStopWords(String path);
 }

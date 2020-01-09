@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +18,7 @@ public class RunnableParse implements Runnable {
     private static final int MERGERSPOOLSIZE = 2;
     private HashSet<String> entities;
     private HashSet<String> singleAppearanceEntities;
+    private HashMap<String,HashMap<String, Integer>> documentsEntities; //<DocNum, Map of all the entities in the document and their frequency in the document>
     private File[] filesToParse;
     private Parse parser;
     private Indexer indexer;
@@ -33,6 +35,7 @@ public class RunnableParse implements Runnable {
         this.indexer = new Indexer();
         this.parser = new Parse(entities, singleAppearanceEntities, useStemmer);
         this.documentsCount = 0;
+        this.documentsEntities = new HashMap<>();
     }
 
     /**
@@ -100,6 +103,9 @@ public class RunnableParse implements Runnable {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
                     ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(document.getId(), document.getDate(), bagOfWords);
                     postingEntriesListsOfFile.add(postingsEntries);
+
+                    this.documentsEntities.put(document.getId(),parser.getLastProcessedDocumentEntities());
+
                     this.documentsCount++;
                 }
 
@@ -147,5 +153,9 @@ public class RunnableParse implements Runnable {
         //entirePostingEntries contains all the sorted trios from all the documents - per thread
         //build posting file for all the documents in the thread
         this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
+    }
+
+    public HashMap<String, HashMap<String, Integer>> getDocumentsEntities() {
+        return documentsEntities;
     }
 }
