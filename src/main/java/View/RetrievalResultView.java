@@ -82,7 +82,6 @@ public class RetrievalResultView {
         }
 
         for (int i = 0; i < 50; i++) {
-            ObservableList<String> strings = FXCollections.observableArrayList(testDataGenerator.getNext(rankedDocuments.size()));
             tableView.getItems().add(
                     FXCollections.observableArrayList(
                             testDataGenerator.getNext(rankedDocuments.size())
