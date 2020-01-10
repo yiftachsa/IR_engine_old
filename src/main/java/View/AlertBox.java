@@ -28,7 +28,7 @@ public class AlertBox {
             root = FXMLLoader.load(AlertBox.class.getClassLoader().getResource("AlertBox.fxml"));
         } catch (
                 IOException e) {
-            System.out.println("Couldn't open the \"ExitConfirmBox.fxml\" fxml file");
+            System.out.println("Couldn't open the \"AlertBox.fxml\" fxml file");
             e.printStackTrace();
         }
 

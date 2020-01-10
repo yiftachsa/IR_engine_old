@@ -1,5 +1,6 @@
 package View;
 
+import Test.TestsPart1;
 import ViewModel.MyViewModel;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -217,8 +218,12 @@ public class GUIController implements Observer {
         if (preConditionsMet) {
             //TODO: Send to myViewModel
             ArrayList<String> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
-            //TODO: Display results. TextField or plain alert box
+            ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
+            rankedDocumentsNumbers.add(new Pair<>(query, rankedDocuments));
 
+
+            //TODO: Display results. TextField or plain alert box
+            RetrievalResultView.display("Single query results", rankedDocumentsNumbers);
         }
 
     }
@@ -244,6 +249,8 @@ public class GUIController implements Observer {
 
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
+            RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers);
+
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }
     }
@@ -275,8 +282,9 @@ public class GUIController implements Observer {
      * Handles the "about" button. Displays an about window with the creators details.
      */
     public void aboutHandler() {
-        String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
-        AlertBox.display("About", "About us:", sAbout, "Close", "default background");
+    //    String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
+    //    AlertBox.display("About", "About us:", sAbout, "Close", "default background");
+        TestsPart1.RetrievalResultView_Test1();
     }
 
 

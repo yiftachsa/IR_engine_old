@@ -2,8 +2,10 @@ package Test;
 
 import CorpusProcessing.*;
 import Model.MyModel;
+import View.RetrievalResultView;
 import javafx.util.Pair;
 
+import java.sql.Array;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -19,8 +21,30 @@ public class TestsPart1 {
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2_entireCorpus();
+        //Model_Test2_entireCorpus();
         //Model_Test2_100DocsTest();
+        RetrievalResultView_Test1();
+    }
+
+    public static void RetrievalResultView_Test1() {
+        ArrayList<Pair<String, ArrayList<String>>> pairs = new ArrayList<>();
+        ArrayList<String> stringArrayList = new ArrayList<>();
+        stringArrayList.add("query1-first");
+        stringArrayList.add("query1-second");
+
+        Pair<String, ArrayList<String>> newPair = new Pair<>("query1", stringArrayList);
+        pairs.add(newPair);
+        stringArrayList = new ArrayList<>();
+        stringArrayList.add("query2-first");
+        stringArrayList.add("query2-second");
+        stringArrayList.add("query2-third");
+
+
+        newPair = new Pair<>("query2", stringArrayList);
+        pairs.add(newPair);
+
+
+        RetrievalResultView.display("this is a title", pairs);
     }
 
 
