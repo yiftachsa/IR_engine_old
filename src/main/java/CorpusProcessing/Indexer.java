@@ -303,7 +303,54 @@ public class Indexer {
     public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
         //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
         DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
-        ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term ,dictionaryEntryTrio.getPostingIndex());
+        ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());
         return postingLine;
+    }
+
+    /**
+     * Checks if a given String is a valid document number by comparing it with the pre-loaded documents details.
+     *
+     * @param documentNumber - String - a string to check.
+     * @return - boolean - true if a given String is a valid document number, else false.
+     */
+    public boolean isValidDocumentNumber(String documentNumber) {
+        return this.documentsDetails.containsKey(documentNumber);
+    }
+
+    /**
+     * Returns all the document entities and their frequency for the given documentNumber as a Map of (entity , frequency).
+     *
+     * @param documentNumber - String - a valid document number
+     * @return - HashMap<String, Integer> - all the document entities
+     */
+    public HashMap<String, Integer> getDocumentEntities(String documentNumber) {
+        return allDocumentsEntities.get(documentNumber);
+    }
+
+    /**
+     * Returns all the saved document details for the given documentNumber as an array of strings.
+     *
+     * @param documentNumber - String - a valid document number
+     * @return - String[] - an array of all the document details
+     */
+    public String[] getDocumentDetails(String documentNumber) {
+        String details =  this.documentsDetails.get(documentNumber);
+        //maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
+
+        String maxTermFrequency = details.substring(0,details.indexOf(","));
+        details = details.substring(details.indexOf(",")+1);
+
+        String uniqTermsCount = details.substring(0,details.indexOf(","));
+        details = details.substring(details.indexOf(",")+1);
+
+        String length = details.substring(0,details.indexOf(","));
+        details = details.substring(details.indexOf(",")+1);
+
+        String documentDate = details.substring(0,details.indexOf(","));
+        details = details.substring(details.indexOf(",")+1);
+
+        String documentHeader = details;
+
+        return new String[]{maxTermFrequency, uniqTermsCount, length, documentDate, documentHeader};
     }
 }

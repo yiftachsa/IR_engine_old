@@ -223,7 +223,7 @@ public class GUIController implements Observer {
 
 
             //TODO: Display results. TextField or plain alert box
-            RetrievalResultView.display("Single query results", rankedDocumentsNumbers);
+            RetrievalResultView.display("Single query results", rankedDocumentsNumbers, viewModel);
         }
 
     }
@@ -249,7 +249,7 @@ public class GUIController implements Observer {
 
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
-            RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers);
+            RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers,viewModel);
 
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }
@@ -284,7 +284,7 @@ public class GUIController implements Observer {
     public void aboutHandler() {
     //    String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
     //    AlertBox.display("About", "About us:", sAbout, "Close", "default background");
-        TestsPart1.RetrievalResultView_Test1();
+        TestsPart1.RetrievalResultView_Test1(viewModel);
     }
 
 

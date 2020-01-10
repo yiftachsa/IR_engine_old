@@ -504,6 +504,27 @@ public class MyModel extends Observable implements IModel {
         }
         return rankedDocuments;
     }
+
+    @Override
+    public boolean checkValidDocumentNumber(String documentNumber) {
+//        //FIXME:DELETE THIS!!!!
+//        if(this.indexer == null){
+//            return false;
+//        }
+        return this.indexer.isValidDocumentNumber(documentNumber);
+    }
+
+    @Override
+    public String[] getDocumentEntities(String documentNumber) {
+        HashMap<String, Integer> documentEntities = this.indexer.getDocumentEntities(documentNumber);
+//      maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
+        String[] documentDetails = this.indexer.getDocumentDetails(documentNumber);
+
+        String documentHeader = documentDetails[documentDetails.length-1];
+
+        return searcher.rankEntities(documentEntities, documentHeader, this.parse);
+
+    }
 }
 
 

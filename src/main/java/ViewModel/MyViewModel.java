@@ -115,7 +115,31 @@ public class MyViewModel extends Observable implements Observer {
         return model.getStopWordsStatus();
     }
 
+    /**
+     * Loads a stop words file to memory from a given file path.
+     * If a stop words list is already loaded returns true.
+     * @param path - String - path to a stop words file.
+     * @return - boolean - true if a stop words list is loaded to memory.
+     */
     public boolean loadStopWords(String path) {
         return model.loadStopWords(path);
+    }
+
+    /**
+     * Checks if a given String is a valid document number
+     * @param documentNumber - String - a string to check
+     * @return - boolean - true if a given String is a valid document number, else false
+     */
+    public boolean checkValidDocumentNumber(String documentNumber) {
+        return model.checkValidDocumentNumber(documentNumber);
+    }
+
+    /**
+     * Returns an sorted array of the entities, based on importance, in the document.
+     * @param documentNumber - String - a valid document number.
+     * @return - String[] - an sorted array of the entities, based on importance.
+     */
+    public String[] getDocumentEntities(String documentNumber) {
+        return model.getDocumentEntities(documentNumber);
     }
 }

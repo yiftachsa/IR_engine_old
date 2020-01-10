@@ -9,19 +9,22 @@ public interface IModel {
 
     /**
      * Receives the "Stemming" checkbox state and sets its value
+     *
      * @param selected - boolean - the "Stemming" checkbox state
      */
     void setStemming(boolean selected);
 
     /**
-     *Receives the path of the dictionary from the user and loads it to the memory.
+     * Receives the path of the dictionary from the user and loads it to the memory.
+     *
      * @param path - String - the path of the dictionary
      * @return - boolean - true if the loading completed successfully, else false
      */
     boolean loadDictionary(String path);
 
     /**
-     *  Clears all the files related to the IR engine.
+     * Clears all the files related to the IR engine.
+     *
      * @param path - String - the path of the folder
      * @return - boolean - true if deleting  the files completed successfully, else false
      */
@@ -29,12 +32,14 @@ public interface IModel {
 
     /**
      * Checks if the dictionary is already loaded to the memory.
+     *
      * @return - boolean - true if the dictionary is loaded to the memory in the model, else false
      */
     boolean getDictionaryStatus();
 
     /**
      * Indexes the given corpus from the "corpusPath" and saves the index files (dictionary and posting files) in the "resultPath"
+     *
      * @param corpusPath - String - "corpusPath" text field content
      * @param resultPath - String - "resultPath" text field content
      */
@@ -43,6 +48,7 @@ public interface IModel {
     /**
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
+     *
      * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
     LinkedList<Pair<String, Integer>> getDictionary();
@@ -50,12 +56,14 @@ public interface IModel {
 
     /**
      * The dictionary size, the number of the unique terms
+     *
      * @return - int -  the number of the unique terms
      */
     int getUniqueTermsCount();
 
     /**
      * Returns the number of the documents processed
+     *
      * @return - int - the number of the documents processed
      */
     int getDocumentsProcessedCount();
@@ -63,13 +71,36 @@ public interface IModel {
     ArrayList<String> runQuery(String query, boolean useSemanticAnalysis);
 
     /**
-     *
      * @param queriesPath
-     * @return ArrayList<Pair<String , ArrayList<String>>> - pair < query , ranked Documents list>
+     * @return ArrayList<Pair < String, ArrayList < String>>> - pair < query , ranked Documents list>
      */
-    ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath,boolean useSemanticAnalysis);
+    ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis);
 
     boolean getStopWordsStatus();
 
+    /**
+     * Loads a stop words file to memory from a given file path.
+     * If a stop words list is already loaded returns true.
+     *
+     * @param path - String - path to a stop words file.
+     * @return - boolean - true if a stop words list is loaded to memory.
+     */
     boolean loadStopWords(String path);
+
+
+    /**
+     * Checks if a given String is a valid document number by comparing it with the pre-loaded documents details.
+     *
+     * @param documentNumber - String - a string to check.
+     * @return - boolean - true if a given String is a valid document number, else false.
+     */
+    boolean checkValidDocumentNumber(String documentNumber);
+
+    /**
+     * Returns an sorted array of the entities, based on importance, in the document.
+     *
+     * @param documentNumber - String - a valid document number.
+     * @return - String[] - an sorted array of the entities, based on importance.
+     */
+    String[] getDocumentEntities(String documentNumber);
 }
