@@ -12,7 +12,7 @@ public class Searcher {
         this.ranker = new Ranker();
     }
 
-    public ArrayList<String> runQuery(String query , Indexer indexer, Parse parse) {
+    public ArrayList<String> runQuery(String query, Indexer indexer, Parse parse) {
         ArrayList<TermDocumentTrio> processedQuery = parseQuery(query , parse);
         /**
          *  HashMap(DocID ,Pair(Document length , HasMap( Term , Document frequency)))

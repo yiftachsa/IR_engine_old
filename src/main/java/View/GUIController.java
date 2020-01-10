@@ -34,6 +34,8 @@ public class GUIController implements Observer {
     private TextField queryText;
     @FXML
     private CheckBox stemmingCheckBox;
+    @FXML
+    private CheckBox semanticCheckBox;
 
     /**
      * Sets the view model private field
@@ -123,6 +125,7 @@ public class GUIController implements Observer {
             queriesText.setText(path);
         }
     }
+
     /**
      * Displays a file selection window and returns the absolute path of the file chosen.
      *
@@ -211,9 +214,9 @@ public class GUIController implements Observer {
             }
         }
 
-        if(preConditionsMet){
+        if (preConditionsMet) {
             //TODO: Send to myViewModel
-            ArrayList<String> rankedDocuments = viewModel.runQuery(query);
+            ArrayList<String> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
 
         }
@@ -222,13 +225,23 @@ public class GUIController implements Observer {
 
     public void runQueriesHandler(ActionEvent event) {
         String queriesPath = queriesText.getText();
+        Boolean preConditionsMet = true;
+
         if (queriesPath.isEmpty()) {
             AlertBox.display("Wrong Inputs", "Wrong Inputs", "Please check your inputs and try again\n\n\n\n\n", "Back to menu", "default background");
+            preConditionsMet = false;
         } else if (!viewModel.getDictionaryStatus()) {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
-        } else {
+            preConditionsMet = false;
+        } else if (!viewModel.getStopWordsStatus()) {
+            if (!viewModel.loadStopWords(corpusText.getText())) {
+                AlertBox.display("No stop words loaded", "No stop words loaded", "Please enter corpus path\nto load the stop words list.\n\n\n\n\n", "Back to menu", "default background");
+                preConditionsMet = false;
+            }
+        }
+        if (preConditionsMet) {
             //TODO: Send to myViewModel
-            ArrayList<Pair<String , ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath);
+            ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }

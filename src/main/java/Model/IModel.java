@@ -60,14 +60,14 @@ public interface IModel {
      */
     int getDocumentsProcessedCount();
 
-    ArrayList<String> runQuery(String query);
+    ArrayList<String> runQuery(String query, boolean useSemanticAnalysis);
 
     /**
      *
      * @param queriesPath
      * @return ArrayList<Pair<String , ArrayList<String>>> - pair < query , ranked Documents list>
      */
-    ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath);
+    ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath,boolean useSemanticAnalysis);
 
     boolean getStopWordsStatus();
 
