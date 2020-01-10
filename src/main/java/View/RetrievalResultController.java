@@ -15,7 +15,7 @@ public class RetrievalResultController {
 
     public void saveResults(ActionEvent actionEvent) {
         String path = browseDirectoryChooser(actionEvent);
-        
+
 
     }
 
