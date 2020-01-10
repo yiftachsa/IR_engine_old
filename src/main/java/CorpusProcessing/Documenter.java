@@ -47,7 +47,7 @@ public class Documenter {
     }
 
 
-    public static HashMap<String , String> getDocumentsDetails() {
+    public static HashMap<String, String> getDocumentsDetails() {
         return documentsDetails;
     }
 
@@ -59,10 +59,10 @@ public class Documenter {
      * @param uniqTermsCount   - int - the number of uniq terms in the document
      * @param length           - int - the total number of terms in the document
      */
-    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate , String documentHeader) {
+    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate, String documentHeader) {
         if (filesPath != null) {
             documentsDetailsMutex.lock();
-            documentsDetails.put(docId,maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader);
+            documentsDetails.put(docId, maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate + "," + documentHeader);
             documentsDetailsMutex.unlock();
         }
     }
@@ -74,8 +74,8 @@ public class Documenter {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\DocumentsDetails"));
-            for (Map.Entry<String , String> documentDetails : documentsDetails.entrySet()) {
-                writer.write(documentDetails.getKey()+","+documentDetails.getValue());
+            for (Map.Entry<String, String> documentDetails : documentsDetails.entrySet()) {
+                writer.write(documentDetails.getKey() + "," + documentDetails.getValue());
                 writer.newLine();
             }
             writer.close();
@@ -90,7 +90,7 @@ public class Documenter {
      * @param path - String - path
      * @return - HashSet<String> - documents details
      */
-    public static HashMap<String , String> loadDocumentsDetailsFromFile(String path) {
+    public static HashMap<String, String> loadDocumentsDetailsFromFile(String path) {
         documentsDetails = new HashMap<>();
 
         BufferedReader reader = null;
@@ -98,9 +98,9 @@ public class Documenter {
             reader = new BufferedReader(new FileReader(path + "\\DocumentsDetails\\DocumentsDetails"));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                String documentID = line.substring(0 , line.indexOf(","));
-                String documentDetails = line.substring(line.indexOf(",")+1);
-                documentsDetails.put(documentID , documentDetails);
+                String documentID = line.substring(0, line.indexOf(","));
+                String documentDetails = line.substring(line.indexOf(",") + 1);
+                documentsDetails.put(documentID, documentDetails);
             }
             reader.close();
         } catch (IOException e) {
@@ -367,7 +367,7 @@ public class Documenter {
     public static HashMap<String, HashMap<String, Integer>> loadDocumentEntities(String path) {
         String entitiesPath = path + "\\Entities\\DocumentsEntities";
         FileInputStream fileInputStream;
-        HashMap<String, HashMap<String, Integer>> allDocumentsEntities =null;
+        HashMap<String, HashMap<String, Integer>> allDocumentsEntities = null;
 
         try {
             fileInputStream = new FileInputStream(entitiesPath);
@@ -383,7 +383,7 @@ public class Documenter {
         return allDocumentsEntities;
     }
 
-    public static ArrayList<Pair<String , Integer>> retrievePosting(String term, String postingIndex) {
+    public static ArrayList<Pair<String, Integer>> retrievePosting(String term, String postingIndex) {
         //todo: maybe we should split the posting file - time complexity
         String postingFilePath = filesPath + "\\PostingFiles\\" + postingIndex + "\\posting";
         BufferedReader reader = null;
@@ -391,8 +391,7 @@ public class Documenter {
             reader = new BufferedReader((new FileReader(postingFilePath)));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                if(term.equals(line.substring(0, line.indexOf('!'))))
-                {
+                if (term.equals(line.substring(0, line.indexOf('!')))) {
                     return getTermPairs(line);
                 }
             }
@@ -407,14 +406,14 @@ public class Documenter {
     private static ArrayList<Pair<String, Integer>> getTermPairs(String line) {
         //$$$$!<LA070590-0214,1>|<LA071290-0249,1>|<LA071990-0172,1>|<LA072690-0193,1>|<LA080990-0168,1>|<LA081690-0198,1>|<LA090690-0183,1>|
         //todo: check index
-        line = line.substring(line.indexOf('!')+1);
-        String [] allPairs = line.split("[|]");
-        ArrayList<Pair<String,Integer>> result = new ArrayList<>();
+        line = line.substring(line.indexOf('!') + 1);
+        String[] allPairs = line.split("[|]");
+        ArrayList<Pair<String, Integer>> result = new ArrayList<>();
         for (int i = 0; i < allPairs.length; i++) {
-            String documentID = allPairs[i].substring(1 , allPairs[i].indexOf(','));
+            String documentID = allPairs[i].substring(1, allPairs[i].indexOf(','));
             //todo: check index
-            int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',')+1 , (allPairs[i].length()-1)));
-            Pair<String , Integer> pair = new Pair<>(documentID,termFrequency);
+            int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
+            Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
             result.add(pair);
         }
         return result;
@@ -422,6 +421,29 @@ public class Documenter {
 
     public static void setFilePath(String path) {
         filesPath = path;
+    }
+
+    public static void saveRetrievalResults(String path, ArrayList<Pair<String, ArrayList<String>>> latestQueryResult) {
+        if (path != null) {
+            //WRITE TO DISK! 
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(path));
+                for (Pair<String, ArrayList<String>> pair : latestQueryResult) {
+                    String queryNum = pair.getKey();
+                    ArrayList<String> documents = pair.getValue();
+                    for (String documentNumber : documents) {
+                        String outLine = queryNum + " 0 " +documentNumber+" 1 42.38 mt";
+                        writer.write(outLine);
+                        writer.newLine();
+                    }
+                    writer.newLine();
+                }
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
 

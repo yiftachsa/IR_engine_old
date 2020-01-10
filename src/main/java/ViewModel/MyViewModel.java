@@ -142,4 +142,8 @@ public class MyViewModel extends Observable implements Observer {
     public String[] getDocumentEntities(String documentNumber) {
         return model.getDocumentEntities(documentNumber);
     }
+
+    public void saveLatestRetrievalResults(String path) {
+        model.saveLatestRetrievalResults(path);
+    }
 }

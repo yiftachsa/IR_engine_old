@@ -16,6 +16,8 @@ public class MyModel extends Observable implements IModel {
     private Indexer indexer;
     private Parse parse;
     private Searcher searcher;
+
+    private ArrayList<Pair<String, ArrayList<String>>> latestQueryResult;
     /**
      * The number of the parallel threads processing the files.
      */
@@ -473,8 +475,16 @@ public class MyModel extends Observable implements IModel {
 
         ArrayList<String> result = searcher.runQuery(query, this.indexer, this.parse);
 
-        //fixme
+        ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
+
+        Random random = new Random();
+        int queryIndex = random.nextInt(900)+100;
+
+        rankedDocumentsNumbers.add(new Pair<>(queryIndex + "", result));
+
+        setLatestQueryResult(rankedDocumentsNumbers);
         return result;
+
     }
 
 
@@ -501,15 +511,12 @@ public class MyModel extends Observable implements IModel {
             ArrayList<String> currentQueryRankedDocuments = runQuery(query, false); //Already used semantic analysis
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
         }
+        setLatestQueryResult(rankedDocuments);
         return rankedDocuments;
     }
 
     @Override
     public boolean checkValidDocumentNumber(String documentNumber) {
-//        //FIXME:DELETE THIS!!!!
-//        if(this.indexer == null){
-//            return false;
-//        }
         return this.indexer.isValidDocumentNumber(documentNumber);
     }
 
@@ -523,6 +530,15 @@ public class MyModel extends Observable implements IModel {
 
         return searcher.rankEntities(documentEntities, documentHeader, this.parse);
 
+    }
+
+    private void setLatestQueryResult(ArrayList<Pair<String, ArrayList<String>>> rankedDocuments){
+        this.latestQueryResult = rankedDocuments;
+    }
+
+    @Override
+    public void saveLatestRetrievalResults(String path) {
+        Documenter.saveRetrievalResults(path, this.latestQueryResult);
     }
 }
 
