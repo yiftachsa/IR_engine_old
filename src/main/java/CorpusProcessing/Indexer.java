@@ -14,7 +14,7 @@ public class Indexer {
 
     private TreeSet<String> entities;
 
-    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;
+    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;//<DocNum, Map of all the entities in the document and their frequency in the document>
 
     private int documentsCount;
 
