@@ -58,6 +58,7 @@ public class RetrievalResultController {
      * @return - String - the absolute path of the file chosen or an empty String
      */
     private String browseFileChooser(ActionEvent event) {
+        //TODO:FIXME
         FileChooser fileChooser = new FileChooser();
         Button browseButton = (Button) event.getSource();
         Scene scene = browseButton.getScene();
