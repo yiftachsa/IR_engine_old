@@ -474,8 +474,7 @@ public class MyModel extends Observable implements IModel {
         ArrayList<String> result = searcher.runQuery(query, this.indexer, this.parse);
 
         //fixme
-        return null;
-
+        return result;
     }
 
 

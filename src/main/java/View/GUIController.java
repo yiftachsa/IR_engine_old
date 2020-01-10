@@ -282,9 +282,8 @@ public class GUIController implements Observer {
      * Handles the "about" button. Displays an about window with the creators details.
      */
     public void aboutHandler() {
-    //    String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
-    //    AlertBox.display("About", "About us:", sAbout, "Close", "default background");
-        TestsPart1.RetrievalResultView_Test1(viewModel);
+        String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
+        AlertBox.display("About", "About us:", sAbout, "Close", "default background");
     }
 
 
