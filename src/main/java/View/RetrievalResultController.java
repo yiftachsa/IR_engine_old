@@ -9,8 +9,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class RetrievalResultController {
 
@@ -29,12 +31,12 @@ public class RetrievalResultController {
             if (!viewModel.checkValidDocumentNumber(documentNumber)) {
                 AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
             } else {
-                String[] documentEntities = viewModel.getDocumentEntities(documentNumber);
+                ArrayList<Pair<String, Double>> documentEntities = viewModel.getDocumentEntities(documentNumber);
 
                 String documentEntitiesToPrint = "";
-                for (int i = 0; i < documentEntities.length; i++) {
-                    if (documentEntities[i] != null && !documentEntities[i].isEmpty()) {
-                        documentEntitiesToPrint = documentEntitiesToPrint + documentEntities[i] + "\n";
+                for (int i = 0; i < documentEntities.size(); i++) {
+                    if (documentEntities.get(i) != null && !documentEntities.get(i).getKey().isEmpty()) {
+                        documentEntitiesToPrint = documentEntitiesToPrint +"Entity: "+ documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue()+ "\n";
                     }
                 }
                 documentEntitiesToPrint = documentEntitiesToPrint.substring(0, documentEntitiesToPrint.length() - 1);

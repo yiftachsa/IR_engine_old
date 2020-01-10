@@ -5,7 +5,6 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 //todo- maybe we should make the ranker as an abstract class - which every different calc of rank will be class which extend the abstract ranker class
 public class Ranker implements IRanker {
@@ -19,48 +18,53 @@ public class Ranker implements IRanker {
     private static final double b = 0.75;
     private static final double k = 1.2;
 
+    public Ranker(int corpusSize, double avdl, Indexer indexer) {
+        this.corpusSize = corpusSize;
+        this.avdl = avdl;
+        this.indexer = indexer;
+    }
 
     @Override
     public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
         return BM25calculator(query, documentID, documentLength, documentTerms);
     }
 
-    public double BM25calculator(ArrayList<TermDocumentTrio> query , String documentID, int documentLength , HashMap<String , Integer> documentTerms)
-    {
+    public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
         double sigma = 0;
-        double documentLengthRatio = documentLength/this.avdl;
+        double documentLengthRatio = documentLength / this.avdl;
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
-        for (TermDocumentTrio trio: query)
-        {
+        for (TermDocumentTrio trio : query) {
             String term = trio.getTerm();
             int tfQ = trio.getFrequency();
-            int tfD =  documentTerms.get(term);
-            double divide = (( k + 1 ) * tfD) / (tfD + lengthFactor);
+            int tfD = 0;
+            if (documentTerms.containsKey(term)) {
+                tfD = documentTerms.get(term);
+            }
+            double divide = ((k + 1) * tfD) / (tfD + lengthFactor);
             int dfT = indexer.getDocumentFrequency(term);
-            if(dfT < 0 )
-            {
+            if (dfT <= 0) {
                 continue;
             }
-            double logCalc = Math.log10(( (corpusSize + 1) / (dfT)));
+            double logCalc = Math.log10(((corpusSize + 1) / (dfT)));
             sigma = sigma + (tfQ * divide * logCalc);
         }
         return sigma;
     }
 
     @Override
-    public String[] rankEntities(HashMap<String, Integer> documentEntities, ArrayList<TermDocumentTrio> processedDocumentHeader) {
-        String[] result = new String[5];
+    public ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, ArrayList<TermDocumentTrio> processedDocumentHeader) {
+        ArrayList<Pair<String, Double>> result = new ArrayList<>();
 
-        Pair<Double,String>[] rankedEntities = new Pair[documentEntities.size()];
+        Pair<Double, String>[] rankedEntities = new Pair[documentEntities.size()];
         int index = 0;
 
-        for (Map.Entry<String, Integer> entry: documentEntities.entrySet()){
+        for (Map.Entry<String, Integer> entry : documentEntities.entrySet()) {
             String entity = entry.getKey();
             int docFrequency = entry.getValue();
             int docHeaderFrequency = 0;
 
-            for (TermDocumentTrio trio: processedDocumentHeader){
-                if(trio.getTerm().equals(entity)){
+            for (TermDocumentTrio trio : processedDocumentHeader) {
+                if (trio.getTerm().equals(entity)) {
                     docHeaderFrequency = trio.getFrequency();
                     break;
                 }
@@ -68,7 +72,7 @@ public class Ranker implements IRanker {
 
             double entityScore = rankEntity(docFrequency, docHeaderFrequency);
 
-            rankedEntities[index++] = new Pair<>(entityScore,entity);
+            rankedEntities[index++] = new Pair<>(entityScore, entity);
         }
 
 
@@ -77,27 +81,29 @@ public class Ranker implements IRanker {
             double maxValue = 0;
             int maxIndex = -1;
             for (int j = 0; j < rankedEntities.length; j++) {
-                if(rankedEntities[j]!= null){
-                    if(rankedEntities[j].getKey() > maxValue){
+                if (rankedEntities[j] != null) {
+                    if (rankedEntities[j].getKey() > maxValue) {
                         maxValue = rankedEntities[j].getKey();
                         maxIndex = j;
                     }
                 }
             }
-            if(maxIndex>-1){
-                result[i] = rankedEntities[maxIndex].getValue();
-            }else{
-                result[i] = "null";
+            if (maxIndex > -1) {
+                result.add(new Pair<>(rankedEntities[maxIndex].getValue(), maxValue));
+                rankedEntities[maxIndex] = null;
             }
+//            }else{
+//                result[i] = "null";
+//            }
         }
         return result;
     }
 
 
-    private double rankEntity(int docFrequency, int docHeaderFrequency){
+    private double rankEntity(int docFrequency, int docHeaderFrequency) {
         double docFrequencyWeight = 0.5;
         double docHeaderFrequencyWeight = 0.5;
 
-        return (docFrequencyWeight*docFrequency + docHeaderFrequencyWeight*docHeaderFrequency);
+        return (docFrequencyWeight * docFrequency + docHeaderFrequencyWeight * docHeaderFrequency);
     }
 }

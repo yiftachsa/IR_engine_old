@@ -9,8 +9,8 @@ public class Searcher {
     private IRanker ranker;
     private static final int RESULTNUMBER = 50;
 
-    public Searcher() {
-        this.ranker = new Ranker();
+    public Searcher(Indexer indexer, int corpusSize, double avdl) {
+        this.ranker = new Ranker(corpusSize,avdl, indexer);
     }
 
     public ArrayList<String> runQuery(String query, Indexer indexer, Parse parse) {
@@ -20,8 +20,13 @@ public class Searcher {
          */
         HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails = getRelevantDocumentsDetails(processedQuery, indexer);
 
-        //HashMap(DocID ,rankResult)
-        PriorityQueue<Pair<Double, String>> relevantDocsAndRankResult = new PriorityQueue<>();
+        //HashMap(rankResult , DocID)
+        PriorityQueue<Pair<Double, String>> relevantDocsAndRankResult = new PriorityQueue<>(new Comparator<Pair<Double, String>>() {
+            @Override
+            public int compare(Pair<Double, String> o1, Pair<Double, String> o2) {
+                return (int)(o2.getKey()-o1.getKey());
+            }
+        });
         for (Map.Entry<String, Pair<Integer, HashMap<String, Integer>>> docDetailsPair : relevantDocumentsDetails.entrySet()) {
             String documentID = docDetailsPair.getKey();
             int documentLength = docDetailsPair.getValue().getKey();
@@ -39,7 +44,7 @@ public class Searcher {
     private ArrayList<TermDocumentTrio> parseQuery(String DocNO, String query, Parse parse) {
 
         ArrayList<String> bagOfWords = parse.parseQuery(query);
-        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(DocNO, "", bagOfWords, "");
+        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(true,DocNO, "", bagOfWords, "");
         return processedQuery;
     }
 
@@ -75,7 +80,7 @@ public class Searcher {
      * @param documentEntities
      * @param documentHeader
      */
-    public String[] rankEntities(HashMap<String, Integer> documentEntities, String documentHeader , Parse parser) {
+    public  ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, String documentHeader , Parse parser) {
 
 
         return ranker.rankEntities(documentEntities, parseQuery("document",documentHeader,parser));

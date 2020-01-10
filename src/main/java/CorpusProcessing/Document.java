@@ -15,9 +15,13 @@ public class Document {
      */
     public Document(String documentID, String header,String date, String text) {
         this.id = documentID;
-        this.header = header;
+        this.header = strip(header);
         this.text = text;
         this.date = date;
+    }
+
+    private String strip(String header) {
+        return header.replaceAll("\n" , " ");
     }
 
     /**

@@ -68,7 +68,7 @@ public interface IModel {
      */
     int getDocumentsProcessedCount();
 
-    ArrayList<String> runQuery(String query, boolean useSemanticAnalysis);
+    ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis);
 
     /**
      * @param queriesPath
@@ -102,7 +102,7 @@ public interface IModel {
      * @param documentNumber - String - a valid document number.
      * @return - String[] - an sorted array of the entities, based on importance.
      */
-    String[] getDocumentEntities(String documentNumber);
+    ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber);
 
     void saveLatestRetrievalResults(String path);
 }

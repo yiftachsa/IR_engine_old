@@ -217,13 +217,11 @@ public class GUIController implements Observer {
 
         if (preConditionsMet) {
             //TODO: Send to myViewModel
-            ArrayList<String> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
-            ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
-            rankedDocumentsNumbers.add(new Pair<>(query, rankedDocuments));
+            ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
 
 
             //TODO: Display results. TextField or plain alert box
-            RetrievalResultView.display("Single query results", rankedDocumentsNumbers, viewModel);
+            RetrievalResultView.display("Single query results", rankedDocuments, viewModel);
         }
 
     }

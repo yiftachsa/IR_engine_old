@@ -303,7 +303,7 @@ public class TestsPart1 {
         String filePath = "C:\\Users\\yiftachs\\Data\\ReportFB.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords("" , "" , bagOfWords,"");
+        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords(false,"" , "" , bagOfWords,"");
         test.sort(new Comparator<TermDocumentTrio>() {
             @Override
             public int compare(TermDocumentTrio o1, TermDocumentTrio o2) {
