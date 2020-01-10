@@ -3,6 +3,7 @@ package Test;
 import CorpusProcessing.*;
 import Model.MyModel;
 import View.RetrievalResultView;
+import ViewModel.MyViewModel;
 import javafx.util.Pair;
 
 import java.sql.Array;
@@ -23,10 +24,10 @@ public class TestsPart1 {
         //Model_MergerThreads_test1();
         //Model_Test2_entireCorpus();
         //Model_Test2_100DocsTest();
-        RetrievalResultView_Test1();
+        //RetrievalResultView_Test1();
     }
 
-    public static void RetrievalResultView_Test1() {
+    public static void RetrievalResultView_Test1(MyViewModel viewModel) {
         ArrayList<Pair<String, ArrayList<String>>> pairs = new ArrayList<>();
         ArrayList<String> stringArrayList = new ArrayList<>();
         stringArrayList.add("query1-first");
@@ -44,7 +45,7 @@ public class TestsPart1 {
         pairs.add(newPair);
 
 
-        RetrievalResultView.display("this is a title", pairs);
+        RetrievalResultView.display("this is a title", pairs,viewModel);
     }
 
 
@@ -302,7 +303,7 @@ public class TestsPart1 {
         String filePath = "C:\\Users\\yiftachs\\Data\\ReportFB.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords("" , "" , bagOfWords);
+        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords("" , "" , bagOfWords,"");
         test.sort(new Comparator<TermDocumentTrio>() {
             @Override
             public int compare(TermDocumentTrio o1, TermDocumentTrio o2) {

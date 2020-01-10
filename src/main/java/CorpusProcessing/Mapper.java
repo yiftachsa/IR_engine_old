@@ -19,7 +19,7 @@ public class Mapper {
      * @param terms - ArrayList<String> - the terms to be converted into trios
      * @return - ArrayList<Trio> - ordered list of posting entries
      */
-    public static ArrayList<TermDocumentTrio> processBagOfWords(String DocNO, String documentDate, ArrayList<String> terms) {
+    public static ArrayList<TermDocumentTrio> processBagOfWords(String DocNO, String documentDate, ArrayList<String> terms , String documentHeader) {
         ArrayList<TermDocumentTrio> postingEntries = new ArrayList<TermDocumentTrio>();
         int maxTermFrequency = 1;
 
@@ -46,7 +46,7 @@ public class Mapper {
             }
         }
 
-        Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size(), documentDate);
+        Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size(), documentDate , documentHeader);
 
         return postingEntries;
     }

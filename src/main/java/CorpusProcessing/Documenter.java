@@ -59,10 +59,10 @@ public class Documenter {
      * @param uniqTermsCount   - int - the number of uniq terms in the document
      * @param length           - int - the total number of terms in the document
      */
-    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate) {
+    public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate , String documentHeader) {
         if (filesPath != null) {
             documentsDetailsMutex.lock();
-            documentsDetails.put(docId,maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate);
+            documentsDetails.put(docId,maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader);
             documentsDetailsMutex.unlock();
         }
     }
