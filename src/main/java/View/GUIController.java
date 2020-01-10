@@ -241,6 +241,7 @@ public class GUIController implements Observer {
         }
         if (preConditionsMet) {
             //TODO: Send to myViewModel
+            
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
