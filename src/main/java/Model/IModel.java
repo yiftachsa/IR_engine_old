@@ -103,4 +103,6 @@ public interface IModel {
      * @return - String[] - an sorted array of the entities, based on importance.
      */
     String[] getDocumentEntities(String documentNumber);
+
+    void saveLatestRetrievalResults(String path);
 }
