@@ -1,13 +1,13 @@
 package CorpusProcessing;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class ReadFile {
 
@@ -82,7 +82,7 @@ public class ReadFile {
                         do {
                             currentLine = iterator.next();
                         } while (!currentLine.equals("<HEADLINE>") && !currentLine.equals("<TEXT>"));
-                        if(!currentLine.equals("<TEXT>")) {
+                        if (!currentLine.equals("<TEXT>")) {
                             currentLine = iterator.next();
                             while (!currentLine.equals("</HEADLINE>")) {
                                 documentHeader = documentHeader + currentLine + " \n ";
@@ -123,5 +123,40 @@ public class ReadFile {
 
 
         return documents;
+    }
+
+    public static Query[] separateFileToQueries(String queriesPath) {
+        BufferedReader reader = null;
+        LinkedList<Query> queries = new LinkedList<>();
+        try {
+            reader = new BufferedReader((new FileReader(queriesPath)));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("<num>")){
+                    int queryNumber;
+                    String title = "";
+                    String description = "";
+
+                    String[] splitedline = line.split(" ");
+                    queryNumber =Integer.parseInt(splitedline[splitedline.length-1]); // TODO: Check what happens when the final char is " "
+
+                    line = reader.readLine();
+                    title = line.substring(line.indexOf(" ")+1);
+
+                    while (!((line = reader.readLine()).contains("<desc>"))) {}
+                    while (!((line = reader.readLine()).contains("<narr>"))) {
+                        description = description + line + " ";
+                    }
+
+                    queries.add(new Query(queryNumber,title, description));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

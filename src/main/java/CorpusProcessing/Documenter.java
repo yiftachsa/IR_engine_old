@@ -18,7 +18,7 @@ public class Documenter {
 
     private static int invertedIndexIndex = 0;
 
-    private static ArrayList<String> documentsDetails = new ArrayList<>();
+    private static HashMap<String, String> documentsDetails = new HashMap<>();
 
     private static ReentrantLock documentsDetailsMutex;
     private static ReentrantLock invertedIndexMutex;
@@ -47,7 +47,7 @@ public class Documenter {
     }
 
 
-    public static ArrayList<String> getDocumentsDetails() {
+    public static HashMap<String , String> getDocumentsDetails() {
         return documentsDetails;
     }
 
@@ -62,7 +62,7 @@ public class Documenter {
     public static void saveDocumentDetails(String docId, int maxTermFrequency, int uniqTermsCount, int length, String documentDate) {
         if (filesPath != null) {
             documentsDetailsMutex.lock();
-            documentsDetails.add(docId + "," + maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate);
+            documentsDetails.put(docId,maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate);
             documentsDetailsMutex.unlock();
         }
     }
@@ -74,8 +74,8 @@ public class Documenter {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(filesPath + "\\DocumentsDetails\\DocumentsDetails"));
-            for (String documentDetails : documentsDetails) {
-                writer.write(documentDetails);
+            for (Map.Entry<String , String> documentDetails : documentsDetails.entrySet()) {
+                writer.write(documentDetails.getKey()+","+documentDetails.getValue());
                 writer.newLine();
             }
             writer.close();
@@ -88,17 +88,19 @@ public class Documenter {
      * Loads the documentsDetails field to file
      *
      * @param path - String - path
-     * @return - ArrayList<String> - documents details
+     * @return - HashSet<String> - documents details
      */
-    public static ArrayList<String> loadDocumentsDetailsFromFile(String path) {
-        documentsDetails = new ArrayList<>();
+    public static HashMap<String , String> loadDocumentsDetailsFromFile(String path) {
+        documentsDetails = new HashMap<>();
 
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(path + "\\DocumentsDetails\\DocumentsDetails"));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                documentsDetails.add(line);
+                String documentID = line.substring(0 , line.indexOf(","));
+                String documentDetails = line.substring(line.indexOf(",")+1);
+                documentsDetails.put(documentID , documentDetails);
             }
             reader.close();
         } catch (IOException e) {
@@ -379,6 +381,47 @@ public class Documenter {
             e.printStackTrace();
         }
         return allDocumentsEntities;
+    }
+
+    public static ArrayList<Pair<String , Integer>> retrievePosting(String term, String postingIndex) {
+        //todo: maybe we should split the posting file - time complexity
+        String postingFilePath = filesPath + "\\PostingFiles\\" + postingIndex + "\\posting";
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader((new FileReader(postingFilePath)));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                if(term.equals(line.substring(0, line.indexOf('!'))))
+                {
+                    return getTermPairs(line);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static ArrayList<Pair<String, Integer>> getTermPairs(String line) {
+        //$$$$!<LA070590-0214,1>|<LA071290-0249,1>|<LA071990-0172,1>|<LA072690-0193,1>|<LA080990-0168,1>|<LA081690-0198,1>|<LA090690-0183,1>|
+        //todo: check index
+        line = line.substring(line.indexOf('!')+1);
+        String [] allPairs = line.split("[|]");
+        ArrayList<Pair<String,Integer>> result = new ArrayList<>();
+        for (int i = 0; i < allPairs.length; i++) {
+            String documentID = allPairs[i].substring(1 , allPairs[i].indexOf(','));
+            //todo: check index
+            int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',')+1 , (allPairs[i].length()-1)));
+            Pair<String , Integer> pair = new Pair<>(documentID,termFrequency);
+            result.add(pair);
+        }
+        return result;
+    }
+
+    public static void setFilePath(String path) {
+        filesPath = path;
     }
 }
 

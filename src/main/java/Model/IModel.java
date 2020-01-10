@@ -62,7 +62,12 @@ public interface IModel {
 
     ArrayList<String> runQuery(String query);
 
-    ArrayList<ArrayList<String>> runQueries(String queriesPath);
+    /**
+     *
+     * @param queriesPath
+     * @return ArrayList<Pair<String , ArrayList<String>>> - pair < query , ranked Documents list>
+     */
+    ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath);
 
     boolean getStopWordsStatus();
 
