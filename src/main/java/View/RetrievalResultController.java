@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -47,21 +48,21 @@ public class RetrievalResultController {
     }
 
     public void saveResults(ActionEvent actionEvent) {
-        String path = browseDirectoryChooser(actionEvent);
+        String path = browseFileChooser(actionEvent);
         viewModel.saveLatestRetrievalResults(path);
     }
     /**
-     * Displays a folder selection window and returns the absolute path of the folder chosen.
+     * Displays a file selection window and returns the absolute path of the file chosen.
      *
      * @param event - ActionEvent - the button that was pressed
-     * @return - String - the absolute path of the directory chosen or an empty String
+     * @return - String - the absolute path of the file chosen or an empty String
      */
-    private String browseDirectoryChooser(ActionEvent event) {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
+    private String browseFileChooser(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
         Button browseButton = (Button) event.getSource();
         Scene scene = browseButton.getScene();
         Stage stage = (Stage) scene.getWindow();
-        File file = directoryChooser.showDialog(stage);
+        File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
             return file.getAbsolutePath();
         }
