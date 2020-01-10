@@ -31,7 +31,6 @@ public class TestsPart1 {
         ArrayList<String> stringArrayList = new ArrayList<>();
         stringArrayList.add("query1-first");
         stringArrayList.add("query1-second");
-        stringArrayList.add("query1-third");
 
         Pair<String, ArrayList<String>> newPair = new Pair<>("query1", stringArrayList);
         pairs.add(newPair);
@@ -39,6 +38,7 @@ public class TestsPart1 {
         stringArrayList.add("query2-first");
         stringArrayList.add("query2-second");
         stringArrayList.add("query2-third");
+
 
         newPair = new Pair<>("query2", stringArrayList);
         pairs.add(newPair);

@@ -33,7 +33,6 @@ public class RetrievalResultView {
 
       String columnTitle = "";
         for (Pair<String,ArrayList<String>> pair : rankedDocuments){
-           // TableColumn<String, String> tableColumn = new TableColumn(pair.getKey());
             if(columnTitle.equals(""))
             {
                 columnTitle = pair.getKey();
@@ -43,16 +42,7 @@ public class RetrievalResultView {
                 columnTitle = columnTitle+" "+pair.getKey();
 
             }
-            //tableColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-            //tableView.getColumns().add(tableColumn);
-            //tableView.getItems().addAll(pair);
-//            ArrayList<String> documentsNumbers = pair.getValue();
-//            tableView.getItems().add(documentsNumbers);
-
-
         }
-        //Entries addition
-
 
         for (int i = 0; i < 50; i++) {
             ArrayList<Pair<String,String>> entry = new ArrayList<>();
@@ -89,16 +79,6 @@ public class RetrievalResultView {
             );
         }
 
-
-
-
-
-
-
-
-
-
-
         Button closeButton = (Button) root.lookup("#closeButton");
         closeButton.setOnAction(e-> window.close());
 
@@ -107,22 +87,6 @@ public class RetrievalResultView {
         window.setScene(scene);
         window.showAndWait();
 
-    }
-
-    private static  List<String> getNext(int nWord , int curWord , String []allColumnTitle )
-    {
-        List<String> words = new ArrayList<>();
-
-        for(int j = 0; j<nWord ; j++)
-        {
-            if(curWord == Integer.MAX_VALUE)
-            {
-                curWord = 0;
-            }
-            words.add(allColumnTitle [curWord % allColumnTitle.length] );
-            curWord++;
-        }
-        return words;
     }
 
 
