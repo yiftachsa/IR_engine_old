@@ -103,12 +103,12 @@ public class MyViewModel extends Observable implements Observer {
         return model.getDocumentsProcessedCount();
     }
 
-    public ArrayList<String> runQuery(String query) {
-        return model.runQuery(query);
+    public ArrayList<String> runQuery(String query, boolean useSemanticAnalysis) {
+        return model.runQuery(query, useSemanticAnalysis);
     }
 
-    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath) {
-        return model.runQueries(queriesPath);
+    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
+        return model.runQueries(queriesPath,useSemanticAnalysis);
     }
 
     public boolean getStopWordsStatus() {

@@ -4,7 +4,6 @@ import CorpusProcessing.*;
 import javafx.util.Pair;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,7 +65,7 @@ public class MyModel extends Observable implements IModel {
         Map<String, DictionaryEntryTrio> dictionary = Documenter.loadDictionary(path);
         TreeSet<String> entities = Documenter.loadEntities(path);
         HashMap<String, HashMap<String, Integer>> allDocumentsEntities = Documenter.loadDocumentEntities(path);
-        HashMap<String , String> documentDetails = Documenter.loadDocumentsDetailsFromFile(path);
+        HashMap<String, String> documentDetails = Documenter.loadDocumentsDetailsFromFile(path);
         if (dictionary == null || entities == null || allDocumentsEntities == null || documentDetails == null) {
             return false;
         }
@@ -112,7 +111,6 @@ public class MyModel extends Observable implements IModel {
         }
         return true;
     }
-
 
 
     @Override
@@ -459,37 +457,50 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public ArrayList<String> runQuery(String query) {
+    public ArrayList<String> runQuery(String query, boolean useSemanticAnalysis) {
 
-        if(searcher == null)
-        {
+        if (searcher == null) {
             searcher = new Searcher();
         }
-        if(this.parse == null)
-        {
-            this.parse = new Parse(new HashSet<>(), new HashSet<>() , this.stemming);
+        if (this.parse == null) {
+            this.parse = new Parse(new HashSet<>(), new HashSet<>(), this.stemming);
         }
-        ArrayList<String> result = searcher.runQuery(query , this.indexer , this.parse);
+
+        if (useSemanticAnalysis) {
+            SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
+            query = semanticAnalyzer.expandQuery(query);
+        }
+
+        ArrayList<String> result = searcher.runQuery(query, this.indexer, this.parse);
 
         //fixme
         return null;
 
     }
-    
+
 
     @Override
-    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath) {
-        ArrayList<Pair<String ,ArrayList<String>>> rankedDocuments = null;
+    public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
+        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = null;
         if (!testFilePath(queriesPath)) {
             setChanged();
             notifyObservers("Bad input");
             return null;
         }
-        Query [] queries = ReadFile.separateFileToQueries(queriesPath);
+        Query[] queries = ReadFile.separateFileToQueries(queriesPath);
         for (int i = 0; i < queries.length; i++) {
-            String query = queries[i].getTitle() + " " + queries[i].getDescription();
-            ArrayList<String> currentQueryRankedDocuments = runQuery(query);
-            rankedDocuments.add(new Pair<>(queries[i].getNumber()+"", currentQueryRankedDocuments));
+            String queryTitle = queries[i].getTitle();
+            String queryDescription = queries[i].getDescription();
+
+            //Use semantic analysis only on the title.
+            if (useSemanticAnalysis) {
+                SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
+                queryTitle = semanticAnalyzer.expandQuery(queryTitle);
+            }
+
+            String query = queryTitle + " " + queryDescription;
+            ArrayList<String> currentQueryRankedDocuments = runQuery(query, false); //Already used semantic analysis
+            rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
         }
         return rankedDocuments;
     }

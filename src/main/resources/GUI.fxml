@@ -67,7 +67,25 @@
                   <Button fx:id="queriesBrowse" mnemonicParsing="false" onAction="#queriesBrowseHandler" text="Browse" />
                </children>
             </HBox>
-            <Button fx:id="runQueriesButton" mnemonicParsing="false" onAction="#runQueriesHandler" text="RUN Queries" />
+            <HBox alignment="CENTER" prefHeight="29.0" prefWidth="400.0" VBox.vgrow="NEVER">
+               <children>
+                  <CheckBox fx:id="semanticCheckBox" alignment="CENTER" mnemonicParsing="false" text="Semantic">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                     <padding>
+                        <Insets right="10.0" />
+                     </padding>
+                  </CheckBox>
+                  <Button fx:id="runQueriesButton" alignment="CENTER" mnemonicParsing="false" onAction="#runQueriesHandler" text="RUN Queries" textAlignment="CENTER">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin></Button>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </HBox>
             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data">
                <VBox.margin>
                   <Insets top="10.0" />
