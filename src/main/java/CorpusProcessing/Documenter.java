@@ -410,11 +410,16 @@ public class Documenter {
         String[] allPairs = line.split("[|]");
         ArrayList<Pair<String, Integer>> result = new ArrayList<>();
         for (int i = 0; i < allPairs.length; i++) {
-            String documentID = allPairs[i].substring(1, allPairs[i].indexOf(','));
-            //todo: check index
-            int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
-            Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
-            result.add(pair);
+            try {
+                String documentID = allPairs[i].substring(1, allPairs[i].indexOf(','));
+                //todo: check index
+                int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
+                Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
+                result.add(pair);
+            }catch (Exception e){
+                e.printStackTrace();
+                System.out.println("");
+            }
         }
         return result;
     }

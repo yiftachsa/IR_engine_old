@@ -303,11 +303,17 @@ public class Indexer {
     public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
         //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
         DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
+        boolean toLowerCase = false;
+
         if(dictionaryEntryTrio == null){
             dictionaryEntryTrio = this.dictionary.get(term.toLowerCase());
             if(dictionaryEntryTrio == null){
                 return null;
             }
+            toLowerCase = true;
+        }
+        if(toLowerCase){
+            term = term.toLowerCase();
         }
         ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());
         return postingLine;

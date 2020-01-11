@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class MyModel extends Observable implements IModel {
@@ -413,9 +414,11 @@ public class MyModel extends Observable implements IModel {
 
         char startCharacter = '`';
         int invertedIndexDirectoriesCount = Indexer.getINVERTEDINDEXDIRECTORIESCOUNT();
+        ReentrantLock sharedDictionaryMutex = new ReentrantLock();
+
         for (int i = 0; i < invertedIndexDirectoriesCount; i++) {
             String path = resultPath + "\\PostingFiles\\" + (char) ((int) startCharacter + i);
-            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path, this.indexer.getDictionary())));
+            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path, this.indexer.getDictionary() , sharedDictionaryMutex)));
         }
 
         //waiting for threads to finish
