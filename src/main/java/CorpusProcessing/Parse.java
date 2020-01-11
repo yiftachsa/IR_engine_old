@@ -153,7 +153,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë")||token.contains("í") ||token.contains("ó") || token.contains("ø")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë")||token.contains("í") ||token.contains("ó") || token.contains("ø") || token.contains(">")) {
                 continue;
             }
 
@@ -410,6 +410,8 @@ public class Parse {
                         } else {
                             term = term + " " + string;
                         }
+                        /*todo - add all single string to the dictionary - USE STEMMER CHECK */
+
 
                     }
                     if (!isStopWord(term.toLowerCase())) {
@@ -479,14 +481,14 @@ public class Parse {
                 if (entityTokens.size() > 0) {
                     //Add to entities the first element which is the entity
                     String entity = entityTokens.get(0);
-                    if (!entities.contains(entity)) {
-                        if (!singleAppearanceEntities.contains(entity)) {
-                            singleAppearanceEntities.add(entity);
-                            addDocumentEntity(entity);
+                    if (!entities.contains(entity.toUpperCase())) {
+                        if (!singleAppearanceEntities.contains(entity.toUpperCase())) {
+                            singleAppearanceEntities.add(entity.toUpperCase());
+                            addDocumentEntity(entity.toUpperCase());
                         } else {
-                            singleAppearanceEntities.remove(entity);
-                            entities.add(entity);
-                            addDocumentEntity(entity);
+                            singleAppearanceEntities.remove(entity.toUpperCase());
+                            entities.add(entity.toUpperCase());
+                            addDocumentEntity(entity.toUpperCase());
                         }
                     }
                     for (String entityToken : entityTokens) {
