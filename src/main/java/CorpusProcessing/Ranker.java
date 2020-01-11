@@ -23,7 +23,6 @@ public class Ranker implements IRanker {
     private static final double WEIGHT_HEADER = 0.05;
     private static final double WEIGHT_ENTITIES = 0.05;
 
-
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
         this.avdl = avdl;
