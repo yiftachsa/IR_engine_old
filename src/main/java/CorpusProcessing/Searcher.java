@@ -10,7 +10,7 @@ public class Searcher {
     private static final int RESULTNUMBER = 50;
 
     public Searcher(Indexer indexer, int corpusSize, double avdl) {
-        this.ranker = new Ranker(corpusSize,avdl, indexer);
+        this.ranker = new Ranker(corpusSize, avdl, indexer);
     }
 
     public ArrayList<String> runQuery(String query, Indexer indexer, Parse parse) {
@@ -24,16 +24,20 @@ public class Searcher {
         PriorityQueue<Pair<Double, String>> relevantDocsAndRankResult = new PriorityQueue<>(new Comparator<Pair<Double, String>>() {
             @Override
             public int compare(Pair<Double, String> o1, Pair<Double, String> o2) {
-                return (int)(o2.getKey()-o1.getKey());
+                return (int) (o2.getKey() - o1.getKey());
             }
         });
         for (Map.Entry<String, Pair<Integer, HashMap<String, Integer>>> docDetailsPair : relevantDocumentsDetails.entrySet()) {
             String documentID = docDetailsPair.getKey();
             int documentLength = docDetailsPair.getValue().getKey();
             HashMap<String, Integer> documentTerms = docDetailsPair.getValue().getValue();
-             String documentHeader= indexer.getDocumentHeader(documentID);
-            ArrayList<TermDocumentTrio> processedHeader = parseQuery("header" , documentHeader, parse);
-             double rankResult = ranker.rankDocument(processedQuery, documentID, documentLength, documentTerms , processedHeader);
+
+            String documentHeader = indexer.getDocumentHeader(documentID);
+            ArrayList<TermDocumentTrio> processedHeader = parseQuery("header", documentHeader, parse);
+
+            ArrayList<String> documentEntities = indexer.getDocumentEntitiesList(documentID);
+
+            double rankResult = ranker.rankDocument(processedQuery, documentID, documentLength, documentTerms, processedHeader, documentEntities);
             relevantDocsAndRankResult.add(new Pair<>(rankResult, documentID));
         }
         ArrayList<String> result = new ArrayList<>();
@@ -46,7 +50,7 @@ public class Searcher {
     private ArrayList<TermDocumentTrio> parseQuery(String DocNO, String query, Parse parse) {
 
         ArrayList<String> bagOfWords = parse.parseQuery(query);
-        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(true,DocNO, "", bagOfWords, "");
+        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(true, DocNO, "", bagOfWords, "");
         return processedQuery;
     }
 
@@ -78,14 +82,15 @@ public class Searcher {
 
     /**
      * Returns an sorted array of the entities, based on importance.
-     * @return - String[] - an sorted array of the entities, based on importance.
+     *
      * @param documentEntities
      * @param documentHeader
+     * @return - String[] - an sorted array of the entities, based on importance.
      */
-    public  ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, String documentHeader , Parse parser) {
+    public ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, String documentHeader, Parse parser) {
 
 
-        return ranker.rankEntities(documentEntities, parseQuery("document",documentHeader,parser));
+        return ranker.rankEntities(documentEntities, parseQuery("document", documentHeader, parser));
     }
 
 

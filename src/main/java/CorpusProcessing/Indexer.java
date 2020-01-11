@@ -335,8 +335,22 @@ public class Indexer {
      * @param documentNumber - String - a valid document number
      * @return - HashMap<String, Integer> - all the document entities
      */
-    public HashMap<String, Integer> getDocumentEntities(String documentNumber) {
+    public HashMap<String, Integer> getDocumentEntitiesMap(String documentNumber) {
         return allDocumentsEntities.get(documentNumber);
+    }
+    /**
+     * Returns all the document entities  for the given documentNumber.
+     *
+     * @param documentNumber - String - a valid document number
+     * @return - ArrayList<String> - all the document entities
+     */
+    public ArrayList<String> getDocumentEntitiesList(String documentNumber) {
+        ArrayList<String> result = new ArrayList<>();
+        HashMap<String, Integer> documentEntities = allDocumentsEntities.get(documentNumber);
+        for(Map.Entry<String,Integer> entry: documentEntities.entrySet()){
+            result.add(entry.getKey());
+        }
+        return result;
     }
 
     /**

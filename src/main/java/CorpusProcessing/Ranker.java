@@ -19,6 +19,11 @@ public class Ranker implements IRanker {
     private static final double b = 0.75;
     private static final double k = 1.2;
 
+    private static final double WEIGHT_BM25 = 0.7;
+    private static final double WEIGHT_HEADER = 0.2;
+    private static final double WEIGHT_ENTITIES = 0.1;
+
+
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
         this.avdl = avdl;
@@ -30,40 +35,63 @@ public class Ranker implements IRanker {
     // 2. Jaccard Similarity between query and documentHeader
     // 3. Entities - number of entities in both / total number of entities in the document
     @Override
-    public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms , ArrayList<TermDocumentTrio> documentHeader) {
-        double finalRank = 0;
+    public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
         double bm25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
 
         List<String> queryTerms = extractTerms(query);
         List<String> documentHeaderTerms = extractTerms(documentHeader);
-        double headerJaccardRank = JaccardCalculator(queryTerms , documentHeaderTerms);
-        //TODO!!!!
-       // double entitiesRank = EntitiesCalculator();
+        double headerJaccardRank = JaccardCalculator(queryTerms, documentHeaderTerms);
+        double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
+
+
+        double finalRank = (WEIGHT_BM25 * bm25Rank + WEIGHT_HEADER * headerJaccardRank + WEIGHT_ENTITIES * entitiesDSCRank);
         return finalRank;
     }
 
-    private double JaccardCalculator(List<String> queryTerms, List<String> documentHeader) {
-        int total = queryTerms.size()+documentHeader.size();
+    /**
+     * Dice coefficient
+     *
+     * @param queryTerms
+     * @param documentEntities
+     * @return
+     */
+    private double DSCCalculator(List<String> queryTerms, ArrayList<String> documentEntities) {
+        int total = queryTerms.size() + documentEntities.size();
+        if (documentEntities.size() == 0 || total == 0) {
+            return 0;
+        }
         int totalInCommon = 0;
-        for(String termFromQuery : queryTerms)
-        {
-            for (String termFromHeader : documentHeader)
-            {
-                if(termFromHeader.equals(termFromHeader))
-                {
-                    totalInCommon ++;
+        for (String termFromQuery : queryTerms) {
+            for (String entity : documentEntities) {
+                if (termFromQuery.equals(entity)) {
+                    totalInCommon++;
                 }
             }
         }
-        if(total == totalInCommon)
-        {
+
+        double DSC = (2 * totalInCommon) / total;
+        return DSC;
+    }
+
+    private double JaccardCalculator(List<String> queryTerms, List<String> documentHeader) {
+        int total = queryTerms.size() + documentHeader.size();
+        int totalInCommon = 0;
+        for (String termFromQuery : queryTerms) {
+            for (String termFromHeader : documentHeader) {
+                if (termFromQuery.equals(termFromHeader)) {
+                    totalInCommon++;
+                }
+            }
+        }
+        if (total == totalInCommon) {
             return 0;
         }
-        return totalInCommon / (total-totalInCommon);
+        return totalInCommon / (total - totalInCommon);
     }
 
     /**
      * return list of terms from ArrayList<TermDocumentTrio> documentTrios
+     *
      * @param documentTrios
      * @return
      */
@@ -137,8 +165,8 @@ public class Ranker implements IRanker {
             if (maxIndex > -1) {
                 result.add(new Pair<>(rankedEntities[maxIndex].getValue(), maxValue));
                 rankedEntities[maxIndex] = null;
-            }else{
-                result.add(new Pair<>("null", (double)-1));
+            } else {
+                result.add(new Pair<>("null", (double) -1));
             }
         }
         return result;
