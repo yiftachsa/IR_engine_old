@@ -371,4 +371,16 @@ public class Indexer {
         double avdl = sigmaLength/numberOfDocuments;
         return avdl;
     }
+
+    /**
+     * Receive Document ID and return the Document Header
+     * @param documentID
+     * @return
+     */
+    public String getDocumentHeader(String documentID) {
+
+        String[] details = getDocumentDetails(documentID);
+        return details[details.length-1];
+
+    }
 }

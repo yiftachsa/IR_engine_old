@@ -31,7 +31,9 @@ public class Searcher {
             String documentID = docDetailsPair.getKey();
             int documentLength = docDetailsPair.getValue().getKey();
             HashMap<String, Integer> documentTerms = docDetailsPair.getValue().getValue();
-            double rankResult = ranker.rankDocument(processedQuery, documentID, documentLength, documentTerms);
+             String documentHeader= indexer.getDocumentHeader(documentID);
+            ArrayList<TermDocumentTrio> processedHeader = parseQuery("header" , documentHeader, parse);
+             double rankResult = ranker.rankDocument(processedQuery, documentID, documentLength, documentTerms , processedHeader);
             relevantDocsAndRankResult.add(new Pair<>(rankResult, documentID));
         }
         ArrayList<String> result = new ArrayList<>();

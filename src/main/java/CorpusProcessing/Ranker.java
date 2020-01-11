@@ -4,6 +4,7 @@ import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 //todo- maybe we should make the ranker as an abstract class - which every different calc of rank will be class which extend the abstract ranker class
@@ -24,9 +25,54 @@ public class Ranker implements IRanker {
         this.indexer = indexer;
     }
 
+    // rank calculators -
+    // 1. BM25
+    // 2. Jaccard Similarity between query and documentHeader
+    // 3. Entities - number of entities in both / total number of entities in the document
     @Override
-    public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
-        return BM25calculator(query, documentID, documentLength, documentTerms);
+    public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms , ArrayList<TermDocumentTrio> documentHeader) {
+        double finalRank = 0;
+        double bm25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+
+        List<String> queryTerms = extractTerms(query);
+        List<String> documentHeaderTerms = extractTerms(documentHeader);
+        double headerJaccardRank = JaccardCalculator(queryTerms , documentHeaderTerms);
+        //TODO!!!!
+       // double entitiesRank = EntitiesCalculator();
+        return finalRank;
+    }
+
+    private double JaccardCalculator(List<String> queryTerms, List<String> documentHeader) {
+        int total = queryTerms.size()+documentHeader.size();
+        int totalInCommon = 0;
+        for(String termFromQuery : queryTerms)
+        {
+            for (String termFromHeader : documentHeader)
+            {
+                if(termFromHeader.equals(termFromHeader))
+                {
+                    totalInCommon ++;
+                }
+            }
+        }
+        if(total == totalInCommon)
+        {
+            return 0;
+        }
+        return totalInCommon / (total-totalInCommon);
+    }
+
+    /**
+     * return list of terms from ArrayList<TermDocumentTrio> documentTrios
+     * @param documentTrios
+     * @return
+     */
+    private List<String> extractTerms(ArrayList<TermDocumentTrio> documentTrios) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < documentTrios.size(); i++) {
+            result.add(documentTrios.get(i).getTerm());
+        }
+        return result;
     }
 
     public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
