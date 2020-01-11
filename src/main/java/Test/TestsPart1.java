@@ -6,15 +6,22 @@ import View.RetrievalResultView;
 import ViewModel.MyViewModel;
 import javafx.util.Pair;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Array;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
-
+        //parserTest(parser);
+        Model_Test3_2DocsTest();
         //ReadFile_separateFileToDocuments_Test1();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
@@ -26,6 +33,39 @@ public class TestsPart1 {
         //Model_Test2_100DocsTest();
         //RetrievalResultView_Test1();
     }
+
+    public static void Model_Test3_2DocsTest(){
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+    }
+
+    private static boolean parserTest(Parse parse) throws IOException {
+        boolean result = false;
+        String filePath = "C:\\Users\\Merav\\Desktop\\parserTest.txt";
+        BufferedReader reader = null;
+        String query="";
+        try {
+            reader = new BufferedReader(new FileReader(filePath));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+
+                query=query+ " "+line;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ArrayList<String>stringArrayList = parse.parseQuery(query);
+        for (int i = 0; i < stringArrayList.size(); i++) {
+            System.out.println(stringArrayList.get(i));
+        }
+
+
+        return result;
+    }
+
 
     public static void RetrievalResultView_Test1(MyViewModel viewModel) {
         ArrayList<Pair<String, ArrayList<String>>> pairs = new ArrayList<>();
@@ -61,6 +101,8 @@ public class TestsPart1 {
         }
         return result;
     }
+
+
 
 
     private static void ReadFile_separateFileToDocuments_Test2() {
