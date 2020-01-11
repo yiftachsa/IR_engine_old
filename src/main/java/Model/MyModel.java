@@ -459,10 +459,10 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public ArrayList<String> runQuery(String query, boolean useSemanticAnalysis) {
+    public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
 
         if (searcher == null) {
-            searcher = new Searcher();
+            searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(),this.indexer.getAverageDocumentLength());
         }
         if (this.parse == null) {
             this.parse = new Parse(new HashSet<>(), new HashSet<>(), this.stemming);
@@ -483,14 +483,14 @@ public class MyModel extends Observable implements IModel {
         rankedDocumentsNumbers.add(new Pair<>(queryIndex + "", result));
 
         setLatestQueryResult(rankedDocumentsNumbers);
-        return result;
+        return rankedDocumentsNumbers;
 
     }
 
 
     @Override
     public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
-        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = null;
+        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = new ArrayList<>();
         if (!testFilePath(queriesPath)) {
             setChanged();
             notifyObservers("Bad input");
@@ -508,7 +508,7 @@ public class MyModel extends Observable implements IModel {
             }
 
             String query = queryTitle + " " + queryDescription;
-            ArrayList<String> currentQueryRankedDocuments = runQuery(query, false); //Already used semantic analysis
+            ArrayList<String> currentQueryRankedDocuments = (runQuery(query, false)).get(0).getValue(); //Already used semantic analysis
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
         }
         setLatestQueryResult(rankedDocuments);
@@ -521,7 +521,7 @@ public class MyModel extends Observable implements IModel {
     }
 
     @Override
-    public String[] getDocumentEntities(String documentNumber) {
+    public ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber) {
         HashMap<String, Integer> documentEntities = this.indexer.getDocumentEntities(documentNumber);
 //      maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
         String[] documentDetails = this.indexer.getDocumentDetails(documentNumber);

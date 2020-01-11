@@ -437,7 +437,7 @@ public class Documenter {
                         writer.write(outLine);
                         writer.newLine();
                     }
-                    writer.newLine();
+//                    writer.newLine();
                 }
                 writer.close();
             } catch (IOException e) {

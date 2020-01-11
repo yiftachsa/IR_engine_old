@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class Mapper {
 
 
-
     /**
      * Processes a given bag of words and deliver an ordered list of posting entries (trio).
      * Updates the tf for each term in the bag of words.
@@ -19,7 +18,7 @@ public class Mapper {
      * @param terms - ArrayList<String> - the terms to be converted into trios
      * @return - ArrayList<Trio> - ordered list of posting entries
      */
-    public static ArrayList<TermDocumentTrio> processBagOfWords(String DocNO, String documentDate, ArrayList<String> terms , String documentHeader) {
+    public static ArrayList<TermDocumentTrio> processBagOfWords(boolean isQuery, String DocNO, String documentDate, ArrayList<String> terms, String documentHeader) {
         ArrayList<TermDocumentTrio> postingEntries = new ArrayList<TermDocumentTrio>();
         int maxTermFrequency = 1;
 
@@ -45,9 +44,9 @@ public class Mapper {
                 maxTermFrequency = termFrequency;
             }
         }
-
-        Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size(), documentDate , documentHeader);
-
+        if (!isQuery) {
+            Documenter.saveDocumentDetails(DocNO, maxTermFrequency, postingEntries.size(), terms.size(), documentDate, documentHeader);
+        }
         return postingEntries;
     }
 
@@ -75,7 +74,6 @@ public class Mapper {
         }
         return mergedList;
     }
-
 
 
 }

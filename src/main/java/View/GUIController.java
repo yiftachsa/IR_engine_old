@@ -217,13 +217,11 @@ public class GUIController implements Observer {
 
         if (preConditionsMet) {
             //TODO: Send to myViewModel
-            ArrayList<String> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
-            ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
-            rankedDocumentsNumbers.add(new Pair<>(query, rankedDocuments));
+            ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
 
 
             //TODO: Display results. TextField or plain alert box
-            RetrievalResultView.display("Single query results", rankedDocumentsNumbers, viewModel);
+            RetrievalResultView.display("Single query results", rankedDocuments, viewModel);
         }
 
     }
@@ -245,7 +243,7 @@ public class GUIController implements Observer {
             }
         }
         if (preConditionsMet) {
-            //TODO: Send to myViewModel
+            AlertBox.display("Running Queries", "Running Queries", "The queries are being evaluated\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n", "Got it!", "default background");
 
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
@@ -282,9 +280,8 @@ public class GUIController implements Observer {
      * Handles the "about" button. Displays an about window with the creators details.
      */
     public void aboutHandler() {
-    //    String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
-    //    AlertBox.display("About", "About us:", sAbout, "Close", "default background");
-        TestsPart1.RetrievalResultView_Test1(viewModel);
+        String sAbout = "The Creators:\n" + "        Merav Shaked\n" + "        Yiftach Savransky";
+        AlertBox.display("About", "About us:", sAbout, "Close", "default background");
     }
 
 

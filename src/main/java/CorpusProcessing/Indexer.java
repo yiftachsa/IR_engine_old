@@ -276,13 +276,13 @@ public class Indexer {
      * Receive term and return df(term)
      *
      * @param term - String - term in the dictionary
-     * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return -1
+     * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return 0
      */
     public int getDocumentFrequency(String term) {
         if (dictionary.containsKey(term)) {
             return this.dictionary.get(term).getDocumentFrequency();
         }
-        return -1;
+        return 0;
     }
 
     /**
@@ -303,6 +303,12 @@ public class Indexer {
     public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
         //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
         DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
+        if(dictionaryEntryTrio == null){
+            dictionaryEntryTrio = this.dictionary.get(term.toLowerCase());
+            if(dictionaryEntryTrio == null){
+                return null;
+            }
+        }
         ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());
         return postingLine;
     }
@@ -314,7 +320,7 @@ public class Indexer {
      * @return - boolean - true if a given String is a valid document number, else false.
      */
     public boolean isValidDocumentNumber(String documentNumber) {
-        return this.documentsDetails.containsKey(documentNumber);
+        return this.allDocumentsEntities.containsKey(documentNumber); //Check
     }
 
     /**
@@ -352,5 +358,17 @@ public class Indexer {
         String documentHeader = details;
 
         return new String[]{maxTermFrequency, uniqTermsCount, length, documentDate, documentHeader};
+    }
+
+    public double getAverageDocumentLength() {
+        int numberOfDocuments = documentsDetails.size();
+        int sigmaLength = 0;
+
+        for (Map.Entry<String, String> entry: documentsDetails.entrySet()){
+            sigmaLength = sigmaLength + getDocumentLength(entry.getKey());
+        }
+
+        double avdl = sigmaLength/numberOfDocuments;
+        return avdl;
     }
 }

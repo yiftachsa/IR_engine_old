@@ -14,6 +14,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Constructor
+     *
      * @param model- IModel
      */
     public MyViewModel(IModel model) {
@@ -22,7 +23,7 @@ public class MyViewModel extends Observable implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (o==model){
+        if (o == model) {
             setChanged();
             notifyObservers(arg);
         }
@@ -30,6 +31,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Receives the "Stemming" checkbox state and forwards the selection to the model
+     *
      * @param selected - boolean - the "Stemming" checkbox state
      */
     public void stemmingSelection(boolean selected) {
@@ -38,6 +40,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Receives the path of the dictionary from the user and forwards it to the model.
+     *
      * @param path - String - the path of the dictionary
      * @return - boolean - true if the loading completed successfully, else false
      */
@@ -48,6 +51,7 @@ public class MyViewModel extends Observable implements Observer {
     /**
      * Receives the path of the folder from which to clear all the files related
      * to the IR engine and forwards it to the model.
+     *
      * @param path - String - the path of the folder
      * @return - boolean - true if deleting  the files completed successfully, else false
      */
@@ -57,6 +61,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Receives the dictionary status from the model.
+     *
      * @return - boolean - true if the dictionary is loaded to the memory in the model, else false
      */
     public boolean getDictionaryStatus() {
@@ -68,10 +73,11 @@ public class MyViewModel extends Observable implements Observer {
      * Returns a String representation of the dictionary in memory.
      * If there is no dictionary loaded to the main memory the result will be null.
      * A dictionary MUST be loaded to the memory.
+     *
      * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    public LinkedList<Pair<String,Integer>> getDictionary() {
-        if(model.getDictionaryStatus()) {
+    public LinkedList<Pair<String, Integer>> getDictionary() {
+        if (model.getDictionaryStatus()) {
             return model.getDictionary();
         }
         return null;
@@ -79,16 +85,18 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Forwards the text fields from the user to the model.
+     *
      * @param corpusPath - String - "corpusPath" text field content
      * @param resultPath - String - "resultPath" text field content
      */
     public void start(String corpusPath, String resultPath) {
-        model.start(corpusPath , resultPath);
+        model.start(corpusPath, resultPath);
     }
 
 
     /**
      * Returns the number of the unique terms
+     *
      * @return - int - the number of the unique terms
      */
     public int getUniqueTermsCount() {
@@ -97,18 +105,19 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Returns the number of the documents processed
+     *
      * @return - int - the number of the documents processed
      */
     public int getDocumentsProcessedCount() {
         return model.getDocumentsProcessedCount();
     }
 
-    public ArrayList<String> runQuery(String query, boolean useSemanticAnalysis) {
+    public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
         return model.runQuery(query, useSemanticAnalysis);
     }
 
-    public ArrayList<Pair<String , ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
-        return model.runQueries(queriesPath,useSemanticAnalysis);
+    public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
+        return model.runQueries(queriesPath, useSemanticAnalysis);
     }
 
     public boolean getStopWordsStatus() {
@@ -118,6 +127,7 @@ public class MyViewModel extends Observable implements Observer {
     /**
      * Loads a stop words file to memory from a given file path.
      * If a stop words list is already loaded returns true.
+     *
      * @param path - String - path to a stop words file.
      * @return - boolean - true if a stop words list is loaded to memory.
      */
@@ -127,6 +137,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Checks if a given String is a valid document number
+     *
      * @param documentNumber - String - a string to check
      * @return - boolean - true if a given String is a valid document number, else false
      */
@@ -136,10 +147,11 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Returns an sorted array of the entities, based on importance, in the document.
+     *
      * @param documentNumber - String - a valid document number.
-     * @return - String[] - an sorted array of the entities, based on importance.
+     * @return - ArrayList<Pair<String, Double>> - an sorted array of the entities, based on importance.
      */
-    public String[] getDocumentEntities(String documentNumber) {
+    public ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber) {
         return model.getDocumentEntities(documentNumber);
     }
 
