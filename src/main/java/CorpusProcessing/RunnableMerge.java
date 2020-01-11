@@ -36,7 +36,7 @@ public class RunnableMerge implements Runnable {
 
         for (int i = 0; i < stringArrayList.size(); i++) {
             String s = stringArrayList.get(i);
-            if(this.dictionary.containsKey(s.substring(0,s.indexOf('!'))));
+            if(this.dictionary.containsKey(s.substring(0,s.indexOf('!'))))
             {
                 listWithoutEntity.add(stringArrayList.get(i));
             }
