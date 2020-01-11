@@ -16,13 +16,14 @@ public class Ranker implements IRanker {
 
 
     //todo: optimize
-    private static final double b = 0.75;
-    private static final double k = 1.2;
+    private static final double b = 0.865;
+    private static final double k = 1.81;
 
-    private static final double WEIGHT_BM25 = 0.7;
-    private static final double WEIGHT_HEADER = 0.2;
-    private static final double WEIGHT_ENTITIES = 0.1;
-    
+    private static final double WEIGHT_BM25 = 0.9;
+    private static final double WEIGHT_HEADER = 0.05;
+    private static final double WEIGHT_ENTITIES = 0.05;
+
+
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
         this.avdl = avdl;

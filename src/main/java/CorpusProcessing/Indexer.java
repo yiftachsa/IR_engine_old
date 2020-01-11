@@ -44,6 +44,7 @@ public class Indexer {
         this.entities = entities;
         this.allDocumentsEntities = allDocumentsEntities;
         this.documentsDetails = documentDetails;
+        this.documentsCount = documentDetails.size();
     }
 
 

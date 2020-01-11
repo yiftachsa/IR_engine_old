@@ -68,7 +68,6 @@ public class GUIController implements Observer {
             AlertBox.display("Wrong Input", "Wrong Input", "Please check your inputs and try again\n\n\n\n\n", "Close", "default background");
         } else {
             if (!viewModel.clear(path)) {
-
                 AlertBox.display("Clear Failed", "Clear", "Everything is already cleared\n\n\n\n\n", "Back to menu", "default background");
             } else {
                 AlertBox.display("Succeed", "Succeed", "clear was successful\n\n\n\n\n", "Close", "default background");
@@ -216,11 +215,8 @@ public class GUIController implements Observer {
         }
 
         if (preConditionsMet) {
-            //TODO: Send to myViewModel
             ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = viewModel.runQuery(query, semanticCheckBox.isSelected());
 
-
-            //TODO: Display results. TextField or plain alert box
             RetrievalResultView.display("Single query results", rankedDocuments, viewModel);
         }
 
@@ -247,7 +243,7 @@ public class GUIController implements Observer {
 
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
             //TODO: Display results. TextField or plain alert box
-            RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers,viewModel);
+            RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers, viewModel);
 
             //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }
