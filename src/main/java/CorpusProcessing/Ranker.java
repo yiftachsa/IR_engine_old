@@ -91,10 +91,9 @@ public class Ranker implements IRanker {
             if (maxIndex > -1) {
                 result.add(new Pair<>(rankedEntities[maxIndex].getValue(), maxValue));
                 rankedEntities[maxIndex] = null;
+            }else{
+                result.add(new Pair<>("null", (double)-1));
             }
-//            }else{
-//                result[i] = "null";
-//            }
         }
         return result;
     }

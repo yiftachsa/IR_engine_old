@@ -490,7 +490,7 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
-        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = null;
+        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = new ArrayList<>();
         if (!testFilePath(queriesPath)) {
             setChanged();
             notifyObservers("Bad input");

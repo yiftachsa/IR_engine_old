@@ -157,6 +157,8 @@ public class ReadFile {
             e.printStackTrace();
         }
 
-        return null;
+        Query[] queriesResults = new Query[queries.size()];
+        queries.toArray(queriesResults);
+        return queriesResults;
     }
 }

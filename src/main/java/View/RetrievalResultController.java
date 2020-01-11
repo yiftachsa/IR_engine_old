@@ -36,11 +36,13 @@ public class RetrievalResultController {
 
                 String documentEntitiesToPrint = "";
                 for (int i = 0; i < documentEntities.size(); i++) {
-                    if (documentEntities.get(i) != null && !documentEntities.get(i).getKey().isEmpty()) {
+                    if (documentEntities.get(i) != null && !documentEntities.get(i).getKey().equals("null")) {
                         documentEntitiesToPrint = documentEntitiesToPrint +"Entity: "+ documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue()+ "\n";
                     }
                 }
-                documentEntitiesToPrint = documentEntitiesToPrint.substring(0, documentEntitiesToPrint.length() - 1);
+                if(documentEntitiesToPrint.length()>0) {
+                    documentEntitiesToPrint = documentEntitiesToPrint.substring(0, documentEntitiesToPrint.length() - 1);
+                }
                 AlertBox.display("Document Entities", "Document Entities for Document\n\t" + documentNumber, documentEntitiesToPrint + "\n\n\n", "Close", "default background");
             }
         }
@@ -60,10 +62,14 @@ public class RetrievalResultController {
     private String browseFileChooser(ActionEvent event) {
         //TODO:FIXME
         FileChooser fileChooser = new FileChooser();
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+
         Button browseButton = (Button) event.getSource();
         Scene scene = browseButton.getScene();
         Stage stage = (Stage) scene.getWindow();
-        File file = fileChooser.showOpenDialog(stage);
+        File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
             return file.getAbsolutePath();
         }

@@ -320,7 +320,7 @@ public class Indexer {
      * @return - boolean - true if a given String is a valid document number, else false.
      */
     public boolean isValidDocumentNumber(String documentNumber) {
-        return this.documentsDetails.containsKey(documentNumber);
+        return this.allDocumentsEntities.containsKey(documentNumber); //Check
     }
 
     /**
