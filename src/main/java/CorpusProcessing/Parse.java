@@ -404,14 +404,33 @@ public class Parse {
                     i--;
                 } else {
                     String term = "";
-                    for (String string : entityTokensCandidates) {
+                    for (String entity : entityTokensCandidates) {
                         if (term.equals("")) {
-                            term = string;
+                            term = entity;
                         } else {
-                            term = term + " " + string;
+                            term = term + " " + entity;
                         }
-                        /*todo - add all single string to the dictionary - USE STEMMER CHECK */
-
+                        /*  add all single string to the dictionary - USE STEMMER CHECK */
+                        if(!isStopWord(entity.toLowerCase()))
+                        {
+                            if(useStemmer)
+                            {
+                                String checkLowerUpper = entity.toLowerCase();
+                                String afterStemming = Stemmer.stem(checkLowerUpper);
+                                if(checkLowerUpper.equals(entity))
+                                {
+                                    terms.add(afterStemming);
+                                }
+                                else
+                                {
+                                    terms.add(afterStemming.toUpperCase());
+                                }
+                            }
+                            else
+                            {
+                                terms.add(entity.toUpperCase());
+                            }
+                        }
 
                     }
                     if (!isStopWord(term.toLowerCase())) {
