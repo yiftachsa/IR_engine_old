@@ -39,22 +39,22 @@ public class SemanticAnalyzer {
      * Receives a term and expands it using semantic analysis of the terms within it.
      * for each term in the query finds a list of words with close semantic meaning.
      * @param queryToExpand - String - query to expand
-     * @return - String - expanded query
+     * @return - ArrayList<String> - expanded query
      */
-    public String expandQuery(String queryToExpand) {
+    public ArrayList<String> expandQuery(String queryToExpand) {
         String[] queryTerms = queryToExpand.split(" ");
         String result = "";
 
+        ArrayList<String> expandedQuery = new ArrayList<>();
         for (int i = 0; i < queryTerms.length; i++) {
-            ArrayList<String> expandedQuery = new ArrayList<>();
-            expandedQuery.add(queryTerms[i]);
+            //expandedQuery.add(queryTerms[i]);
             expandedQuery.addAll(expandTerm(queryTerms[i].toLowerCase()));
 
-            for (String term : expandedQuery) {
-                result = result + term + " ";
-            }
+//            for (String term : expandedQuery) {
+//                result = result + term + " ";
+//            }
         }
-        return result;
+        return expandedQuery;
     }
 
     /**
