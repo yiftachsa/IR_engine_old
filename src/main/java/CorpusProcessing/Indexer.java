@@ -77,6 +77,10 @@ public class Indexer {
             TermDocumentTrio postingEntry = postingEntries.get(i);
             String term = postingEntry.getTerm();
             String docId = postingEntry.getDocid();
+            if (!term.equals("")) {
+
+                isLowerCaseLetters = Character.isLowerCase(term.charAt(0));
+            }
             int termFrequency = postingEntry.getFrequency();
             if (!term.equals("")) {
                 if (isLowerCaseLetters && (term.charAt(0) > limitCharacter)) {
@@ -94,7 +98,7 @@ public class Indexer {
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(term, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, newDocumentFrequency));
+                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, termFrequency));
                         }
                     } else {
                         dictionary.put(term, new DictionaryEntryTrio(1, termFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
@@ -118,7 +122,7 @@ public class Indexer {
                             postingLine.add(new Pair<>(docId, termFrequency));
                             posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newDocumentFrequency));
+                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, termFrequency));
                         }
                     } else if (dictionary.containsKey(term)) {//the dictionary already contains the term in upper case
                         DictionaryEntryTrio entry = dictionary.get(term);
@@ -128,12 +132,12 @@ public class Indexer {
                         String postingDirectory = entry.getPostingIndex();
                         //The function put override the previous value;
                         dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, postingDirectory));
-                        if (posting[invertedArrayIndex].get(lowerCaseTerm) == null) {
+                        if (posting[invertedArrayIndex].get(term) == null) {
                             PriorityQueue<Pair<String, Integer>> postingLine = new PriorityQueue<>(new PairComparator());
                             postingLine.add(new Pair<>(docId, termFrequency));
-                            posting[invertedArrayIndex].put(lowerCaseTerm, postingLine);
+                            posting[invertedArrayIndex].put(term, postingLine);
                         } else {
-                            posting[invertedArrayIndex].get(lowerCaseTerm).add(new Pair<>(docId, newDocumentFrequency));
+                            posting[invertedArrayIndex].get(term).add(new Pair<>(docId, termFrequency));
                         }
                     }
                     //the dictionary doesn't contain the term

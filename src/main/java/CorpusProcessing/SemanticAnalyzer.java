@@ -7,8 +7,6 @@ import sun.plugin.javascript.navig.Link;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 public class SemanticAnalyzer {
