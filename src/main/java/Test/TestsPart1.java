@@ -7,6 +7,7 @@ import ViewModel.MyViewModel;
 import javafx.util.Pair;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,18 +21,25 @@ public class TestsPart1 {
 
     public static void main(String[] args) throws IOException {
         Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
-        //parserTest(parser);
-        Model_Test3_2DocsTest();
-        //ReadFile_separateFileToDocuments_Test1();
+       // parserTest(parser);
+       // Model_Test3_2DocsTest();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        //Model_Test2_entireCorpus();
-        //Model_Test2_100DocsTest();
+        Model_Test2_100DocsTest();
+
         //RetrievalResultView_Test1();
+        //test30();
+
+    }
+
+    private static void test30() {
+        String s="currentLine.contains(\"71546\")||currentLine.contains(\"72692\")||currentLine.contains(\"72987\")||currentLine.contains(\"94579\")||currentLine.contains(\"94795\")||currentLine.contains(\"118042\")||currentLine.contains(\"118123\")||currentLine.contains(\"118190\")||currentLine.contains(\"118319\")||currentLine.contains(\"131919\") ||currentLine.contains(\"132603\")||currentLine.contains(\"139474\")||currentLine.contains(\"141683\")||currentLine.contains(\"145257\")||currentLine.contains(\"146408\")||currentLine.contains(\"146867\")||currentLine.contains(\"151104\")||currentLine.contains(\"151251\")||currentLine.contains(\"157416\")||currentLine.contains(\"158450\")||currentLine.contains(\"159991\")||currentLine.contains(\"165901\")||currentLine.contains(\"177745\")||currentLine.contains(\"190208\")||currentLine.contains(\"193844\")||currentLine.contains(\"195735\")||currentLine.contains(\"214327\")||currentLine.contains(\"214646\")||currentLine.contains(\"222915\")||currentLine.contains(\"224450\")||currentLine.contains(\"225423\")||currentLine.contains(\"25627\")||currentLine.contains(\"232143\")||currentLine.contains(\"236685\")||currentLine.contains(\"245951\")||currentLine.contains(\"251515\")||currentLine.contains(\"253636\")||currentLine.contains(\"256550\")||currentLine.contains(\"262902\")||currentLine.contains(\"263799\")||currentLine.contains(\"287999\")||currentLine.contains(\"308081\")||currentLine.contains(\"308433\")||currentLine.contains(\"323218\")||currentLine.contains(\"331454\")||currentLine.contains(\"335156\")||currentLine.contains(\"335858\")||currentLine.contains(\"343429\")||currentLine.contains(\"355892\")||currentLine.contains(\"384766\")||currentLine.contains(\"438713\")||currentLine.contains(\"439846\")||currentLine.contains(\"443109\")||currentLine.contains(\"449105\")||currentLine.contains(\"453202\")||currentLine.contains(\"463431\")||currentLine.contains(\"464947\")";
+        s= s.replaceAll("currentLine" , "documentId");
+        System.out.println(s);
     }
 
     public static void Model_Test3_2DocsTest(){
@@ -43,7 +51,7 @@ public class TestsPart1 {
 
     private static boolean parserTest(Parse parse) throws IOException {
         boolean result = false;
-        String filePath = "C:\\Users\\Merav\\Desktop\\parserTest.txt";
+        String filePath = "C:\\Users\\Merav\\Desktop\\testtt";
         BufferedReader reader = null;
         String query="";
         try {
@@ -89,17 +97,19 @@ public class TestsPart1 {
     }
 
 
-    private static boolean ReadFile_separateFileToDocuments_Test1() {
+    private static void ReadFile_separateFileToDocuments_Test1() {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396001";
-        ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
-        for (int i = 0; i < documentsList.size(); i++) {
-            Document document = documentsList.get(i);
-            System.out.println(document.getId());
-            System.out.println(document.getHeader());
-            System.out.println(document.getText());
+        String filePath1 = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus";
+
+        File Corpus = new File(filePath1);
+        File[] filesToParse = Corpus.listFiles();
+        for (File directory : filesToParse) {
+            String filePath = directory.listFiles()[0].getAbsolutePath();
+            if (Files.isReadable(Paths.get(filePath))) {
+                System.out.println("boom");
+                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+            }
         }
-        return result;
     }
 
 
@@ -445,8 +455,9 @@ public class TestsPart1 {
 */
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\Users\\yiftachs\\Data\\Corpus";
-        String resultPath = "C:\\Users\\yiftachs\\Data\\output";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+
         double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
         myModel.setStemming(false);
