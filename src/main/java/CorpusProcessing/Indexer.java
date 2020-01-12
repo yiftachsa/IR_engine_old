@@ -66,7 +66,7 @@ public class Indexer {
         for (int i = 0; i < posting.length; i++) {
             posting[i] = new TreeMap<>();
         }
-        
+
         //Enter to dictionary
         int invertedArrayIndex = 26;
         char limitCharacter = 'y';
