@@ -30,6 +30,7 @@ public class Ranker implements IRanker {
         this.indexer = indexer;
     }
 
+    
     // rank calculators -
     // 1. BM25
     // 2. Jaccard Similarity between query and documentHeader
