@@ -316,7 +316,7 @@ public class Indexer {
         if(toLowerCase){
             term = term.toLowerCase();
         }
-        ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());
+        ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());//check
         return postingLine;
     }
 

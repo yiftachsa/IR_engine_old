@@ -473,7 +473,7 @@ public class MyModel extends Observable implements IModel {
 
         if (useSemanticAnalysis) {
             SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
-            query = semanticAnalyzer.expandQuery(query);
+            query = semanticAnalyzer.expandQuery(query); //TODO: Semantics
         }
 
         ArrayList<String> result = searcher.runQuery(query, this.indexer, this.parse);

@@ -54,6 +54,7 @@ public class Searcher {
         return processedQuery;
     }
 
+    // HashMap(DocID ,Pair(Document length , HasMap( Term , Document frequency)))
     private HashMap<String, Pair<Integer, HashMap<String, Integer>>> getRelevantDocumentsDetails(ArrayList<TermDocumentTrio> processedQuery, Indexer indexer) {
         HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails = new HashMap<>();
         for (TermDocumentTrio termTrio : processedQuery) {
@@ -62,15 +63,20 @@ public class Searcher {
             if (allPairs != null) {
                 for (int i = 0; i < allPairs.size(); i++) {
                     String documentID = allPairs.get(i).getKey();
-                    int df = allPairs.get(i).getValue();
+                    int tf = allPairs.get(i).getValue();
                     HashMap<String, Integer> docTerms = new HashMap<>();
                     if (!relevantDocumentsDetails.containsKey(documentID)) {
-                        docTerms.put(term, df);
+                        docTerms.put(term, tf);
                         Pair<Integer, HashMap<String, Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
                         relevantDocumentsDetails.put(documentID, pair);
                     } else {
-                        docTerms.putAll(relevantDocumentsDetails.get(documentID).getValue());
-                        docTerms.put(term, df);
+                        docTerms = relevantDocumentsDetails.get(documentID).getValue();
+                        int previousTF = 0;
+                        if(docTerms.containsKey(term)){
+                            previousTF = docTerms.get(term);
+                        }
+                        //docTerms.putAll(relevantDocumentsDetails.get(documentID).getValue());
+                        docTerms.put(term, tf + previousTF);
                         Pair<Integer, HashMap<String, Integer>> pair = new Pair<>(indexer.getDocumentLength(documentID), docTerms);
                         relevantDocumentsDetails.put(documentID, pair);
                     }

@@ -48,7 +48,7 @@ public class SemanticAnalyzer {
         for (int i = 0; i < queryTerms.length; i++) {
             ArrayList<String> expandedQuery = new ArrayList<>();
             expandedQuery.add(queryTerms[i]);
-            expandedQuery.addAll(expandTerm(queryTerms[i]));
+            expandedQuery.addAll(expandTerm(queryTerms[i].toLowerCase()));
 
             for (String term : expandedQuery) {
                 result = result + term + " ";
