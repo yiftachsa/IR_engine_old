@@ -29,7 +29,6 @@ public class Ranker implements IRanker {
         this.avdl = avdl;
         this.indexer = indexer;
     }
-
     
     // rank calculators -
     // 1. BM25
