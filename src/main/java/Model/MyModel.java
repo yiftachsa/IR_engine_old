@@ -418,7 +418,7 @@ public class MyModel extends Observable implements IModel {
 
         for (int i = 0; i < invertedIndexDirectoriesCount; i++) {
             String path = resultPath + "\\PostingFiles\\" + (char) ((int) startCharacter + i);
-            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path, this.indexer.getDictionary() , sharedDictionaryMutex)));
+            postingMergerFutures.add(postingMergersPool.submit(new RunnableMerge(path, this.indexer.getDictionary(), sharedDictionaryMutex)));
         }
 
         //waiting for threads to finish
@@ -461,27 +461,31 @@ public class MyModel extends Observable implements IModel {
         return this.indexer.getDictionarySize();
     }
 
-    @Override
-    public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
-
+    private void preQueryInitialization() {
         if (searcher == null) {
-            searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(),this.indexer.getAverageDocumentLength());
+            searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(), this.indexer.getAverageDocumentLength());
         }
         if (this.parse == null) {
             this.parse = new Parse(new HashSet<>(), new HashSet<>(), this.stemming);
         }
+    }
 
+    @Override
+    public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
+        preQueryInitialization();
+
+        ArrayList<String> semanticExpansion = null;
         if (useSemanticAnalysis) {
             SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
-            query = semanticAnalyzer.expandQuery(query);
+            semanticExpansion = semanticAnalyzer.expandQuery(query);
         }
 
-        ArrayList<String> result = searcher.runQuery(query, this.indexer, this.parse);
+        ArrayList<String> result = searcher.runQuery(query, "", semanticExpansion, this.indexer, this.parse);
 
         ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
 
         Random random = new Random();
-        int queryIndex = random.nextInt(900)+100;
+        int queryIndex = random.nextInt(900) + 100;
 
         rankedDocumentsNumbers.add(new Pair<>(queryIndex + "", result));
 
@@ -493,27 +497,35 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
-        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = new ArrayList<>();
         if (!testFilePath(queriesPath)) {
             setChanged();
             notifyObservers("Bad input");
             return null;
         }
+
+        ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = new ArrayList<>();
+
+        preQueryInitialization();
+
+        //Get all individual queries
         Query[] queries = ReadFile.separateFileToQueries(queriesPath);
+
         for (int i = 0; i < queries.length; i++) {
             String queryTitle = queries[i].getTitle();
             String queryDescription = queries[i].getDescription();
 
             //Use semantic analysis only on the title.
+            ArrayList<String> semanticExpansion = null;
             if (useSemanticAnalysis) {
                 SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
-                queryTitle = semanticAnalyzer.expandQuery(queryTitle);
+                semanticExpansion = semanticAnalyzer.expandQuery(queryTitle);
             }
 
-            String query = queryTitle + " " + queryDescription;
-            ArrayList<String> currentQueryRankedDocuments = (runQuery(query, false)).get(0).getValue(); //Already used semantic analysis
+            ArrayList<String> currentQueryRankedDocuments = searcher.runQuery(queryTitle, queryDescription, semanticExpansion, this.indexer, this.parse);
+
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
         }
+
         setLatestQueryResult(rankedDocuments);
         return rankedDocuments;
     }
@@ -529,13 +541,13 @@ public class MyModel extends Observable implements IModel {
 //      maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
         String[] documentDetails = this.indexer.getDocumentDetails(documentNumber);
 
-        String documentHeader = documentDetails[documentDetails.length-1];
+        String documentHeader = documentDetails[documentDetails.length - 1];
 
         return searcher.rankEntities(documentEntities, documentHeader, this.parse);
 
     }
 
-    private void setLatestQueryResult(ArrayList<Pair<String, ArrayList<String>>> rankedDocuments){
+    private void setLatestQueryResult(ArrayList<Pair<String, ArrayList<String>>> rankedDocuments) {
         this.latestQueryResult = rankedDocuments;
     }
 

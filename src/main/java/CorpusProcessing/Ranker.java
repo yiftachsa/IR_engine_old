@@ -19,7 +19,8 @@ public class Ranker implements IRanker {
     private static final double b = 0.865;
     private static final double k = 1.81;
 
-    private static final double WEIGHT_BM25 = 0.9;
+    private static final double WEIGHT_QUERY_BM25 = 0.6;
+    private static final double WEIGHT_QUERYDESC_BM25 = 0.3;
     private static final double WEIGHT_HEADER = 0.05;
     private static final double WEIGHT_ENTITIES = 0.05;
 
@@ -34,8 +35,12 @@ public class Ranker implements IRanker {
     // 2. Jaccard Similarity between query and documentHeader
     // 3. Entities - number of entities in both / total number of entities in the document
     @Override
-    public double rankDocument(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
-        double bm25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+    public double rankDocument(ArrayList<TermDocumentTrio> query,ArrayList<TermDocumentTrio> queryDescription , String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
+
+        double queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
+
+
 
         List<String> queryTerms = extractTerms(query);
         List<String> documentHeaderTerms = extractTerms(documentHeader);
@@ -43,7 +48,7 @@ public class Ranker implements IRanker {
         double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
 
 
-        double finalRank = (WEIGHT_BM25 * bm25Rank + WEIGHT_HEADER * headerJaccardRank + WEIGHT_ENTITIES * entitiesDSCRank);
+        double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25*queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
         return finalRank;
     }
 
