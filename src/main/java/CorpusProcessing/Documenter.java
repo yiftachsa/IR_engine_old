@@ -337,16 +337,27 @@ public class Documenter {
     public static boolean deleteIndexingFilesFromDirectory(String path) {
         File stemmedDirectory = new File(path + "\\Stemmed");
         File unstemmedDirectory = new File(path + "\\UnStemmed");
-        if (!stemmedDirectory.exists() || !unstemmedDirectory.exists()) {
+
+
+        if (!stemmedDirectory.exists() && !unstemmedDirectory.exists()) {
             return false;
         }
 
         boolean clearSuccessful = true;
-        try {
-            FileUtils.deleteDirectory(stemmedDirectory);
-            FileUtils.deleteDirectory(unstemmedDirectory);
-        } catch (IOException e) {
-            clearSuccessful = false;
+        if (stemmedDirectory.exists()) {
+            try {
+                FileUtils.deleteDirectory(stemmedDirectory);
+            } catch (IOException e) {
+                clearSuccessful = false;
+            }
+        }
+
+        if (unstemmedDirectory.exists()) {
+            try {
+                FileUtils.deleteDirectory(unstemmedDirectory);
+            } catch (IOException e) {
+                clearSuccessful = false;
+            }
         }
 
         return clearSuccessful;
@@ -416,7 +427,7 @@ public class Documenter {
                 int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
                 Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
                 result.add(pair);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("");
             }
@@ -438,7 +449,7 @@ public class Documenter {
                     String queryNum = pair.getKey();
                     ArrayList<String> documents = pair.getValue();
                     for (String documentNumber : documents) {
-                        String outLine = queryNum + " 0 " +documentNumber+" 1 42.38 mt";
+                        String outLine = queryNum + " 0 " + documentNumber + " 1 42.38 mt";
                         writer.write(outLine);
                         writer.newLine();
                     }

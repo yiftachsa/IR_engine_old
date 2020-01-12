@@ -525,7 +525,7 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber) {
-        HashMap<String, Integer> documentEntities = this.indexer.getDocumentEntities(documentNumber);
+        HashMap<String, Integer> documentEntities = this.indexer.getDocumentEntitiesMap(documentNumber);
 //      maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
         String[] documentDetails = this.indexer.getDocumentDetails(documentNumber);
 
