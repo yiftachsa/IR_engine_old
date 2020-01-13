@@ -416,14 +416,12 @@ public class Documenter {
 
     private static ArrayList<Pair<String, Integer>> getTermPairs(String line) {
         //$$$$!<LA070590-0214,1>|<LA071290-0249,1>|<LA071990-0172,1>|<LA072690-0193,1>|<LA080990-0168,1>|<LA081690-0198,1>|<LA090690-0183,1>|
-        //todo: check index
         line = line.substring(line.indexOf('!') + 1);
         String[] allPairs = line.split("[|]");
         ArrayList<Pair<String, Integer>> result = new ArrayList<>();
         for (int i = 0; i < allPairs.length; i++) {
             try {
                 String documentID = allPairs[i].substring(1, allPairs[i].indexOf(','));
-                //todo: check index
                 int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
                 Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
                 result.add(pair);

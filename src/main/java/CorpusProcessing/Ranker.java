@@ -16,13 +16,13 @@ public class Ranker implements IRanker {
 
 
     //todo: optimize
-    private static final double b = 0.865;
+    private static final double b = 0.7;
     private static final double k = 1.81;
 
-    private static final double WEIGHT_QUERY_BM25 = 0.6;
-    private static final double WEIGHT_QUERYDESC_BM25 = 0.3;
-    private static final double WEIGHT_HEADER = 0.05;
-    private static final double WEIGHT_ENTITIES = 0.05;
+    private static final double WEIGHT_QUERY_BM25 = 1;
+    private static final double WEIGHT_QUERYDESC_BM25 = 0.4;
+    private static final double WEIGHT_HEADER = 0.1;
+    private static final double WEIGHT_ENTITIES = 0.4;
 
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
@@ -109,7 +109,7 @@ public class Ranker implements IRanker {
 
     public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
         double sigma = 0;
-        double documentLengthRatio = documentLength / this.avdl;
+        double documentLengthRatio = documentLength / (this.avdl*2);
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
         for (TermDocumentTrio trio : query) {
             String term = trio.getTerm();
