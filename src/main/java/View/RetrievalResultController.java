@@ -26,6 +26,7 @@ public class RetrievalResultController {
 
     /**
      * Handles the Display entities button being pressed
+     *
      * @param actionEvent - ActionEvent - the event of the button press
      */
     public void displayEntities(ActionEvent actionEvent) {
@@ -39,10 +40,10 @@ public class RetrievalResultController {
                 String documentEntitiesToPrint = "";
                 for (int i = 0; i < documentEntities.size(); i++) {
                     if (documentEntities.get(i) != null && !documentEntities.get(i).getKey().equals("null")) {
-                        documentEntitiesToPrint = documentEntitiesToPrint +"Entity: "+ documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue()+ "\n";
+                        documentEntitiesToPrint = documentEntitiesToPrint + "Entity: " + documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue() + "\n";
                     }
                 }
-                if(documentEntitiesToPrint.length()>0) {
+                if (documentEntitiesToPrint.length() > 0) {
                     documentEntitiesToPrint = documentEntitiesToPrint.substring(0, documentEntitiesToPrint.length() - 1);
                 }
                 AlertBox.display("Document Entities", "Document Entities for Document\n\t" + documentNumber, documentEntitiesToPrint + "\n\n\n", "Close", "default background");
@@ -51,13 +52,15 @@ public class RetrievalResultController {
     }
 
     /**
-     *  
+     * Handles the save Results button being pressed
+     *
      * @param actionEvent
      */
     public void saveResults(ActionEvent actionEvent) {
         String path = saveFileChooser(actionEvent);
         viewModel.saveLatestRetrievalResults(path);
     }
+
     /**
      * Displays a file selection window and returns the absolute path of the file chosen.
      *
@@ -65,7 +68,6 @@ public class RetrievalResultController {
      * @return - String - the absolute path of the file chosen or an empty String
      */
     private String saveFileChooser(ActionEvent event) {
-        //TODO:FIXME
         FileChooser fileChooser = new FileChooser();
         //Set extension filter
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");

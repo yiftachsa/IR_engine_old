@@ -13,11 +13,25 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class MyModel extends Observable implements IModel {
 
+    /**
+     * Indicates whether to use stemming in the indexing process.
+     */
     private boolean stemming;
+    /**
+     * The main Indexer that will be used to retrieve documents.
+     */
     private Indexer indexer;
+    /**
+     * The main Parse that will be used to parse the query sections.
+     */
     private Parse parse;
+    /**
+     * Searcher that will be used to retrieve the relevant documents to a query.
+     */
     private Searcher searcher;
-
+    /**
+     * The latest retrieved results.
+     */
     private ArrayList<Pair<String, ArrayList<String>>> latestQueryResult;
     /**
      * The number of the parallel threads processing the files.
@@ -176,7 +190,7 @@ public class MyModel extends Observable implements IModel {
 
         indexer.setDocumentDetails(Documenter.getDocumentsDetails());
 
-        //Closing all open ends
+        //Closing all open ends and saving all the gathered documents details.
         Documenter.shutdown();
 
     }
@@ -290,6 +304,13 @@ public class MyModel extends Observable implements IModel {
         return multipleAndUniqueEntities[1];
     }
 
+    /**
+     * Removes all the unique entities from the allDocumentsEntities Map.
+     *
+     * @param allDocumentsEntities - HashMap<String, HashMap<String, Integer>> - a map containing all the entities that are in the document which his ID is the key of the dictionary.
+     * @param uniqueEntities       - HashSet<String> - a set of all the entities which appear only in one document in the entire corpus.
+     * @return - HashMap<String, HashMap<String, Integer>> - the given allDocumentsEntities without all the strings in uniqueEntities.
+     */
     private HashMap<String, HashMap<String, Integer>> removeAllUniqueEntities(HashMap<String, HashMap<String, Integer>> allDocumentsEntities, HashSet<String> uniqueEntities) {
 
         HashMap<String, HashMap<String, Integer>> allDocumentsEntitiesUpdate = new HashMap<>();
@@ -461,6 +482,10 @@ public class MyModel extends Observable implements IModel {
         return this.indexer.getDictionarySize();
     }
 
+    /**
+     * Initializes all the needed components before a query is run.
+     * Makes sure that the searcher and the parse fields have been initialized an if not initializes them.
+     */
     private void preQueryInitialization() {
         if (searcher == null) {
             searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(), this.indexer.getAverageDocumentLength());
@@ -472,18 +497,22 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
+        //Initialization
         preQueryInitialization();
 
+        //Semantic analysis for query expansion
         String semanticExpansion = "";
         if (useSemanticAnalysis) {
             SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
             semanticExpansion = semanticAnalyzer.expandQuery(query);
         }
 
+        //retrieves the relevant documents
         ArrayList<String> result = searcher.runQuery(query, "", semanticExpansion, this.indexer, this.parse);
 
         ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
 
+        //Generates a random number for the individual query
         Random random = new Random();
         int queryIndex = random.nextInt(900) + 100;
 
@@ -491,7 +520,6 @@ public class MyModel extends Observable implements IModel {
 
         setLatestQueryResult(rankedDocumentsNumbers);
         return rankedDocumentsNumbers;
-
     }
 
 
@@ -504,7 +532,7 @@ public class MyModel extends Observable implements IModel {
         }
 
         ArrayList<Pair<String, ArrayList<String>>> rankedDocuments = new ArrayList<>();
-
+        //Initialization
         preQueryInitialization();
 
         //Get all individual queries
@@ -521,6 +549,7 @@ public class MyModel extends Observable implements IModel {
                 semanticExpansion = semanticAnalyzer.expandQuery(queryTitle);
             }
 
+            //retrieves the relevant documents
             ArrayList<String> currentQueryRankedDocuments = searcher.runQuery(queryTitle, queryDescription, semanticExpansion, this.indexer, this.parse);
 
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
@@ -547,6 +576,11 @@ public class MyModel extends Observable implements IModel {
 
     }
 
+    /**
+     * Sets the latestQueryResult field
+     *
+     * @param rankedDocuments
+     */
     private void setLatestQueryResult(ArrayList<Pair<String, ArrayList<String>>> rankedDocuments) {
         this.latestQueryResult = rankedDocuments;
     }

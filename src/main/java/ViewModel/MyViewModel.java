@@ -112,14 +112,33 @@ public class MyViewModel extends Observable implements Observer {
         return model.getDocumentsProcessedCount();
     }
 
+    /**
+     * Returns the relevant documents to a given query sorted by their relevance.
+     *
+     * @param query               - String - a phrase to retrieve relevant documents for.
+     * @param useSemanticAnalysis - boolean - whether to use semantic analysis on the given query.
+     * @return - ArrayList<Pair<String, ArrayList<String>>> - a list containing a pair of the query as key and the retrieved documents for it as a list.
+     */
     public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
         return model.runQuery(query, useSemanticAnalysis);
     }
 
+    /**
+     * Returns the relevant documents to the queries in the given path, sorted by their relevance.
+     *
+     * @param queriesPath         - String - a path to the queries file.
+     * @param useSemanticAnalysis - boolean - whether to use semantic analysis on the given query.
+     * @return - ArrayList<Pair<String, ArrayList<String>>> - a list containing pairs of each query number as key and the retrieved documents for it as a list.
+     */
     public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
         return model.runQueries(queriesPath, useSemanticAnalysis);
     }
 
+    /**
+     * Receives the stop words list status from the model.
+     *
+     * @return - boolean - true if the stop words list is loaded to the memory in the model, else false.
+     */
     public boolean getStopWordsStatus() {
         return model.getStopWordsStatus();
     }
@@ -155,6 +174,12 @@ public class MyViewModel extends Observable implements Observer {
         return model.getDocumentEntities(documentNumber);
     }
 
+    /**
+     * Orders the model to save the latest retrieval results to the given path.
+     * If a file already exists in the destination path then overrides its.
+     *
+     * @param path - String - a path to save the latest retrieval results to.
+     */
     public void saveLatestRetrievalResults(String path) {
         model.saveLatestRetrievalResults(path);
     }

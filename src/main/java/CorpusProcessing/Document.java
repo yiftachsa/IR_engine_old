@@ -1,5 +1,8 @@
-package  CorpusProcessing;
+package CorpusProcessing;
 
+/**
+ * Represents a document.
+ */
 public class Document {
 
     private String id;
@@ -9,23 +12,30 @@ public class Document {
 
     /**
      * Constructor
+     *
      * @param documentID - String - DocNO {Primary Key}
-     * @param header - String - The header of the document
-     * @param text - String - The text in the body of the document
+     * @param header     - String - The header of the document
+     * @param text       - String - The text in the body of the document
      */
-    public Document(String documentID, String header,String date, String text) {
+    public Document(String documentID, String header, String date, String text) {
         this.id = documentID;
         this.header = strip(header);
         this.text = text;
         this.date = date;
     }
 
+    /**
+     * Replaces all the "new line" characters with a space
+     * @param header - String - a sentence containing "new line" characters
+     * @return - String - a sentence without "new line" characters
+     */
     private String strip(String header) {
-        return header.replaceAll("\n" , " ");
+        return header.replaceAll("\n", " ");
     }
 
     /**
      * Getter for the id
+     *
      * @return - String - DocNO {Primary Key}
      */
     public String getId() {
@@ -34,6 +44,7 @@ public class Document {
 
     /**
      * Setter for the id
+     *
      * @param id - String - DocNO {Primary Key}
      */
     public void setId(String id) {
@@ -42,6 +53,7 @@ public class Document {
 
     /**
      * Getter for the header
+     *
      * @return - String - The header of the document
      */
     public String getHeader() {
@@ -50,6 +62,7 @@ public class Document {
 
     /**
      * Setter for the header
+     *
      * @param header - String - The header of the document
      */
     public void setHeader(String header) {
@@ -58,6 +71,7 @@ public class Document {
 
     /**
      * Getter for the text
+     *
      * @return - String - The text in the body of the document
      */
     public String getText() {
@@ -66,6 +80,7 @@ public class Document {
 
     /**
      * Getter for the date
+     *
      * @return - String - the date
      */
     public String getDate() {
@@ -74,6 +89,7 @@ public class Document {
 
     /**
      * Setter for the text
+     *
      * @param text - String - The text in the body of the document
      */
     public void setText(String text) {

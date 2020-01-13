@@ -14,13 +14,14 @@ import java.io.IOException;
 public class AlertBox {
     /**
      * Displays a simple alert box.
-     * @param title - String - the stage title
-     * @param subTitle - String - title in the scene
-     * @param text - String - text in the middle of the scene
-     * @param buttonText - String
+     *
+     * @param title               - String - the stage title
+     * @param subTitle            - String - title in the scene
+     * @param text                - String - text in the middle of the scene
+     * @param buttonText          - String
      * @param backgroundImagePath - String - path to the background image
      */
-    public static void display(String title, String subTitle, String text, String buttonText, String backgroundImagePath ) {
+    public static void display(String title, String subTitle, String text, String buttonText, String backgroundImagePath) {
         Stage window = new Stage();
         window.setTitle(title);
         Parent root = null;
@@ -40,14 +41,14 @@ public class AlertBox {
 
         Button closeButton = (Button) root.lookup("#closeButton");
         closeButton.setText(buttonText);
-        closeButton.setOnAction(e-> window.close());
+        closeButton.setOnAction(e -> window.close());
 
-        VBox vBox = (VBox)root;
-        if (!backgroundImagePath.equals("default background")){
-            String backgroundConfig = "-fx-background-image: url("+backgroundImagePath+");";
+        VBox vBox = (VBox) root;
+        if (!backgroundImagePath.equals("default background")) {
+            String backgroundConfig = "-fx-background-image: url(" + backgroundImagePath + ");";
             vBox.setStyle(backgroundConfig);
         }
-        
+
         Scene scene = new Scene(root);
         window.setScene(scene);
         window.showAndWait();

@@ -2,15 +2,17 @@ package CorpusProcessing;
 
 import com.medallia.word2vec.Searcher;
 import com.medallia.word2vec.Word2VecModel;
-import sun.plugin.javascript.navig.Link;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Used for semantic analysis on phrases.
+ * Singleton.
+ */
 public class SemanticAnalyzer {
 
     private static final int EXPENDEDWORDSPERTERM = 3;
@@ -18,7 +20,9 @@ public class SemanticAnalyzer {
     private static SemanticAnalyzer semanticAnalyzer;
     private Searcher word2VecSearcher; //FIXME: Check if a new searcher is needed for every search
 
-
+    /**
+     * Private constructor.
+     */
     private SemanticAnalyzer() {
         try {
             Word2VecModel word2VecModel = Word2VecModel.fromTextFile(new File("src\\main\\resources\\w2vJAR\\word2vec.c.output.model.txt"));
@@ -28,6 +32,11 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * Returns a SemanticAnalyzer
+     *
+     * @return - SemanticAnalyzer - this.semanticAnalyzer
+     */
     public static SemanticAnalyzer getInstance() {
         if (semanticAnalyzer == null) {
             semanticAnalyzer = new SemanticAnalyzer();
@@ -38,6 +47,7 @@ public class SemanticAnalyzer {
     /**
      * Receives a term and expands it using semantic analysis of the terms within it.
      * for each term in the query finds a list of words with close semantic meaning.
+     *
      * @param queryToExpand - String - query to expand
      * @return - String - expanded query
      */
@@ -53,19 +63,20 @@ public class SemanticAnalyzer {
         }
 
         for (int i = 0; i < queryTerms.length; i++) {
-            if(expandedQuery.contains(queryTerms[i])){
+            if (expandedQuery.contains(queryTerms[i])) {
                 expandedQuery.remove(queryTerms[i]);
             }
         }
 
         for (String term : expandedQuery) {
             result = result + term + " ";
-            }
+        }
         return result;
     }
 
     /**
      * Receives a term and finds other words with close semantic meaning.
+     *
      * @param queryTerm - String - a word to expand
      * @return - ArrayList<String> - words with close semantic meaning to queryTerm
      */
@@ -73,7 +84,7 @@ public class SemanticAnalyzer {
         ArrayList<String> similarTerms = new ArrayList<>();
         try {
             List<Searcher.Match> matches = this.word2VecSearcher.getMatches(queryTerm, EXPENDEDWORDSPERTERM);
-            for (Searcher.Match match:matches){
+            for (Searcher.Match match : matches) {
                 similarTerms.add(match.match());
             }
         } catch (Searcher.UnknownWordException e) {

@@ -68,14 +68,29 @@ public interface IModel {
      */
     int getDocumentsProcessedCount();
 
+    /**
+     * Returns the relevant documents to a given query sorted by their relevance.
+     *
+     * @param query               - String - a phrase to retrieve relevant documents for.
+     * @param useSemanticAnalysis - boolean - whether to use semantic analysis on the given query.
+     * @return - ArrayList<Pair<String, ArrayList<String>>> - a list containing a pair of the query as key and the retrieved documents for it as a list.
+     */
     ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis);
 
     /**
-     * @param queriesPath
-     * @return ArrayList<Pair < String, ArrayList < String>>> - pair < query , ranked Documents list>
+     * Returns the relevant documents to the queries in the given path, sorted by their relevance.
+     *
+     * @param queriesPath         - String - a path to the queries file.
+     * @param useSemanticAnalysis - boolean - whether to use semantic analysis on the given query.
+     * @return - ArrayList<Pair<String, ArrayList<String>>> - a list containing pairs of each query number as key and the retrieved documents for it as a list.
      */
     ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis);
 
+    /**
+     * Checks if the stop words list is already loaded to the memory.
+     *
+     * @return - boolean - true if the stop words list is loaded to the memory in the model, else false.
+     */
     boolean getStopWordsStatus();
 
     /**
@@ -104,5 +119,11 @@ public interface IModel {
      */
     ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber);
 
+    /**
+     * Saves the latest retrieval results to the given path.
+     * If a file already exists in the destination path then overrides its.
+     *
+     * @param path - String - a path to save the latest retrieval results to.
+     */
     void saveLatestRetrievalResults(String path);
 }

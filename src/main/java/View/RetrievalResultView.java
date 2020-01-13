@@ -20,9 +20,10 @@ import java.util.List;
 public class RetrievalResultView {
     /**
      * Displays a window that contains the retrieval results
-     * @param title - String
+     *
+     * @param title           - String
      * @param rankedDocuments - ArrayList<Pair<String, ArrayList<String>>>
-     * @param viewModel - MyViewModel
+     * @param viewModel       - MyViewModel
      */
     public static void display(String title, ArrayList<Pair<String, ArrayList<String>>> rankedDocuments, MyViewModel viewModel) {
         Stage window = new Stage();
