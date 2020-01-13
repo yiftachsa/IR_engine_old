@@ -96,7 +96,7 @@ public class ParseTest {
         System.out.println("\ntestDollars");
         boolean passed = true;
         ArrayList<String> testResults = parser.parseQuery("20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
-        passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
+        passed = passed && testResults.get(0).equals("20.6 M Dollars");
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
         passed = passed && testResults.get(3).equals("450 M Dollars");

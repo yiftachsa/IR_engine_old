@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View.GUIController">
+   <top>
+       <HBox BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="ClearButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#clearHandler" text="Clear" HBox.hgrow="ALWAYS" />
+            <Button fx:id="dictionaryButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#displayDictionaryHandler" text="Display Dictionary">
+               <HBox.margin>
+                  <Insets left="2.0" right="2.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="About" minWidth="-Infinity" mnemonicParsing="false" onAction="#aboutHandler" text="About">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin></Button>
+            <Region prefHeight="25.0" prefWidth="165.0" HBox.hgrow="ALWAYS" />
+            <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#exit" text="Exit">
+               <HBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </HBox.margin></Button>
+         </children>
+      </HBox>
+   </top>
+   <center>
+
+   </center>
+   <center>
+      <VBox alignment="TOP_CENTER" prefHeight="250.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Queries">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin></Text>
+            <HBox alignment="CENTER" prefHeight="21.0" prefWidth="400.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Query: " HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="queryText" alignment="TOP_CENTER" promptText="Query">
+                     <HBox.margin>
+                        <Insets bottom="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="runQueryButton" mnemonicParsing="false" onAction="#runQueryHandler" text="RUN" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="21.0" prefWidth="400.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Queries: " HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="queriesText" alignment="TOP_CENTER" promptText="Queries path">
+                     <HBox.margin>
+                        <Insets bottom="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="queriesBrowse" mnemonicParsing="false" onAction="#queriesBrowseHandler" text="Browse" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="29.0" prefWidth="400.0" VBox.vgrow="NEVER">
+               <children>
+                  <CheckBox fx:id="semanticCheckBox" alignment="CENTER" mnemonicParsing="false" text="Semantic">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                     <padding>
+                        <Insets right="10.0" />
+                     </padding>
+                  </CheckBox>
+                  <Button fx:id="runQueriesButton" alignment="CENTER" mnemonicParsing="false" onAction="#runQueriesHandler" text="RUN Queries" textAlignment="CENTER">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin></Button>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </HBox>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin></Text>
+            <HBox alignment="CENTER" prefHeight="21.0" prefWidth="400.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Corpus: ">
+                     <HBox.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="corpusText" alignment="TOP_CENTER" promptText="Corpus path">
+                     <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="corpusBrowse" mnemonicParsing="false" onAction="#corpusBrowseHandler" text="Browse..." />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="41.0" prefWidth="400.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Result: ">
+                     <HBox.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="resultText" alignment="CENTER" promptText="Result path">
+                     <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Button fx:id="resultBrowse" mnemonicParsing="false" onAction="#resultBrowseHandler" text="Browse..." />
+               </children>
+            </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="33.0" prefWidth="400.0">
+               <children>
+                  <CheckBox fx:id="stemmingCheckBox" mnemonicParsing="false" onAction="#stemmingHandler" text="Stemming" />
+                  <Button fx:id="loadButton" mnemonicParsing="false" onAction="#loadHandler" text="Load Dictionary">
+                     <HBox.margin>
+                        <Insets left="100.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+            <Button fx:id="startButton" mnemonicParsing="false" onAction="#startHandler" text="Start" />
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

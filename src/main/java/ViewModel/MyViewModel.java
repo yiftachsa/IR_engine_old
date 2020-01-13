@@ -1,10 +1,10 @@
 package ViewModel;
 
 import Model.IModel;
-import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
+import javafx.util.Pair;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -14,6 +14,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Constructor
+     *
      * @param model- IModel
      */
     public MyViewModel(IModel model) {
@@ -22,7 +23,7 @@ public class MyViewModel extends Observable implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if (o==model){
+        if (o == model) {
             setChanged();
             notifyObservers(arg);
         }
@@ -30,6 +31,7 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Receives the "Stemming" checkbox state and forwards the selection to the model
+     *
      * @param selected - boolean - the "Stemming" checkbox state
      */
     public void stemmingSelection(boolean selected) {
@@ -38,30 +40,28 @@ public class MyViewModel extends Observable implements Observer {
 
     /**
      * Receives the path of the dictionary from the user and forwards it to the model.
+     *
      * @param path - String - the path of the dictionary
      * @return - boolean - true if the loading completed successfully, else false
      */
     public boolean loadDictionary(String path) {
-        //TODO: load dictionary from path to object
-        //TODO: check stemming!!!!
         return model.loadDictionary(path);
-
     }
 
     /**
      * Receives the path of the folder from which to clear all the files related
      * to the IR engine and forwards it to the model.
+     *
      * @param path - String - the path of the folder
      * @return - boolean - true if deleting  the files completed successfully, else false
      */
     public boolean clear(String path) {
-        //TODO: clear the memory,posting,dictionary!
-        //TODO"check if its already clear!
         return model.clear(path);
     }
 
     /**
      * Receives the dictionary status from the model.
+     *
      * @return - boolean - true if the dictionary is loaded to the memory in the model, else false
      */
     public boolean getDictionaryStatus() {
@@ -70,20 +70,92 @@ public class MyViewModel extends Observable implements Observer {
     }
 
     /**
+     * Returns a String representation of the dictionary in memory.
+     * If there is no dictionary loaded to the main memory the result will be null.
+     * A dictionary MUST be loaded to the memory.
      *
-     * @return
+     * @return - LinkedList<Pair<String,Integer>> - dictionary representation or null, if no dictionary is loaded.
      */
-    public String getDictionary() {
-        return model.getDictionary();
+    public LinkedList<Pair<String, Integer>> getDictionary() {
+        if (model.getDictionaryStatus()) {
+            return model.getDictionary();
+        }
+        return null;
     }
-    //FIXME:expend the JavaDocs
 
     /**
      * Forwards the text fields from the user to the model.
+     *
      * @param corpusPath - String - "corpusPath" text field content
      * @param resultPath - String - "resultPath" text field content
      */
     public void start(String corpusPath, String resultPath) {
-        model.start(corpusPath , resultPath);
+        model.start(corpusPath, resultPath);
+    }
+
+
+    /**
+     * Returns the number of the unique terms
+     *
+     * @return - int - the number of the unique terms
+     */
+    public int getUniqueTermsCount() {
+        return model.getUniqueTermsCount();
+    }
+
+    /**
+     * Returns the number of the documents processed
+     *
+     * @return - int - the number of the documents processed
+     */
+    public int getDocumentsProcessedCount() {
+        return model.getDocumentsProcessedCount();
+    }
+
+    public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
+        return model.runQuery(query, useSemanticAnalysis);
+    }
+
+    public ArrayList<Pair<String, ArrayList<String>>> runQueries(String queriesPath, boolean useSemanticAnalysis) {
+        return model.runQueries(queriesPath, useSemanticAnalysis);
+    }
+
+    public boolean getStopWordsStatus() {
+        return model.getStopWordsStatus();
+    }
+
+    /**
+     * Loads a stop words file to memory from a given file path.
+     * If a stop words list is already loaded returns true.
+     *
+     * @param path - String - path to a stop words file.
+     * @return - boolean - true if a stop words list is loaded to memory.
+     */
+    public boolean loadStopWords(String path) {
+        return model.loadStopWords(path);
+    }
+
+    /**
+     * Checks if a given String is a valid document number
+     *
+     * @param documentNumber - String - a string to check
+     * @return - boolean - true if a given String is a valid document number, else false
+     */
+    public boolean checkValidDocumentNumber(String documentNumber) {
+        return model.checkValidDocumentNumber(documentNumber);
+    }
+
+    /**
+     * Returns an sorted array of the entities, based on importance, in the document.
+     *
+     * @param documentNumber - String - a valid document number.
+     * @return - ArrayList<Pair<String, Double>> - an sorted array of the entities, based on importance.
+     */
+    public ArrayList<Pair<String, Double>> getDocumentEntities(String documentNumber) {
+        return model.getDocumentEntities(documentNumber);
+    }
+
+    public void saveLatestRetrievalResults(String path) {
+        model.saveLatestRetrievalResults(path);
     }
 }

@@ -5,6 +5,7 @@ public class Document {
     private String id;
     private String header;
     private String text;
+    private String date;
 
     /**
      * Constructor
@@ -12,10 +13,15 @@ public class Document {
      * @param header - String - The header of the document
      * @param text - String - The text in the body of the document
      */
-    public Document(String documentID, String header, String text) {
+    public Document(String documentID, String header,String date, String text) {
         this.id = documentID;
-        this.header = header;
+        this.header = strip(header);
         this.text = text;
+        this.date = date;
+    }
+
+    private String strip(String header) {
+        return header.replaceAll("\n" , " ");
     }
 
     /**
@@ -56,6 +62,14 @@ public class Document {
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Getter for the date
+     * @return - String - the date
+     */
+    public String getDate() {
+        return date;
     }
 
     /**

@@ -2,42 +2,117 @@ package Test;
 
 import CorpusProcessing.*;
 import Model.MyModel;
+import View.RetrievalResultView;
+import ViewModel.MyViewModel;
+import javafx.util.Pair;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Array;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class TestsPart1 {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
-
-        //ReadFile_separateFileToDocuments_Test1();
+       // parserTest(parser);
+       // Model_Test3_2DocsTest();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        //Model_Test2_entireCorpus();
         Model_Test2_100DocsTest();
+
+        //RetrievalResultView_Test1();
+        //test30();
+
     }
 
+    private static void test30() {
+        String s="currentLine.contains(\"71546\")||currentLine.contains(\"72692\")||currentLine.contains(\"72987\")||currentLine.contains(\"94579\")||currentLine.contains(\"94795\")||currentLine.contains(\"118042\")||currentLine.contains(\"118123\")||currentLine.contains(\"118190\")||currentLine.contains(\"118319\")||currentLine.contains(\"131919\") ||currentLine.contains(\"132603\")||currentLine.contains(\"139474\")||currentLine.contains(\"141683\")||currentLine.contains(\"145257\")||currentLine.contains(\"146408\")||currentLine.contains(\"146867\")||currentLine.contains(\"151104\")||currentLine.contains(\"151251\")||currentLine.contains(\"157416\")||currentLine.contains(\"158450\")||currentLine.contains(\"159991\")||currentLine.contains(\"165901\")||currentLine.contains(\"177745\")||currentLine.contains(\"190208\")||currentLine.contains(\"193844\")||currentLine.contains(\"195735\")||currentLine.contains(\"214327\")||currentLine.contains(\"214646\")||currentLine.contains(\"222915\")||currentLine.contains(\"224450\")||currentLine.contains(\"225423\")||currentLine.contains(\"25627\")||currentLine.contains(\"232143\")||currentLine.contains(\"236685\")||currentLine.contains(\"245951\")||currentLine.contains(\"251515\")||currentLine.contains(\"253636\")||currentLine.contains(\"256550\")||currentLine.contains(\"262902\")||currentLine.contains(\"263799\")||currentLine.contains(\"287999\")||currentLine.contains(\"308081\")||currentLine.contains(\"308433\")||currentLine.contains(\"323218\")||currentLine.contains(\"331454\")||currentLine.contains(\"335156\")||currentLine.contains(\"335858\")||currentLine.contains(\"343429\")||currentLine.contains(\"355892\")||currentLine.contains(\"384766\")||currentLine.contains(\"438713\")||currentLine.contains(\"439846\")||currentLine.contains(\"443109\")||currentLine.contains(\"449105\")||currentLine.contains(\"453202\")||currentLine.contains(\"463431\")||currentLine.contains(\"464947\")";
+        s= s.replaceAll("currentLine" , "documentId");
+        System.out.println(s);
+    }
 
-    private static boolean ReadFile_separateFileToDocuments_Test1() {
+    public static void Model_Test3_2DocsTest(){
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+        MyModel myModel = new MyModel();
+        myModel.start(corpusPath,resultPath);
+    }
+
+    private static boolean parserTest(Parse parse) throws IOException {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\FB396001";
-        ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
-        for (int i = 0; i < documentsList.size(); i++) {
-            Document document = documentsList.get(i);
-            System.out.println(document.getId());
-            System.out.println(document.getHeader());
-            System.out.println(document.getText());
+        String filePath = "C:\\Users\\Merav\\Desktop\\testtt";
+        BufferedReader reader = null;
+        String query="";
+        try {
+            reader = new BufferedReader(new FileReader(filePath));
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+
+                query=query+ " "+line;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        ArrayList<String>stringArrayList = parse.parseQuery(query);
+        for (int i = 0; i < stringArrayList.size(); i++) {
+            System.out.println(stringArrayList.get(i));
+        }
+
+
         return result;
     }
+
+
+    public static void RetrievalResultView_Test1(MyViewModel viewModel) {
+        ArrayList<Pair<String, ArrayList<String>>> pairs = new ArrayList<>();
+        ArrayList<String> stringArrayList = new ArrayList<>();
+        stringArrayList.add("query1-first");
+        stringArrayList.add("query1-second");
+
+        Pair<String, ArrayList<String>> newPair = new Pair<>("query1", stringArrayList);
+        pairs.add(newPair);
+        stringArrayList = new ArrayList<>();
+        stringArrayList.add("query2-first");
+        stringArrayList.add("query2-second");
+        stringArrayList.add("query2-third");
+
+
+        newPair = new Pair<>("query2", stringArrayList);
+        pairs.add(newPair);
+
+
+        RetrievalResultView.display("this is a title", pairs,viewModel);
+    }
+
+
+    private static void ReadFile_separateFileToDocuments_Test1() {
+        boolean result = false;
+        String filePath1 = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus";
+
+        File Corpus = new File(filePath1);
+        File[] filesToParse = Corpus.listFiles();
+        for (File directory : filesToParse) {
+            String filePath = directory.listFiles()[0].getAbsolutePath();
+            if (Files.isReadable(Paths.get(filePath))) {
+                System.out.println("boom");
+                ArrayList<Document> documents = CorpusProcessing.ReadFile.separateFileToDocuments(filePath);
+            }
+        }
+    }
+
+
 
 
     private static void ReadFile_separateFileToDocuments_Test2() {
@@ -68,7 +143,7 @@ public class TestsPart1 {
         System.out.println("\ntestDollars");
         boolean passed = true;
         ArrayList<String> testResults = parser.parseQuery("$20-Million 20.6m Dollars $100 billion $100 million $450,000,000 $100 391bn Dollars");
-        passed = passed && testResults.get(0).equals("20.6 M Dollars"); //TODO: Replace with Junit and assert
+        passed = passed && testResults.get(0).equals("20.6 M Dollars");
         passed = passed && testResults.get(1).equals("100000 M Dollars");
         passed = passed && testResults.get(2).equals("100 M Dollars");
         passed = passed && testResults.get(3).equals("450 M Dollars");
@@ -277,19 +352,28 @@ public class TestsPart1 {
 
     private static boolean Parse_parseDocument_Test1_parseDocument(Parse parser) {
         boolean result = false;
-        String filePath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Data\\corpus\\corpus\\LA010290\\LA010290";
+        String filePath = "C:\\Users\\yiftachs\\Data\\ReportFB.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        for (String term : bagOfWords) {
-            System.out.println(term);
+        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords(false,"" , "" , bagOfWords,"");
+        test.sort(new Comparator<TermDocumentTrio>() {
+            @Override
+            public int compare(TermDocumentTrio o1, TermDocumentTrio o2) {
+                return o1.getTerm().compareTo(o2.getTerm());
+            }
+        });
+
+
+        for (TermDocumentTrio trio : test) {
+            System.out.println(trio.getTerm() + " , "+trio.getFrequency());
         }
         return result;
     }
-
+/*
     private static boolean Mapper_Test1() {
         boolean result = false;
         ArrayList<String> bagOfWords = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries = Mapper.processBagOfWords("Doc1", bagOfWords);
         for (Trio trio : postingsEntries) {
             System.out.println(trio);
@@ -298,11 +382,13 @@ public class TestsPart1 {
         return result;
     }
 
+
+
     private static boolean Mapper_Test2_mergeAndSortTwoPostingEntriesLists() {
         boolean result = false;
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> mergedList = Mapper.mergeAndSortTwoPostingEntriesLists(postingsEntries1, postingsEntries2);
@@ -312,14 +398,16 @@ public class TestsPart1 {
         return result;
     }
 
+
+
     private static boolean Model_MergerThreads_test1() {
         ArrayList<ArrayList<Trio>> allPostingEntriesLists = new ArrayList<>();
-        ExecutorService mergersPool = Executors.newFixedThreadPool(4); //FIXME:MAGIC NUMBER
+        ExecutorService mergersPool = Executors.newFixedThreadPool(4);
         ArrayList<Future<ArrayList<Trio>>> futures = new ArrayList<>();
         ArrayList<String> bagOfWords1 = new ArrayList<String>(Arrays.asList("B", "c", "B", "a", "b", "c", "a", "A"));
         ArrayList<String> bagOfWords2 = new ArrayList<String>(Arrays.asList("B", "b", "d", "q"));
         ArrayList<String> bagOfWords3 = new ArrayList<String>(Arrays.asList("C", "F", "h", "m"));
-        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine");
+        Documenter.start("D:\\Documents\\Studies\\Documents for higher education\\Courses\\Year 3 Semester 1\\אחזור מידע\\TestIREngine", false);
         ArrayList<Trio> postingsEntries1 = Mapper.processBagOfWords("Doc1", bagOfWords1);
         ArrayList<Trio> postingsEntries2 = Mapper.processBagOfWords("Doc2", bagOfWords2);
         ArrayList<Trio> postingsEntries3 = Mapper.processBagOfWords("Doc3", bagOfWords3);
@@ -364,15 +452,21 @@ public class TestsPart1 {
 
         return false;
     }
-
+*/
 
     public static void Model_Test2_entireCorpus(){
-        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data\\corpus";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
         String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
+
+        double startTime = System.currentTimeMillis()/1000;
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
+        myModel.setStemming(false);
+        myModel.loadDictionary(resultPath);
+        double endTime = System.currentTimeMillis()/1000;
+        String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
+        System.out.println(timePrint);
 
-
+        countNumberTerms(myModel.getDictionary());
         /*final int NUMBEROFDOCUMENTPROCESSORS = 4;
         final int NUMBEROFDOCUMENTPERPARSER = 5;
 
@@ -385,7 +479,7 @@ public class TestsPart1 {
         File[] directories = Corpus.listFiles();
         int currentDirectoryIndex = 0;
 
-        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS); //FIXME:MAGIC NUMBER
+        //ExecutorService documentProcessorsPool = Executors.newFixedThreadPool(NUMBEROFDOCUMENTPROCESSORS);
         Thread[] threads = new Thread[NUMBEROFDOCUMENTPROCESSORS];
         RunnableParse[] runnableParses = new RunnableParse[NUMBEROFDOCUMENTPROCESSORS];
 
@@ -434,22 +528,25 @@ public class TestsPart1 {
          */
     }
 
-
     public static void Model_Test2_100DocsTest(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\100DocsTest\\Output";
-        MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
-    }
-
-    public static void Model_Test2_300DocsTest(){
-        String corpusPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\corpus";
-        String resultPath = "C:\\scripts\\Courses_Scripts\\Information_Retrieval\\IR_Engine\\Test Files\\300DocsTest\\Output";
+        String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
+        String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
         myModel.start(corpusPath,resultPath);
     }
 
 
+    private static void countNumberTerms(LinkedList<Pair<String, Integer>> dictionary){
+        LinkedList<String> numbers = new LinkedList<>();
+        for (Pair<String, Integer> pair: dictionary){
+            String term = pair.getKey();
+            if (term.matches("[0-9]{1,13}(\\.[0-9]*)?")){
+                numbers.add(term);
+            }
+        }
+        System.out.println(numbers.size());
+
+    }
 
     private static int totalPostingEntries(int numberOfFilesPerThread){
         final int totalFilesInCorpus = 1815;

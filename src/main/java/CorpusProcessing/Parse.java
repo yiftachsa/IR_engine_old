@@ -71,11 +71,26 @@ public class Parse {
     private HashSet<String> singleAppearanceEntities;
     private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
+    private HashMap<String,Integer> lastProcessedDocumentEntities; //HashMap of all entities identified in the last document parsed with their counter
 
+    /**
+     * Constructor
+     * @param entities - HashSet<String>
+     * @param singleAppearanceEntities - HashSet<String>
+     * @param useStemmer - boolean
+     */
     public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
         this.entities = entities;
         this.singleAppearanceEntities = singleAppearanceEntities;
         this.useStemmer = useStemmer;
+    }
+
+    /**
+     * Returns true if the stop words are loaded
+     * @return - boolean - true if the stop words are loaded
+     */
+    public static boolean getStopwordsStatus() {
+        return stopwords!=null;
     }
 
     /**
@@ -103,6 +118,23 @@ public class Parse {
         ArrayList<String> terms = parseText(tokens, useStemmer);
         return terms;
     }
+
+    public HashMap<String,Integer> getLastProcessedDocumentEntities(){
+        return this.lastProcessedDocumentEntities;
+    }
+
+    /**
+     * Updates the lastProcessedDocumentEntities Map with the entity and it's frequency in the document.
+     * @param entity - String - The entity to be added.
+     */
+    private void addDocumentEntity(String entity){
+        if(lastProcessedDocumentEntities.containsKey(entity)){
+            int counter = lastProcessedDocumentEntities.get(entity) + 1;
+            lastProcessedDocumentEntities.put(entity,counter);
+        }else {
+            lastProcessedDocumentEntities.put(entity,1);
+        }
+    }
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *
@@ -110,8 +142,10 @@ public class Parse {
      * @param useStemmer - boolean - indicate whether to use stemmer. if true stemmer is used.
      * @return - ArrayList<String> - all the words from the text of the document after parsing
      */
-    public ArrayList<String> parseText(String[] tokens, boolean useStemmer) {
+    public ArrayList<String> parseText(String[] tokens, boolean useStemmer/*Add Document num for entities*/) {
         ArrayList<String> terms = new ArrayList<>();
+
+        lastProcessedDocumentEntities = new HashMap<>();
 
         //Start of parsing
         for (int i = 0; i < tokens.length; i++) {
@@ -119,7 +153,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë")||token.contains("í") ||token.contains("ó") || token.contains("ø") || token.contains(">")) {
                 continue;
             }
 
@@ -233,7 +267,9 @@ public class Parse {
                         }
                     } else //<<<Simple Number>>>
                     {
-                        terms.add(generateTokenSimpleNumber(token));
+                        if (token.matches("[0-9]{1,13}(\\.[0-9]*)?"))
+                            terms.add(generateTokenSimpleNumber(token));
+                        else continue;
                     }
                 }
             }
@@ -284,7 +320,16 @@ public class Parse {
                     token = token.substring(token.indexOf('/') + 1);
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term));
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
                             terms.add(term);
                         }
@@ -292,19 +337,37 @@ public class Parse {
                 }
                 if (!isStopWord(token.toLowerCase())) {
                     if (useStemmer) {
-                        terms.add(Stemmer.stem(token.toLowerCase()));
+                        String checkLowerUpper = token.toLowerCase();
+                        String afterStemming = Stemmer.stem(checkLowerUpper);
+                        if(checkLowerUpper.equals(token))
+                        {
+                            terms.add(afterStemming);
+                        }
+                        else
+                        {
+                            terms.add(afterStemming.toUpperCase());
+                        }
                     } else {
                         terms.add(token);
                     }
                 }
             }
             // Hyphens <<<Word-Word-Word>>>
-            else if (token.matches(".*-.*-.*") || token.matches(".*-.*")) {
+            else if (token.matches(".*-.*-.*") || token.matches(".*-.*") || token.contains("--")) {
                 LinkedList<String> resultHyphenList = generateTokenHyphens(token);
                 for (String term : resultHyphenList) {
                     if (!isStopWord(term.toLowerCase())) {
                         if (useStemmer) {
-                            terms.add(Stemmer.stem(term.toLowerCase()));
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
                             if (term.matches("^[A-Z].*"))
                                 terms.add(term.toUpperCase());
@@ -317,19 +380,42 @@ public class Parse {
             //Entity Recognition
             //TOKEN CONTAIN ONLY CAPITAL LETTERS
             else if (token.matches("^[A-Z]+([-/]?[A-Z]+)*")) {
+                boolean endOfLine = false;
                 LinkedList<String> entityTokensCandidates = new LinkedList<>();
                 entityTokensCandidates.add(token);
                 String nextToken = "";
-                if (i < tokens.length - 1) {
-                    nextToken = strip(tokens[i + 1]);
+                if(tokens[i].length() > 0 && tokens[i].charAt(tokens[i].length()-1) == '.')
+                {
+                    endOfLine = true;
                 }
-                for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*"); j++) {
-                    entityTokensCandidates.add(nextToken);
-                    if (i + j < tokens.length - 1) {
-                        nextToken = strip(tokens[i + j + 1]); //strip the next token
+                if ((i < tokens.length - 1) && !endOfLine){
+                    if (!(tokens[i + 1].contains("\n")) && !(tokens[i + 1].contains("\t"))) {
+
+                        nextToken = tokens[i + 1];
+                        if (nextToken.length() > 0 && nextToken.charAt(nextToken.length()-1) == '.')
+                       {
+                           endOfLine = true;
+                       }
+                        nextToken = strip(nextToken);
                     }
                 }
-                //MORE THEN MAXENTITYLENGTH.
+                boolean endEntity = false;
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*") && !endEntity; j++) {
+                    entityTokensCandidates.add(nextToken);
+                    if(endOfLine)
+                    {
+                        endEntity = true;
+                    }
+                    if (i + j < tokens.length - 1) {
+                        nextToken = tokens[i + j + 1];
+                        if (nextToken.length() > 0 && nextToken.charAt(nextToken.length()-1) == '.')
+                        {
+                            endOfLine = true;
+                        }
+                        nextToken = strip(nextToken); //strip the next token
+                    }
+                }
+                //MORE THEN MAXENTITYLENGTH
                 if (entityTokensCandidates.size() > MAXENTITYLENGTH) {
                     int counter = i;
                     for (String term : entityTokensCandidates) {
@@ -339,47 +425,115 @@ public class Parse {
                     i--;
                 } else {
                     String term = "";
-                    for (String string : entityTokensCandidates) {
+                    for (String entity : entityTokensCandidates) {
                         if (term.equals("")) {
-                            term = string;
+                            term = entity;
                         } else {
-                            term = term + " " + string;
+                            term = term + " " + entity;
+                        }
+                        /*  add all single string to the dictionary - USE STEMMER CHECK */
+                        if(!isStopWord(entity.toLowerCase()))
+                        {
+                            if(useStemmer)
+                            {
+                                String checkLowerUpper = entity.toLowerCase();
+                                String afterStemming = Stemmer.stem(checkLowerUpper);
+                                if(checkLowerUpper.equals(entity))
+                                {
+                                    terms.add(afterStemming);
+                                }
+                                else
+                                {
+                                    terms.add(afterStemming.toUpperCase());
+                                }
+                            }
+                            else
+                            {
+                                terms.add(entity.toUpperCase());
+                            }
                         }
 
                     }
-                    terms.add(term);
-                    if (!entities.contains(term)) {
-                        if (!singleAppearanceEntities.contains(term)) {
-                            singleAppearanceEntities.add(term);
+                    if (!isStopWord(term.toLowerCase())) {
+                        if (useStemmer) {
+                            String checkLowerUpper = term.toLowerCase();
+                            String afterStemming = Stemmer.stem(checkLowerUpper);
+                            if(checkLowerUpper.equals(term))
+                            {
+                                terms.add(afterStemming);
+                            }
+                            else
+                            {
+                                terms.add(afterStemming.toUpperCase());
+                            }
                         } else {
-                            singleAppearanceEntities.remove(term);
-                            entities.add(term);
+                            terms.add(term);
+                        }
+                        if (!entities.contains(term)) {
+                            if (!singleAppearanceEntities.contains(term)) {
+                                singleAppearanceEntities.add(term);
+                                addDocumentEntity(term);
+                            } else {
+                                singleAppearanceEntities.remove(term);
+                                entities.add(term);
+                                addDocumentEntity(term);
+                            }
                         }
                     }
+
                     if (entityTokensCandidates.size() > 1) {
                         for (String string : entityTokensCandidates) {
                             if (!isStopWord(string.toLowerCase()))
                                 if (useStemmer) {
-                                    terms.add(Stemmer.stem(string.toLowerCase()));
+                                    String checkLowerUpper = string.toLowerCase();
+                                    String afterStemming = Stemmer.stem(checkLowerUpper);
+                                    if(checkLowerUpper.equals(string))
+                                    {
+                                        terms.add(afterStemming);
+                                    }
+                                    else
+                                    {
+                                        terms.add(afterStemming.toUpperCase());
+                                    }
                                 } else {
                                     terms.add(string);
                                 }
                         }
                     }
-                    i = i + entityTokensCandidates.size() - 1;//TODO:CHECK
+                    i = i + entityTokensCandidates.size() - 1;
                 }
             } else if (token.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*")) {
                 LinkedList<String> entityTokensCandidates = new LinkedList<>();
                 entityTokensCandidates.add(token);
+                boolean isEndLine=false;
                 String nextToken = "";
-                if (i < tokens.length - 1) {
-                    nextToken = strip(tokens[i + 1]);
+                if(tokens[i].length()>0 && tokens[i].charAt(tokens[i].length()-1) == '.')
+                {
+                    isEndLine = true;
                 }
+                if ((i < tokens.length - 1) && !isEndLine) {
+                    nextToken = tokens[i+1];
+                    if(nextToken.length() >0 && nextToken.charAt(nextToken.length()-1) =='.')
+                    {
+                        isEndLine = true;
+                    }
+                    nextToken = strip(nextToken);
+                }
+                boolean endEntity = false;
                 //Get all the following words which begins with a capital letter
-                for (int j = 1; j + i < tokens.length && nextToken.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*"); j++) {
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*") && !endEntity; j++) {
                     entityTokensCandidates.add(nextToken);
+                    if(isEndLine)
+                    {
+                        endEntity = true;
+                    }
                     if (i + j < tokens.length - 1) {
-                        nextToken = strip(tokens[i + j + 1]); //strip the next token
+                        nextToken = tokens[i + j + 1];
+                        if(nextToken.length() >0 && nextToken.charAt(nextToken.length()-1) == '.')
+                        {
+                            isEndLine = true;
+                        }
+                        nextToken = strip(nextToken);//strip the next token
                     }
                 }
                 Pair<LinkedList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
@@ -387,12 +541,14 @@ public class Parse {
                 if (entityTokens.size() > 0) {
                     //Add to entities the first element which is the entity
                     String entity = entityTokens.get(0);
-                    if (!entities.contains(entity)) {
-                        if (!singleAppearanceEntities.contains(entity)) {
-                            singleAppearanceEntities.add(entity);
+                    if (!entities.contains(entity.toUpperCase())) {
+                        if (!singleAppearanceEntities.contains(entity.toUpperCase())) {
+                            singleAppearanceEntities.add(entity.toUpperCase());
+                            addDocumentEntity(entity.toUpperCase());
                         } else {
-                            singleAppearanceEntities.remove(entity);
-                            entities.add(entity);
+                            singleAppearanceEntities.remove(entity.toUpperCase());
+                            entities.add(entity.toUpperCase());
+                            addDocumentEntity(entity.toUpperCase());
                         }
                     }
                     for (String entityToken : entityTokens) {
@@ -403,7 +559,7 @@ public class Parse {
                 }
                 i = i + resultList.getValue();
             } else {
-                if (!isStopWord(token.toLowerCase()))
+                if (token.matches("^[a-z]+$") && !isStopWord(token.toLowerCase()))
                     if (useStemmer) {
                         terms.add(Stemmer.stem(token.toLowerCase()));
                     } else {
@@ -415,19 +571,35 @@ public class Parse {
     }
 
     /**
-     * Receives a list and check if all the words in the list are all constructed only from capital letters
+     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
      *
-     * @param wordList - LinkedList<String> - list of words
-     * @return - boolean - true if all the words are all capital letters
+     * @param token - String - a word with irrelevant symbols
+     * @return - String -a word without irrelevant symbols
      */
-    private boolean isAllCapsSequence(LinkedList<String> wordList) {
-        boolean areAllCaps = true;
-        for (String word : wordList) {
-            if (!word.matches("[A-Z]+")) {
-                areAllCaps = false;
+    private String strip(String token) {
+        String result = "";
+        char[] charArray = token.toCharArray();
+        for (char character : charArray) {
+            //Parenthesis
+            if (character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']') {
+                continue;
+            }
+            //Symbols
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n' || character == '`' || character == '|' || character == '_'|| character == '+') {
+                continue;
+            } else {
+                result = result + character;
             }
         }
-        return areAllCaps;
+        //Removing dot in the end of the token
+        if ( !result.isEmpty() && (result.charAt(0) == '.' ||result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) ) {
+            result = result.substring(0, result.length() - 1);
+        }
+
+        while( (result.indexOf('-') == 0))
+               result = result.substring(1);
+
+        return result;
     }
 
     /**
@@ -462,35 +634,6 @@ public class Parse {
         return result;
     }
 
-
-    /**
-     * Striping irrelevant symbols. Removing all the symbols deemed unimportant for the indexing.
-     *
-     * @param token - String - a word with irrelevant symbols
-     * @return - String -a word without irrelevant symbols
-     */
-    private String strip(String token) {
-        String result = "";
-        char[] charArray = token.toCharArray();
-        for (char character : charArray) {
-            //Parenthesis
-            if (character == ')' || character == '(' || character == '{' || character == '}' || character == '[' || character == ']') {
-                continue;
-            }
-            //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '#' || character == '\t' || character == '\n') {
-                continue;
-            } else {
-                result = result + character;
-            }
-        }
-        //Removing dot in the end of the token
-        if ((result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) && !result.isEmpty()) {
-            result = result.substring(0, result.length() - 1); //FIXME:!!! Check what's happening here
-        }
-        return result;
-    }
-
     /**
      * Receives a token that contains a number and formats it based on it's size
      *
@@ -501,7 +644,7 @@ public class Parse {
         token = token.replaceAll(",", ""); //remove commas 1,000 -> 1000
 
         if (token.matches("\\d+\\.?\\d*")) {
-            double numberToken = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            double numberToken = Double.parseDouble(token);
             if (numberToken >= Kilo && numberToken < Million) //token between Kilo and Million
             {
                 numberToken = numberToken / Kilo;
@@ -589,7 +732,7 @@ public class Parse {
 
         if (token.indexOf('$') == 0) {
             token = token.substring(1); //removing the $ sign
-            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million")||token.contains("billion")||token.contains("Billion"))) {
+            if (token.matches("\\d+\\.?\\d*-.*") && (token.contains("Million") || token.contains("Million") || token.contains("billion") || token.contains("Billion"))) {
                 firstNextToken = token.substring(token.indexOf("-") + 1);
                 token = token.substring(0, token.indexOf("-"));
                 additionalTokensProcessed--;
@@ -613,14 +756,14 @@ public class Parse {
             } else { // <<<$price>>>
                 token = token.replaceAll(",", "");
                 if (token.matches("^\\d+$")) {
-                    double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+                    double value = Double.parseDouble(token);
                     if (value >= Million) {
                         value = value / Million;
                         token = doubleDecimalFormat(value) + " M Dollars";
                     } else {
                         token = doubleDecimalFormat(value) + " Dollars";
                     }
-                }else{
+                } else {
                     token = "";
                 }
             }
@@ -653,7 +796,7 @@ public class Parse {
         token = token.replaceAll(",", "");
         if ((token.matches("^[0-9]*$"))) {
 
-            double value = Double.parseDouble(token); //TODO: Write more tests in order of avoiding try\catch
+            double value = Double.parseDouble(token);
             if (value >= Million) {
                 value = value / Million;
                 token = doubleDecimalFormat(value) + " M Dollars";
@@ -714,20 +857,30 @@ public class Parse {
         return result;
     }
 
+    /**
+     * Receives a token containing hyphens and formats it.
+     * @param token - String
+     * @return - LinkedList<String>
+     */
     private LinkedList<String> generateTokenHyphens(String token) {
         LinkedList<String> resultList = new LinkedList<>();
-        if (token.matches(".*-.*-.*")) {
-            resultList.add(token);
+        if(token.contains("--"))
+        {
             resultList.add(token.substring(0, token.indexOf("-")));
-            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")));
-            resultList.add(token.substring(token.lastIndexOf("-") + 1));
+            resultList.add(token.substring(token.indexOf("-") +2));
+        }
+        else if (token.matches(".*-.*-.*")) {
+            resultList.add(token);
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.lastIndexOf("-") + 1).replaceAll("-",""));
 
         }
         //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
         else if (token.matches(".*-.*")) {
             resultList.add(token);
-            resultList.add(token.substring(0, token.indexOf("-")));
-            resultList.add(token.substring(token.indexOf("-") + 1));
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
+            resultList.add(token.substring(token.indexOf("-") + 1).replaceAll("-",""));
         }
         return resultList;
     }
@@ -748,9 +901,9 @@ public class Parse {
     /**
      * Receives a path to directory containing stop-word file and loads it to the "stopwords" Hash-set
      *
-     * @param stopWordsPath
+     * @param stopWordsPath - boolean - true if the stop words were loaded successfully
      */
-    public static void loadStopWords(String stopWordsPath) {
+    public static boolean loadStopWords(String stopWordsPath) {
         if (stopwords == null) {
             stopwords = new HashSet<>();
             File file = new File(stopWordsPath);
@@ -761,12 +914,17 @@ public class Parse {
                     stopwords.add(line);
                 }
                 stopwords.add("");
+                stopwords.add("<");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                return false;
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -785,6 +943,10 @@ public class Parse {
         return isStopWord;
     }
 
+    /**
+     * Sets the useStemmer field
+     * @param useStemmer - boolean
+     */
     public void setUseStemmer(boolean useStemmer) {
         this.useStemmer = useStemmer;
     }
