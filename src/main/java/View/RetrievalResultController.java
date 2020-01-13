@@ -1,13 +1,11 @@
 package View;
 
-import Model.IModel;
 import ViewModel.MyViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -26,6 +24,11 @@ public class RetrievalResultController {
         viewModel = newViewModel;
     }
 
+    /**
+     * Handles the Display entities button being pressed
+     *
+     * @param actionEvent - ActionEvent - the event of the button press
+     */
     public void displayEntities(ActionEvent actionEvent) {
         String documentNumber = docNumberTextField.getText();
         if (!documentNumber.isEmpty()) {
@@ -37,30 +40,34 @@ public class RetrievalResultController {
                 String documentEntitiesToPrint = "";
                 for (int i = 0; i < documentEntities.size(); i++) {
                     if (documentEntities.get(i) != null && !documentEntities.get(i).getKey().equals("null")) {
-                        documentEntitiesToPrint = documentEntitiesToPrint +"Entity: "+ documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue()+ "\n";
+                        documentEntitiesToPrint = documentEntitiesToPrint + "Entity: " + documentEntities.get(i).getKey() + " Rank: " + documentEntities.get(i).getValue() + "\n";
                     }
                 }
-                if(documentEntitiesToPrint.length()>0) {
+                if (documentEntitiesToPrint.length() > 0) {
                     documentEntitiesToPrint = documentEntitiesToPrint.substring(0, documentEntitiesToPrint.length() - 1);
                 }
                 AlertBox.display("Document Entities", "Document Entities for Document\n\t" + documentNumber, documentEntitiesToPrint + "\n\n\n", "Close", "default background");
             }
         }
-        //TODO: Maybe call alertBox to display entities
     }
 
+    /**
+     * Handles the save Results button being pressed
+     *
+     * @param actionEvent
+     */
     public void saveResults(ActionEvent actionEvent) {
-        String path = browseFileChooser(actionEvent);
+        String path = saveFileChooser(actionEvent);
         viewModel.saveLatestRetrievalResults(path);
     }
+
     /**
      * Displays a file selection window and returns the absolute path of the file chosen.
      *
      * @param event - ActionEvent - the button that was pressed
      * @return - String - the absolute path of the file chosen or an empty String
      */
-    private String browseFileChooser(ActionEvent event) {
-        //TODO:FIXME
+    private String saveFileChooser(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         //Set extension filter
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");

@@ -1,7 +1,5 @@
 package CorpusProcessing;
 
-import javafx.util.Pair;
-
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,9 +25,11 @@ public class RunnableMerge implements Runnable {
     }
 
 
-    //merges all the posting within the path
     @Override
     public void run() {
+        /**
+         * merges all the posting within the path
+         */
 
         ArrayList<String> stringArrayList = Documenter.loadPostingFile(this.path);
         ArrayList<String> listWithoutEntity = new ArrayList<>();
@@ -40,16 +40,14 @@ public class RunnableMerge implements Runnable {
 
         for (int i = 0; i < stringArrayList.size(); i++) {
             String s = stringArrayList.get(i);
-            if(Character.isLowerCase(s.substring(0, s.indexOf('!')).charAt(0)))
-            {
+            if (Character.isLowerCase(s.substring(0, s.indexOf('!')).charAt(0))) {
                 listWithoutEntity.add(stringArrayList.get(i));
-            }
-            else if (this.dictionary.containsKey(s.substring(0, s.indexOf('!')))) {
+            } else if (this.dictionary.containsKey(s.substring(0, s.indexOf('!')))) {
                 listWithoutEntity.add(stringArrayList.get(i));
             }
         }
 
-
+        //merges all the posting within the path
         for (int i = listWithoutEntity.size() - 1; i > 0; i--) {
             String firstRecord = listWithoutEntity.get(i);
             String secondRecord = listWithoutEntity.get(i - 1);

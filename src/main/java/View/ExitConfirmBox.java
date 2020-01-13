@@ -15,6 +15,7 @@ public class ExitConfirmBox {
 
     /**
      * returns the value of the answer private field
+     *
      * @return - boolean
      */
     public static boolean getAnswer() {
@@ -23,6 +24,7 @@ public class ExitConfirmBox {
 
     /**
      * sets the value of the answer private field
+     *
      * @param answer - Boolean
      */
     public static void setAnswer(Boolean answer) {
@@ -31,11 +33,12 @@ public class ExitConfirmBox {
 
     /**
      * Displays an exit window alert box.
-     * @param title - String - the stage title
+     *
+     * @param title   - String - the stage title
      * @param message - String - an exit message
      * @return - boolean - the user's choice
      */
-    public static boolean display(String title, String message){
+    public static boolean display(String title, String message) {
         Stage window = new Stage();
         window.setTitle(title);
         Parent root = null;

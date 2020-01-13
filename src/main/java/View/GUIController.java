@@ -198,6 +198,11 @@ public class GUIController implements Observer {
         }
     }
 
+    /**
+     * Handles a search request of a single query.
+     *
+     * @param actionEvent - ActionEvent
+     */
     public void runQueryHandler(ActionEvent actionEvent) {
         String query = queryText.getText();
         Boolean preConditionsMet = true;
@@ -222,6 +227,11 @@ public class GUIController implements Observer {
 
     }
 
+    /**
+     * Handles a search request of multiple queries.
+     *
+     * @param event - ActionEvent
+     */
     public void runQueriesHandler(ActionEvent event) {
         String queriesPath = queriesText.getText();
         Boolean preConditionsMet = true;

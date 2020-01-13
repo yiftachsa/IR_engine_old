@@ -1,7 +1,5 @@
 package CorpusProcessing;
 
-import javafx.util.Pair;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,7 +16,7 @@ public class RunnableParse implements Runnable {
     private static final int MERGERSPOOLSIZE = 2;
     private HashSet<String> entities;
     private HashSet<String> singleAppearanceEntities;
-    private HashMap<String,HashMap<String, Integer>> documentsEntities; //<DocNum, Map of all the entities in the document and their frequency in the document>
+    private HashMap<String, HashMap<String, Integer>> documentsEntities; //<DocNum, Map of all the entities in the document and their frequency in the document>
     private File[] filesToParse;
     private Parse parser;
     private Indexer indexer;
@@ -101,10 +99,10 @@ public class RunnableParse implements Runnable {
 
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
-                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(false,document.getId(), document.getDate(), bagOfWords , document.getHeader());
+                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(false, document.getId(), document.getDate(), bagOfWords, document.getHeader());
                     postingEntriesListsOfFile.add(postingsEntries);
 
-                    this.documentsEntities.put(document.getId(),parser.getLastProcessedDocumentEntities());
+                    this.documentsEntities.put(document.getId(), parser.getLastProcessedDocumentEntities());
 
                     this.documentsCount++;
                 }
