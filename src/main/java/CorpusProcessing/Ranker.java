@@ -41,7 +41,6 @@ public class Ranker implements IRanker {
         {
             WEIGHT_QUERYDESC_BM25 = 1.5;
         }
-        double queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
         double queryBM25Rank;
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
             ArrayList<TermDocumentTrio> mergedQuery = mergeQueryAndExpandedQueryTrios(query, expandedQuery);
