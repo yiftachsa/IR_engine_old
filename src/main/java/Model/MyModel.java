@@ -22,15 +22,15 @@ public class MyModel extends Observable implements IModel {
     /**
      * The number of the parallel threads processing the files.
      */
-    private static final int NUMBEROFDOCUMENTPROCESSORS = 3;
+    private static final int NUMBEROFDOCUMENTPROCESSORS = 1;
     /**
      * The number of documents being processed at once by a single thread.
      */
-    private static final int NUMBEROFDOCUMENTPERPARSER = 4;
+    private static final int NUMBEROFDOCUMENTPERPARSER = 1;
     /**
      * The number of the parallel threads merging the posting files.
      */
-    private static final int POSTINGMERGERSPOOLSIZE = 3;
+    private static final int POSTINGMERGERSPOOLSIZE = 1;
 
     /**
      * Constructor

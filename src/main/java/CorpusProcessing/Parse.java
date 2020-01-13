@@ -380,18 +380,39 @@ public class Parse {
             //Entity Recognition
             //TOKEN CONTAIN ONLY CAPITAL LETTERS
             else if (token.matches("^[A-Z]+([-/]?[A-Z]+)*")) {
+                boolean endOfLine = false;
                 LinkedList<String> entityTokensCandidates = new LinkedList<>();
                 entityTokensCandidates.add(token);
                 String nextToken = "";
-                if (i < tokens.length - 1) {
+                if(tokens[i].length() > 0 && tokens[i].charAt(tokens[i].length()-1) == '.')
+                {
+                    endOfLine = true;
+                }
+                if ((i < tokens.length - 1) && !endOfLine){
                     if (!(tokens[i + 1].contains("\n")) && !(tokens[i + 1].contains("\t"))) {
-                        nextToken = strip(tokens[i + 1]);
+
+                        nextToken = tokens[i + 1];
+                        if (nextToken.length() > 0 && nextToken.charAt(nextToken.length()-1) == '.')
+                       {
+                           endOfLine = true;
+                       }
+                        nextToken = strip(nextToken);
                     }
                 }
-                for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*"); j++) {
+                boolean endEntity = false;
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^^[A-Z]+([-/]?[A-Z]+)*") && !endEntity; j++) {
                     entityTokensCandidates.add(nextToken);
+                    if(endOfLine)
+                    {
+                        endEntity = true;
+                    }
                     if (i + j < tokens.length - 1) {
-                        nextToken = strip(tokens[i + j + 1]); //strip the next token
+                        nextToken = tokens[i + j + 1];
+                        if (nextToken.length() > 0 && nextToken.charAt(nextToken.length()-1) == '.')
+                        {
+                            endOfLine = true;
+                        }
+                        nextToken = strip(nextToken); //strip the next token
                     }
                 }
                 //MORE THEN MAXENTITYLENGTH
@@ -484,15 +505,35 @@ public class Parse {
             } else if (token.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*")) {
                 LinkedList<String> entityTokensCandidates = new LinkedList<>();
                 entityTokensCandidates.add(token);
+                boolean isEndLine=false;
                 String nextToken = "";
-                if (i < tokens.length - 1) {
-                    nextToken = strip(tokens[i + 1]);
+                if(tokens[i].length()>0 && tokens[i].charAt(tokens[i].length()-1) == '.')
+                {
+                    isEndLine = true;
                 }
+                if ((i < tokens.length - 1) && !isEndLine) {
+                    nextToken = tokens[i+1];
+                    if(nextToken.length() >0 && nextToken.charAt(nextToken.length()-1) =='.')
+                    {
+                        isEndLine = true;
+                    }
+                    nextToken = strip(nextToken);
+                }
+                boolean endEntity = false;
                 //Get all the following words which begins with a capital letter
-                for (int j = 1; j + i < tokens.length && nextToken.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*"); j++) {
+                for (int j = 1; j + i < tokens.length && nextToken.matches("^[A-Z][a-z]+([-/]+[A-Z]?[a-z]+)*") && !endEntity; j++) {
                     entityTokensCandidates.add(nextToken);
+                    if(isEndLine)
+                    {
+                        endEntity = true;
+                    }
                     if (i + j < tokens.length - 1) {
-                        nextToken = strip(tokens[i + j + 1]); //strip the next token
+                        nextToken = tokens[i + j + 1];
+                        if(nextToken.length() >0 && nextToken.charAt(nextToken.length()-1) == '.')
+                        {
+                            isEndLine = true;
+                        }
+                        nextToken = strip(nextToken);//strip the next token
                     }
                 }
                 Pair<LinkedList<String>, Integer> resultList = generateTokensEntity(entityTokensCandidates);
