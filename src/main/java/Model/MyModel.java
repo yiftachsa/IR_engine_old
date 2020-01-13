@@ -474,7 +474,7 @@ public class MyModel extends Observable implements IModel {
     public ArrayList<Pair<String, ArrayList<String>>> runQuery(String query, boolean useSemanticAnalysis) {
         preQueryInitialization();
 
-        ArrayList<String> semanticExpansion = null;
+        String semanticExpansion = "";
         if (useSemanticAnalysis) {
             SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
             semanticExpansion = semanticAnalyzer.expandQuery(query);
@@ -515,7 +515,7 @@ public class MyModel extends Observable implements IModel {
             String queryDescription = queries[i].getDescription();
 
             //Use semantic analysis only on the title.
-            ArrayList<String> semanticExpansion = null;
+            String semanticExpansion = "";
             if (useSemanticAnalysis) {
                 SemanticAnalyzer semanticAnalyzer = SemanticAnalyzer.getInstance();
                 semanticExpansion = semanticAnalyzer.expandQuery(queryTitle);

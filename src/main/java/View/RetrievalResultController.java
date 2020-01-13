@@ -1,13 +1,11 @@
 package View;
 
-import Model.IModel;
 import ViewModel.MyViewModel;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -26,6 +24,10 @@ public class RetrievalResultController {
         viewModel = newViewModel;
     }
 
+    /**
+     * Handles the Display entities button being pressed
+     * @param actionEvent - ActionEvent - the event of the button press
+     */
     public void displayEntities(ActionEvent actionEvent) {
         String documentNumber = docNumberTextField.getText();
         if (!documentNumber.isEmpty()) {
@@ -46,11 +48,14 @@ public class RetrievalResultController {
                 AlertBox.display("Document Entities", "Document Entities for Document\n\t" + documentNumber, documentEntitiesToPrint + "\n\n\n", "Close", "default background");
             }
         }
-        //TODO: Maybe call alertBox to display entities
     }
 
+    /**
+     *  
+     * @param actionEvent
+     */
     public void saveResults(ActionEvent actionEvent) {
-        String path = browseFileChooser(actionEvent);
+        String path = saveFileChooser(actionEvent);
         viewModel.saveLatestRetrievalResults(path);
     }
     /**
@@ -59,7 +64,7 @@ public class RetrievalResultController {
      * @param event - ActionEvent - the button that was pressed
      * @return - String - the absolute path of the file chosen or an empty String
      */
-    private String browseFileChooser(ActionEvent event) {
+    private String saveFileChooser(ActionEvent event) {
         //TODO:FIXME
         FileChooser fileChooser = new FileChooser();
         //Set extension filter

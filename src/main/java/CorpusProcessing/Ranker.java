@@ -20,9 +20,9 @@ public class Ranker implements IRanker {
     private static final double k = 1.81;
 
     private static final double WEIGHT_QUERY_BM25 = 1;
-    private static final double WEIGHT_QUERYDESC_BM25 = 0.4;
-    private static final double WEIGHT_HEADER = 0.1;
-    private static final double WEIGHT_ENTITIES = 0.4;
+    private static final double WEIGHT_QUERYDESC_BM25 = 0.7;
+    private static final double WEIGHT_HEADER = 0.05;
+    private static final double WEIGHT_ENTITIES = 0.2;
 
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
@@ -35,11 +35,18 @@ public class Ranker implements IRanker {
     // 2. Jaccard Similarity between query and documentHeader
     // 3. Entities - number of entities in both / total number of entities in the document
     @Override
-    public double rankDocument(ArrayList<TermDocumentTrio> query,ArrayList<TermDocumentTrio> queryDescription , String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
+    public double rankDocument(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> queryDescription, ArrayList<TermDocumentTrio> expandedQuery, HashMap<String, Integer> semanticExpandedTerms, String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
 
-        double queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+        double queryBM25Rank;
+        if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
+            ArrayList<TermDocumentTrio> mergedQuery = mergeQueryAndExpandedQueryTrios(query, expandedQuery);
+            HashMap<String, Integer> mergedDocumentTerms = mergeQueryAndExpandedQueryDocumentsTerms(semanticExpandedTerms, documentTerms);
+            queryBM25Rank = BM25calculator(mergedQuery, documentID, documentLength, mergedDocumentTerms);
+        } else {
+            queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+        }
+
         double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
-
 
 
         List<String> queryTerms = extractTerms(query);
@@ -48,8 +55,22 @@ public class Ranker implements IRanker {
         double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
 
 
-        double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25*queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
+        double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
         return finalRank;
+    }
+
+    private HashMap<String, Integer> mergeQueryAndExpandedQueryDocumentsTerms(HashMap<String, Integer> semanticExpandedTerms, HashMap<String, Integer> documentTerms) {
+        HashMap<String, Integer> mergedDocumentsTerms = new HashMap<>();
+        mergedDocumentsTerms.putAll(semanticExpandedTerms);
+        mergedDocumentsTerms.putAll(documentTerms);
+        return mergedDocumentsTerms;
+    }
+
+    private ArrayList<TermDocumentTrio> mergeQueryAndExpandedQueryTrios(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> expandedQuery) {
+        ArrayList<TermDocumentTrio> mergedQuery = new ArrayList<>();
+        mergedQuery.addAll(query);
+        mergedQuery.addAll(expandedQuery);
+        return mergedQuery;
     }
 
     /**
@@ -109,7 +130,7 @@ public class Ranker implements IRanker {
 
     public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
         double sigma = 0;
-        double documentLengthRatio = documentLength / (this.avdl*2);
+        double documentLengthRatio = documentLength / (this.avdl * 2);
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
         for (TermDocumentTrio trio : query) {
             String term = trio.getTerm();

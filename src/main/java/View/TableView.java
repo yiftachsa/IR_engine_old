@@ -1,6 +1,5 @@
 package View;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,7 +14,7 @@ import java.util.LinkedList;
 
 public class TableView {
     /**
- * Displays a simple alert box.
+ * Displays a window that contains the dictionary terms
  * @param title - String - the stage title
  * @param buttonText - String
  */
