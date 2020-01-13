@@ -12,15 +12,31 @@ public class Indexer {
      */
     private Map<String, DictionaryEntryTrio> dictionary;
 
+    /**
+     * Sorted TreeSet of all the entities.
+     */
     private TreeSet<String> entities;
 
-    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;//<DocNum, Map of all the entities in the document and their frequency in the document>
+    /**
+     * Document entities map
+     * entry: documentID --> Map of all the entities in the document and their frequency in the document
+     */
+    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;
 
+    /**
+     * total documents Count
+     */
     private int documentsCount;
 
+    /**
+     * Document details map
+     * entry: documentID --> document details
+     */
     private HashMap<String, String> documentsDetails;
 
-
+    /**
+     * Inverted index directories count
+     */
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
 
     /**
@@ -89,7 +105,7 @@ public class Indexer {
                         int newDocumentFrequency = dictionary.get(term).getDocumentFrequency() + 1;
                         int newCumulativeFrequency = dictionary.get(term).getCumulativeFrequency() + termFrequency;
 
-                        
+
                         //The function put override the previous value;
                         dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         //dictionary.put(term, new Pair<Integer, String>(newDocumentFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
@@ -175,14 +191,27 @@ public class Indexer {
         return dictionary != null;
     }
 
+    /**
+     * Getter for the documentsCount.
+     * @return - int - total documents Count
+     */
     public int getDocumentsCount() {
         return documentsCount;
     }
 
+    /**
+     * Setter for the documentsCount.
+     * @param documentsCount - int - total documents Count
+     */
     public void setDocumentsCount(int documentsCount) {
         this.documentsCount = documentsCount;
     }
 
+    /**
+     * Setter for the entities.
+     *
+     * @param entities - TreeSet<String> - Sorted TreeSet of all the entities.
+     */
     public void setEntities(TreeSet<String> entities) {
         this.entities = entities;
     }
@@ -311,14 +340,14 @@ public class Indexer {
         DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
         boolean toLowerCase = false;
 
-        if(dictionaryEntryTrio == null){
+        if (dictionaryEntryTrio == null) {
             dictionaryEntryTrio = this.dictionary.get(term.toLowerCase());
-            if(dictionaryEntryTrio == null){
+            if (dictionaryEntryTrio == null) {
                 return null;
             }
             toLowerCase = true;
         }
-        if(toLowerCase){
+        if (toLowerCase) {
             term = term.toLowerCase();
         }
         ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());//check
@@ -344,6 +373,7 @@ public class Indexer {
     public HashMap<String, Integer> getDocumentEntitiesMap(String documentNumber) {
         return allDocumentsEntities.get(documentNumber);
     }
+
     /**
      * Returns all the document entities  for the given documentNumber.
      *
@@ -353,7 +383,7 @@ public class Indexer {
     public ArrayList<String> getDocumentEntitiesList(String documentNumber) {
         ArrayList<String> result = new ArrayList<>();
         HashMap<String, Integer> documentEntities = allDocumentsEntities.get(documentNumber);
-        for(Map.Entry<String,Integer> entry: documentEntities.entrySet()){
+        for (Map.Entry<String, Integer> entry : documentEntities.entrySet()) {
             result.add(entry.getKey());
         }
         return result;
@@ -366,20 +396,20 @@ public class Indexer {
      * @return - String[] - an array of all the document details
      */
     public String[] getDocumentDetails(String documentNumber) {
-        String details =  this.documentsDetails.get(documentNumber);
+        String details = this.documentsDetails.get(documentNumber);
         //maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
 
-        String maxTermFrequency = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String maxTermFrequency = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String uniqTermsCount = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String uniqTermsCount = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String length = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String length = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String documentDate = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String documentDate = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
         String documentHeader = details;
 
@@ -390,23 +420,24 @@ public class Indexer {
         int numberOfDocuments = documentsDetails.size();
         int sigmaLength = 0;
 
-        for (Map.Entry<String, String> entry: documentsDetails.entrySet()){
+        for (Map.Entry<String, String> entry : documentsDetails.entrySet()) {
             sigmaLength = sigmaLength + getDocumentLength(entry.getKey());
         }
 
-        double avdl = sigmaLength/numberOfDocuments;
+        double avdl = sigmaLength / numberOfDocuments;
         return avdl;
     }
 
     /**
      * Receive Document ID and return the Document Header
+     *
      * @param documentID
      * @return
      */
     public String getDocumentHeader(String documentID) {
 
         String[] details = getDocumentDetails(documentID);
-        return details[details.length-1];
+        return details[details.length - 1];
 
     }
 }
