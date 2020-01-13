@@ -19,10 +19,10 @@ public class Ranker implements IRanker {
     private static final double b = 0.7;
     private static final double k = 1.81;
 
-    private static final double WEIGHT_QUERY_BM25 = 1;
-    private static final double WEIGHT_QUERYDESC_BM25 = 0.4;
-    private static final double WEIGHT_HEADER = 0.1;
-    private static final double WEIGHT_ENTITIES = 0.4;
+    private static  double WEIGHT_QUERY_BM25 = 1;
+    private static  double WEIGHT_QUERYDESC_BM25 = 0.7;
+    private static  double WEIGHT_HEADER = 0.05;
+    private static  double WEIGHT_ENTITIES = 0.2;
 
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
@@ -37,6 +37,10 @@ public class Ranker implements IRanker {
     @Override
     public double rankDocument(ArrayList<TermDocumentTrio> query,ArrayList<TermDocumentTrio> queryDescription , String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
 
+        if(query.size()<=2)
+        {
+            WEIGHT_QUERYDESC_BM25 = 1.5;
+        }
         double queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
         double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
 

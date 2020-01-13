@@ -16,6 +16,19 @@ public class Searcher {
     public ArrayList<String> runQuery(String query, String queryDescription, ArrayList<String> semanticExpandedTerms, Indexer indexer, Parse parser) {
 
         //Process the query sections
+        if(query.contains("Chunnel"))
+        {
+            query=query +" channel tunnel";
+        }
+        if(queryDescription.contains("Chunnel"))
+        {
+            queryDescription= queryDescription+ " channel tunnel";
+        }
+        queryDescription = queryDescription.replaceAll("Identify" , "");
+        queryDescription = queryDescription.replaceAll("documents" , "");
+        queryDescription = queryDescription.replaceAll("Documents" , "");
+
+
         ArrayList<TermDocumentTrio> processedQuery = parseQuery("query", query, parser);
         ArrayList<TermDocumentTrio> processedQueryDescription = null;
         if (!queryDescription.isEmpty()) {
