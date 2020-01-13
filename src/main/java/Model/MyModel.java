@@ -1,6 +1,9 @@
 package Model;
 
 import CorpusProcessing.*;
+import Retrieval.Query;
+import Retrieval.Searcher;
+import Retrieval.SemanticAnalyzer;
 import javafx.util.Pair;
 
 import java.io.File;

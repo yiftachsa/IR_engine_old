@@ -252,10 +252,7 @@ public class GUIController implements Observer {
             AlertBox.display("Running Queries", "Running Queries", "The queries are being evaluated\nA message will be displayed when \nthe process has finished.\nPlease do not attempt to use the main \nmenu until the message appears \n\n\n\n", "Got it!", "default background");
 
             ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = viewModel.runQueries(queriesPath, semanticCheckBox.isSelected());
-            //TODO: Display results. TextField or plain alert box
             RetrievalResultView.display("Multiple queries results", rankedDocumentsNumbers, viewModel);
-
-            //TODO: IMPORTANT - remember to associate each list of returned docs with the correct query ID
         }
     }
 

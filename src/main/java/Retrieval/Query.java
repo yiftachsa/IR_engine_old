@@ -1,4 +1,4 @@
-package CorpusProcessing;
+package Retrieval;
 
 /**
  * Represents a query.

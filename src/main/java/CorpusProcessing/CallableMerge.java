@@ -12,6 +12,7 @@ public class CallableMerge implements Callable<ArrayList<TermDocumentTrio>> {
 
     /**
      * Constructor
+     *
      * @param list1 - ArrayList<Trio>
      * @param list2 - ArrayList<Trio>
      */
@@ -22,7 +23,7 @@ public class CallableMerge implements Callable<ArrayList<TermDocumentTrio>> {
 
     @Override
     public ArrayList<TermDocumentTrio> call() throws Exception {
-        return Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesList1,postingEntriesList2);
+        return Mapper.mergeAndSortTwoPostingEntriesLists(postingEntriesList1, postingEntriesList2);
     }
 
 }

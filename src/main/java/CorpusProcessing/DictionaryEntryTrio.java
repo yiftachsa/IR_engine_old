@@ -1,6 +1,6 @@
 package CorpusProcessing;
 
-public class DictionaryEntryTrio extends Trio{
+public class DictionaryEntryTrio extends Trio {
 
     private int documentFrequency;
     private int cumulativeFrequency;
@@ -8,6 +8,7 @@ public class DictionaryEntryTrio extends Trio{
 
     /**
      * Constructor
+     *
      * @param documentFrequency
      * @param cumulativeFrequency
      * @param postingIndex
@@ -20,6 +21,7 @@ public class DictionaryEntryTrio extends Trio{
 
     /**
      * Returns the documentFrequency field
+     *
      * @return - int - the documentFrequency field
      */
     public int getDocumentFrequency() {
@@ -28,6 +30,7 @@ public class DictionaryEntryTrio extends Trio{
 
     /**
      * Returns the cumulativeFrequency field
+     *
      * @return - int - the cumulativeFrequency field
      */
     public int getCumulativeFrequency() {
@@ -36,6 +39,7 @@ public class DictionaryEntryTrio extends Trio{
 
     /**
      * Returns the postingIndex field
+     *
      * @return - String - the postingIndex field
      */
     public String getPostingIndex() {

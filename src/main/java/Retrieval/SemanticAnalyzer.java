@@ -1,4 +1,4 @@
-package CorpusProcessing;
+package Retrieval;
 
 import com.medallia.word2vec.Searcher;
 import com.medallia.word2vec.Word2VecModel;
@@ -18,7 +18,7 @@ public class SemanticAnalyzer {
     private static final int EXPENDEDWORDSPERTERM = 3;
 
     private static SemanticAnalyzer semanticAnalyzer;
-    private Searcher word2VecSearcher; //FIXME: Check if a new searcher is needed for every search
+    private Searcher word2VecSearcher;
 
     /**
      * Private constructor.
