@@ -40,34 +40,41 @@ public class Ranker implements IRanker {
 
     // rank calculators -
     // 1. BM25
-    // 2. Jaccard Similarity between query and documentHeader
-    // 3. Entities - number of entities in both / total number of entities in the document
+    // 2. Jaccard Similarity between the query and documentHeader.
+    // 3. DSC (Dice) between the query and the document entities.
     @Override
-    public double rankDocument(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> queryDescription, ArrayList<TermDocumentTrio> expandedQuery, HashMap<String, Integer> semanticExpandedTerms, String documentID, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
+    public double rankDocument(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> queryDescription, ArrayList<TermDocumentTrio> expandedQuery, HashMap<String, Integer> semanticExpandedTerms, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
 
         double queryBM25Rank;
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
             ArrayList<TermDocumentTrio> mergedQuery = mergeQueryAndExpandedQueryTrios(query, expandedQuery);
             HashMap<String, Integer> mergedDocumentTerms = mergeQueryAndExpandedQueryDocumentsTerms(semanticExpandedTerms, documentTerms);
-            queryBM25Rank = BM25calculator(mergedQuery, documentID, documentLength, mergedDocumentTerms);
+            queryBM25Rank = BM25calculator(mergedQuery, documentLength, mergedDocumentTerms);
         } else {
-            queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+            queryBM25Rank = BM25calculator(query, documentLength, documentTerms);
         }
 
-        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
-
+        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentLength, documentTerms);
 
         List<String> queryTerms = extractTerms(query);
         List<String> documentHeaderTerms = extractTerms(documentHeader);
         double headerJaccardRank = JaccardCalculator(queryTerms, documentHeaderTerms);
         double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
 
-
         double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
         return finalRank;
     }
 
-    public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
+    /**
+     * Computes BM25 between a given query and a given document.
+     * https://en.wikipedia.org/wiki/Okapi_BM25
+     *
+     * @param query          - ArrayList<TermDocumentTrio> - The query after parsing
+     * @param documentLength - int - The length of the document.
+     * @param documentTerms  - HashMap<String, Integer> - All the terms and their frequencies from the document.
+     * @return - double - BM25 rank between the given query and the given document.
+     */
+    public double BM25calculator(ArrayList<TermDocumentTrio> query, int documentLength, HashMap<String, Integer> documentTerms) {
         double sigma = 0;
         double documentLengthRatio = documentLength / (this.avdl * 2);
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
@@ -93,9 +100,9 @@ public class Ranker implements IRanker {
      * Computes dice coefficient
      * https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
      *
-     * @param queryTerms
-     * @param documentEntities
-     * @return
+     * @param queryTerms       - List<String> - A list of the terms in the query.
+     * @param documentEntities - ArrayList<String> - A list of the document entities.
+     * @return - double - DSC rank between the given queryTerms and the given documentEntities.
      */
     private double DSCCalculator(List<String> queryTerms, ArrayList<String> documentEntities) {
         int total = queryTerms.size() + documentEntities.size();
@@ -115,6 +122,14 @@ public class Ranker implements IRanker {
         return DSC;
     }
 
+    /**
+     * Computes Jaccard similarity.
+     * https://en.wikipedia.org/wiki/Jaccard_index
+     *
+     * @param queryTerms     - List<String> - A list of the terms in the query.
+     * @param documentHeader - List<String> - A list of the terms in the document header.
+     * @return - double - Jaccard similarity rank between the given queryTerms and the given documentHeader.
+     */
     private double JaccardCalculator(List<String> queryTerms, List<String> documentHeader) {
         int total = queryTerms.size() + documentHeader.size();
         int totalInCommon = 0;
@@ -162,8 +177,8 @@ public class Ranker implements IRanker {
     /**
      * return list of terms from ArrayList<TermDocumentTrio> documentTrios
      *
-     * @param documentTrios
-     * @return
+     * @param documentTrios - ArrayList<TermDocumentTrio> - A list to extract terms from.
+     * @return - List<String> - All the terms in the given list.
      */
     private List<String> extractTerms(ArrayList<TermDocumentTrio> documentTrios) {
         List<String> result = new ArrayList<>();
@@ -220,10 +235,16 @@ public class Ranker implements IRanker {
         return result;
     }
 
-
+    /**
+     * Ranks a single entity based on its Frequency in the document and in the document header.
+     *
+     * @param docFrequency       - int - The number of times that the entity appears in the documents.
+     * @param docHeaderFrequency - int - The number of times that the entity appears in the document header.
+     * @return
+     */
     private double rankEntity(int docFrequency, int docHeaderFrequency) {
-        double docFrequencyWeight = 0.5;
-        double docHeaderFrequencyWeight = 0.5;
+        double docFrequencyWeight = 0.3;
+        double docHeaderFrequencyWeight = 0.7;
 
         return (docFrequencyWeight * docFrequency + docHeaderFrequencyWeight * docHeaderFrequency);
     }

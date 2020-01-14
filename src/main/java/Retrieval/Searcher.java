@@ -5,15 +5,40 @@ import javafx.util.Pair;
 
 import java.util.*;
 
+/**
+ * Retrieves the relevant documents to a query from the indexed documents.
+ */
 public class Searcher {
-
+    /**
+     * The main ranker that will be used to rank documents by relevance to a specific query.
+     */
     private IRanker ranker;
+    /**
+     * Total number of results per query.
+     */
     private static final int RESULTNUMBER = 50;
 
+    /**
+     * Constructor
+     *
+     * @param indexer    - Indexer - the indexer that will be used for the retrieval process.
+     * @param corpusSize - int - The number of documents in the entire corpus
+     * @param avdl       - double - The average document length
+     */
     public Searcher(Indexer indexer, int corpusSize, double avdl) {
         this.ranker = new Ranker(corpusSize, avdl, indexer);
     }
 
+    /**
+     * Returns the relevant documents to a given query sorted by their relevance.
+     *
+     * @param query                 - String - A phrase to retrieve relevant documents for.
+     * @param queryDescription      - String - The query description as extracted from a file. if a single query was run then an empty String.
+     * @param semanticExpandedTerms - String - The query after semantic analysis and expansion.
+     * @param indexer               - Indexer - The indexer that will be used for the retrieval.
+     * @param parser                - Parse - A parser for the query sections.
+     * @return - ArrayList<String> - The retrieved documents for it as a list.
+     */
     public ArrayList<String> runQuery(String query, String queryDescription, String semanticExpandedTerms, Indexer indexer, Parse parser) {
 
         //Process the query sections
@@ -35,7 +60,7 @@ public class Searcher {
          */
         HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails = getRelevantDocumentsDetails(queryAssociatedTerms, indexer);
 
-        HashMap<String, Pair<Integer, HashMap<String, Integer>>> expandedQueryDocumentsDetails = getRelevantDocumentsForExpandedQuery(semanticExpandedTerms,processedExpandedQuery ,indexer, parser, relevantDocumentsDetails);
+        HashMap<String, Pair<Integer, HashMap<String, Integer>>> expandedQueryDocumentsDetails = getRelevantDocumentsForExpandedQuery(semanticExpandedTerms, processedExpandedQuery, indexer, relevantDocumentsDetails);
 
 
         //HashMap(rankResult , DocID)
@@ -59,7 +84,7 @@ public class Searcher {
                 }
             }
 
-            double rankResult = ranker.rankDocument(processedQuery, processedQueryDescription,processedExpandedQuery ,expandedQueryDocumentTerms, documentID, documentLength, documentTerms, processedDocumentHeader, documentEntities);
+            double rankResult = ranker.rankDocument(processedQuery, processedQueryDescription, processedExpandedQuery, expandedQueryDocumentTerms, documentLength, documentTerms, processedDocumentHeader, documentEntities);
             relevantDocsAndRankResult.add(new Pair<>(rankResult, documentID));
         }
         ArrayList<String> result = new ArrayList<>();
@@ -70,16 +95,15 @@ public class Searcher {
     }
 
     /**
-     * Returns a map of all the documents which contains both the original query terms and terms from the semantic expansion
+     * Returns a map of all the documents which contains both the original query terms and terms from the semantic expansion.
      *
-     * @param semanticExpandedTerms
-     * @param processedExpandedQuery
-     * @param indexer
-     * @param parser
-     * @param relevantDocumentsDetails
-     * @return
+     * @param semanticExpandedTerms    - String - The query after semantic analysis and expansion.
+     * @param processedExpandedQuery   - ArrayList<TermDocumentTrio> - The expanded query after parsing.
+     * @param indexer                  - indexer - The indexer that will be used for the retrieval.
+     * @param relevantDocumentsDetails - HashMap<String, Pair<Integer, HashMap<String, Integer>>> - The relevant documents details
+     * @return - HashMap<String, Pair<Integer, HashMap<String, Integer>>> - A Map of all the documents which contains both the original query terms and terms from the semantic expansion.
      */
-    private HashMap<String, Pair<Integer, HashMap<String, Integer>>> getRelevantDocumentsForExpandedQuery(String semanticExpandedTerms, ArrayList<TermDocumentTrio> processedExpandedQuery, Indexer indexer, Parse parser, HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails) {
+    private HashMap<String, Pair<Integer, HashMap<String, Integer>>> getRelevantDocumentsForExpandedQuery(String semanticExpandedTerms, ArrayList<TermDocumentTrio> processedExpandedQuery, Indexer indexer, HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails) {
         HashMap<String, Pair<Integer, HashMap<String, Integer>>> expandedQueryDocumentsDetails = null;
 
         if (!semanticExpandedTerms.isEmpty()) { //use semantics
@@ -130,14 +154,28 @@ public class Searcher {
         return queryAssociatedTerms;
     }
 
-    private ArrayList<TermDocumentTrio> parseQuery(String DocNO, String query, Parse parse) {
+    /**
+     * Parses an processes a single given query using the given parser.
+     *
+     * @param elementID - String - The query number.
+     * @param query     - String - A phrase to parse.
+     * @param parse     - Parse - the parser that will be used.
+     * @return - ArrayList<TermDocumentTrio> - the processed query.
+     */
+    private ArrayList<TermDocumentTrio> parseQuery(String elementID, String query, Parse parse) {
 
         ArrayList<String> bagOfWords = parse.parseQuery(query);
-        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(true, DocNO, "", bagOfWords, "");
+        ArrayList<TermDocumentTrio> processedQuery = Mapper.processBagOfWords(true, elementID, "", bagOfWords, "");
         return processedQuery;
     }
 
-    // HashMap(DocID ,Pair(Document length , HasMap( Term , Document frequency)))
+    /**
+     * Gathers and returns all the documents details for the documents which contains terms from the given processedQuery.
+     *
+     * @param processedQuery - HashSet<String> - The processed query.
+     * @param indexer        - indexer - The indexer that will be used for the retrieval of the documents details.
+     * @return - HashMap<String, Pair<Integer, HashMap<String, Integer>>> - DocID --> Pair(Document length , HasMap( Term , Document frequency))
+     */
     private HashMap<String, Pair<Integer, HashMap<String, Integer>>> getRelevantDocumentsDetails(HashSet<String> processedQuery, Indexer indexer) {
         HashMap<String, Pair<Integer, HashMap<String, Integer>>> relevantDocumentsDetails = new HashMap<>();
         for (String term : processedQuery) {
@@ -171,9 +209,9 @@ public class Searcher {
     /**
      * Returns an sorted array of the entities, based on importance.
      *
-     * @param documentEntities
-     * @param documentHeader
-     * @return - String[] - an sorted array of the entities, based on importance.
+     * @param documentEntities - HashMap<String, Integer> - A Map of all the entities in a document.
+     * @param documentHeader   - String - The document header.
+     * @return - ArrayList<Pair<String, Double>> - an sorted list of the entities, based on importance.
      */
     public ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, String documentHeader, Parse parser) {
 
