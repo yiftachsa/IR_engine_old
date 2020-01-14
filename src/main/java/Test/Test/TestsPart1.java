@@ -563,22 +563,22 @@ public class TestsPart1 {
     private static void optimizeRankerWeights() {
         MyModel myModel = new MyModel();
         myModel.loadDictionary("C:\\Users\\dor2\\Output");
+        System.out.printf("Load Dictionary finished");
         myModel.loadStopWords("C:\\Users\\dor2\\Data\\Data\\data");
         myModel.runQueries("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\queries.txt",false);
-
 
 
         double[] maxRecallWeights = new double[6]; //b k WEIGHT_QUERY_BM25 WEIGHT_QUERYDESC_BM25 WEIGHT_HEADER WEIGHT_ENTITIES
         int maxRecallValue = 0;
 
 
-        double[] b_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
-        double[] k_Range = new double[]{1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2};
+        double[] b_Range = new double[]{0.6, 0.8};
+        double[] k_Range = new double[]{1.6, 1.8};
 
-        double[] WEIGHT_QUERY_BM25_Range = new double[]{ 0.5, 0.6, 0.7, 0.8, 0.9, 1,1.1,1.2,1.3,1.4,1.5};
-        double[] WEIGHT_QUERYDESC_BM25_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
-        double[] WEIGHT_HEADER_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4};
-        double[] WEIGHT_ENTITIES_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4};
+        double[] WEIGHT_QUERY_BM25_Range = new double[]{1,1.2,1.4};
+        double[] WEIGHT_QUERYDESC_BM25_Range = new double[]{ 0.4, 0.6, 0.7};
+        double[] WEIGHT_HEADER_Range = new double[]{0.05, 0.1};
+        double[] WEIGHT_ENTITIES_Range = new double[]{ 0.1, 0.2};
 
         for (double b : b_Range) {
             for (double k : k_Range) {
@@ -586,7 +586,8 @@ public class TestsPart1 {
                     for (double QUERYDESC_BM25 : WEIGHT_QUERYDESC_BM25_Range) {
                         for (double HEADER : WEIGHT_HEADER_Range) {
                             for (double ENTITIES : WEIGHT_ENTITIES_Range) {
-                                myModel.weightsSetter(new double[]{b,k,QUERY_BM25,QUERYDESC_BM25,HEADER,ENTITIES});
+                                System.out.println("--------------------------");
+                                //myModel.weightsSetter(new double[]{b,k,QUERY_BM25,QUERYDESC_BM25,HEADER,ENTITIES});
 
                                 ArrayList<Pair<String, ArrayList<String>>> currRetrieval = myModel.runQueries("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\queries.txt",false);
                                 myModel.saveLatestRetrievalResults("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\output\\results.txt");
@@ -595,25 +596,36 @@ public class TestsPart1 {
                                     maxRecallValue = currRecallValue;
                                     maxRecallWeights = new double[]{b,k,QUERY_BM25,QUERYDESC_BM25,HEADER,ENTITIES};
                                 }
+                                System.out.println("currRecallValue: "+currRecallValue);
                             }
                         }
                     }
                 }
             }
         }
-
-        System.out.println(maxRecallWeights);
+        //b k WEIGHT_QUERY_BM25 WEIGHT_QUERYDESC_BM25 WEIGHT_HEADER WEIGHT_ENTITIES
+        System.out.println("b: "+maxRecallWeights[0]+"\n"+"k: "+maxRecallWeights[1]+"\n"+"WEIGHT_QUERY_BM25: "+maxRecallWeights[2]+"\n"+"WEIGHT_QUERYDESC_BM25: "+maxRecallWeights[3]+"\n"+"WEIGHT_HEADER: "+maxRecallWeights[4]+"\n"+"WEIGHT_ENTITIES: "+maxRecallWeights[5]);
     }
 
     private static int getRecall() {
         int recallCount = 0;
         try {
-            Process process = Runtime.getRuntime().exec("cd C:\\Users\\dor2\\Data\\Data\\08 Trec_eval & treceval.exe qrels.txt output\\results.txt > output\\summary.txt");
+            ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "cd C:\\Users\\dor2\\Data\\Data\\08 Trec_eval & treceval.exe qrels.txt output\\results.txt > output\\summary.txt");
+            builder.redirectErrorStream(true);
+            Process p = builder.start();
+            /*try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            */
+            //Process process = Runtime.getRuntime().exec("cd C:\\Users\\dor2\\Data\\Data\\08 Trec_eval & treceval.exe qrels.txt output\\results.txt > output\\summary.txt");
             BufferedReader bufferedReader = new BufferedReader(new FileReader("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\output\\summary.txt"));
             String line = "";
             while ((line = bufferedReader.readLine()) != null){
                 if(line.contains("Rel_ret")){
-                    line = line.substring(0,line.indexOf(':')+1);
+                    line = line.substring(line.indexOf(':')+1);
+                    line = line.replaceAll(" ","");
                     recallCount = Integer.parseInt(line);
                     break;
                 }

@@ -232,7 +232,4 @@ public class Searcher {
     }
 
 
-    public void weightsSetter(double[] weights) {
-        ((Ranker)ranker).weightsSetter(weights);
-    }
 }

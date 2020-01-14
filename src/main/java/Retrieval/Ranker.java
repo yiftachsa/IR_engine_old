@@ -38,15 +38,6 @@ public class Ranker implements IRanker {
         this.indexer = indexer;
     }
 
-    public void weightsSetter(double[] weights){
-        b = weights[0];
-        k = weights[1];
-        WEIGHT_QUERY_BM25 = weights[2];
-        WEIGHT_QUERYDESC_BM25 = weights[3];
-        WEIGHT_HEADER = weights[4];
-        WEIGHT_ENTITIES = weights[5];
-    }
-
     // rank calculators -
     // 1. BM25
     // 2. Jaccard Similarity between the query and documentHeader.

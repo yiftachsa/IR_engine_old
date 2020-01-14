@@ -1,6 +1,5 @@
 package View;
 
-import Test.TestsPart1;
 import ViewModel.MyViewModel;
 import javafx.event.ActionEvent;
 import javafx.event.Event;

@@ -593,10 +593,6 @@ public class MyModel extends Observable implements IModel {
         Documenter.saveRetrievalResults(path, this.latestQueryResult);
     }
 
-
-    public void weightsSetter(double[] weights){
-        searcher.weightsSetter(weights);
-    }
 }
 
 
