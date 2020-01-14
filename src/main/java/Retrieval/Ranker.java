@@ -53,12 +53,12 @@ public class Ranker implements IRanker {
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
             ArrayList<TermDocumentTrio> mergedQuery = mergeQueryAndExpandedQueryTrios(query, expandedQuery);
             HashMap<String, Integer> mergedDocumentTerms = mergeQueryAndExpandedQueryDocumentsTerms(semanticExpandedTerms, documentTerms);
-            queryBM25Rank = BM25calculator(mergedQuery, documentID, documentLength, mergedDocumentTerms);
+            queryBM25Rank = BM25calculator(mergedQuery, documentLength, mergedDocumentTerms);
         } else {
-            queryBM25Rank = BM25calculator(query, documentID, documentLength, documentTerms);
+            queryBM25Rank = BM25calculator(query, documentLength, documentTerms);
         }
 
-        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
+        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentLength, documentTerms);
 
 
         List<String> queryTerms = extractTerms(query);
@@ -70,6 +70,7 @@ public class Ranker implements IRanker {
         return finalRank;
     }
 
+
     /**
      * Computes BM25 between a given query and a given document.
      * https://en.wikipedia.org/wiki/Okapi_BM25
@@ -79,19 +80,20 @@ public class Ranker implements IRanker {
      * @param documentTerms  - HashMap<String, Integer> - All the terms and their frequencies from the document.
      * @return - double - BM25 rank between the given query and the given document.
      */
+
     public double BM25calculator(ArrayList<TermDocumentTrio> query, int documentLength, HashMap<String, Integer> documentTerms) {
         double sigma = 0;
         double documentLengthRatio = documentLength / (this.avdl * 2);
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
         for (TermDocumentTrio trio : query) {
             String term = trio.getTerm();
-            int tfQ = trio.getFrequency();
-            int tfD = 0;
+            double tfQ = trio.getFrequency();
+            double tfD = 0;
             if (documentTerms.containsKey(term)) {
                 tfD = documentTerms.get(term);
             }
             double divide = ((k + 1) * tfD) / (tfD + lengthFactor);
-            int dfT = indexer.getDocumentFrequency(term);
+            double dfT = indexer.getDocumentFrequency(term);
             if (dfT <= 0) {
                 continue;
             }
@@ -100,6 +102,8 @@ public class Ranker implements IRanker {
         }
         return sigma;
     }
+
+
 
     /**
      * Computes dice coefficient
@@ -193,27 +197,6 @@ public class Ranker implements IRanker {
         return result;
     }
 
-    public double BM25calculator(ArrayList<TermDocumentTrio> query, String documentID, int documentLength, HashMap<String, Integer> documentTerms) {
-        double sigma = 0;
-        double documentLengthRatio = documentLength / (this.avdl * 2);
-        double lengthFactor = k * (1 - b + b * documentLengthRatio);
-        for (TermDocumentTrio trio : query) {
-            String term = trio.getTerm();
-            double tfQ = trio.getFrequency();
-            double tfD = 0;
-            if (documentTerms.containsKey(term)) {
-                tfD = documentTerms.get(term);
-            }
-            double divide = ((k + 1) * tfD) / (tfD + lengthFactor);
-            double dfT = indexer.getDocumentFrequency(term);
-            if (dfT <= 0) {
-                continue;
-            }
-            double logCalc = Math.log10(((corpusSize + 1) / (dfT)));
-            sigma = sigma + (tfQ * divide * logCalc);
-        }
-        return sigma;
-    }
 
     @Override
     public ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, ArrayList<TermDocumentTrio> processedDocumentHeader) {
