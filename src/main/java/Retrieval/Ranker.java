@@ -71,8 +71,6 @@ public class Ranker implements IRanker {
         double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
         return finalRank;
     }
-
-
     /**
      * Computes dice coefficient
      * https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
