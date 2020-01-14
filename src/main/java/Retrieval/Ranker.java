@@ -72,19 +72,6 @@ public class Ranker implements IRanker {
         return finalRank;
     }
 
-    private HashMap<String, Integer> mergeQueryAndExpandedQueryDocumentsTerms(HashMap<String, Integer> semanticExpandedTerms, HashMap<String, Integer> documentTerms) {
-        HashMap<String, Integer> mergedDocumentsTerms = new HashMap<>();
-        mergedDocumentsTerms.putAll(semanticExpandedTerms);
-        mergedDocumentsTerms.putAll(documentTerms);
-        return mergedDocumentsTerms;
-    }
-
-    private ArrayList<TermDocumentTrio> mergeQueryAndExpandedQueryTrios(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> expandedQuery) {
-        ArrayList<TermDocumentTrio> mergedQuery = new ArrayList<>();
-        mergedQuery.addAll(query);
-        mergedQuery.addAll(expandedQuery);
-        return mergedQuery;
-    }
 
     /**
      * Computes dice coefficient
