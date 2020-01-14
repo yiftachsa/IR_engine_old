@@ -10,62 +10,59 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Array;
 import java.util.*;
-import java.util.concurrent.*;
 
 public class TestsPart1 {
 
     public static void main(String[] args) throws IOException {
-        Parse parser = new Parse( new HashSet<>(), new HashSet<>(),false);
-       // parserTest(parser);
-       // Model_Test3_2DocsTest();
+        Parse parser = new Parse(new HashSet<>(), new HashSet<>(), false);
+        // parserTest(parser);
+        // Model_Test3_2DocsTest();
         //ReadFile_separateFileToDocuments_Test2()
         //parseTest(parser);
         //Parse_parseDocument_Test1_parseDocument(parser);
         //Mapper_Test1();
         //Mapper_Test2_mergeAndSortTwoPostingEntriesLists();
         //Model_MergerThreads_test1();
-        Model_Test2_100DocsTest();
-
+//        Model_Test2_100DocsTest();
+        optimizeRankerWeights();
         //RetrievalResultView_Test1();
         //test30();
 
     }
 
     private static void test30() {
-        String s="currentLine.contains(\"71546\")||currentLine.contains(\"72692\")||currentLine.contains(\"72987\")||currentLine.contains(\"94579\")||currentLine.contains(\"94795\")||currentLine.contains(\"118042\")||currentLine.contains(\"118123\")||currentLine.contains(\"118190\")||currentLine.contains(\"118319\")||currentLine.contains(\"131919\") ||currentLine.contains(\"132603\")||currentLine.contains(\"139474\")||currentLine.contains(\"141683\")||currentLine.contains(\"145257\")||currentLine.contains(\"146408\")||currentLine.contains(\"146867\")||currentLine.contains(\"151104\")||currentLine.contains(\"151251\")||currentLine.contains(\"157416\")||currentLine.contains(\"158450\")||currentLine.contains(\"159991\")||currentLine.contains(\"165901\")||currentLine.contains(\"177745\")||currentLine.contains(\"190208\")||currentLine.contains(\"193844\")||currentLine.contains(\"195735\")||currentLine.contains(\"214327\")||currentLine.contains(\"214646\")||currentLine.contains(\"222915\")||currentLine.contains(\"224450\")||currentLine.contains(\"225423\")||currentLine.contains(\"25627\")||currentLine.contains(\"232143\")||currentLine.contains(\"236685\")||currentLine.contains(\"245951\")||currentLine.contains(\"251515\")||currentLine.contains(\"253636\")||currentLine.contains(\"256550\")||currentLine.contains(\"262902\")||currentLine.contains(\"263799\")||currentLine.contains(\"287999\")||currentLine.contains(\"308081\")||currentLine.contains(\"308433\")||currentLine.contains(\"323218\")||currentLine.contains(\"331454\")||currentLine.contains(\"335156\")||currentLine.contains(\"335858\")||currentLine.contains(\"343429\")||currentLine.contains(\"355892\")||currentLine.contains(\"384766\")||currentLine.contains(\"438713\")||currentLine.contains(\"439846\")||currentLine.contains(\"443109\")||currentLine.contains(\"449105\")||currentLine.contains(\"453202\")||currentLine.contains(\"463431\")||currentLine.contains(\"464947\")";
-        s= s.replaceAll("currentLine" , "documentId");
+        String s = "currentLine.contains(\"71546\")||currentLine.contains(\"72692\")||currentLine.contains(\"72987\")||currentLine.contains(\"94579\")||currentLine.contains(\"94795\")||currentLine.contains(\"118042\")||currentLine.contains(\"118123\")||currentLine.contains(\"118190\")||currentLine.contains(\"118319\")||currentLine.contains(\"131919\") ||currentLine.contains(\"132603\")||currentLine.contains(\"139474\")||currentLine.contains(\"141683\")||currentLine.contains(\"145257\")||currentLine.contains(\"146408\")||currentLine.contains(\"146867\")||currentLine.contains(\"151104\")||currentLine.contains(\"151251\")||currentLine.contains(\"157416\")||currentLine.contains(\"158450\")||currentLine.contains(\"159991\")||currentLine.contains(\"165901\")||currentLine.contains(\"177745\")||currentLine.contains(\"190208\")||currentLine.contains(\"193844\")||currentLine.contains(\"195735\")||currentLine.contains(\"214327\")||currentLine.contains(\"214646\")||currentLine.contains(\"222915\")||currentLine.contains(\"224450\")||currentLine.contains(\"225423\")||currentLine.contains(\"25627\")||currentLine.contains(\"232143\")||currentLine.contains(\"236685\")||currentLine.contains(\"245951\")||currentLine.contains(\"251515\")||currentLine.contains(\"253636\")||currentLine.contains(\"256550\")||currentLine.contains(\"262902\")||currentLine.contains(\"263799\")||currentLine.contains(\"287999\")||currentLine.contains(\"308081\")||currentLine.contains(\"308433\")||currentLine.contains(\"323218\")||currentLine.contains(\"331454\")||currentLine.contains(\"335156\")||currentLine.contains(\"335858\")||currentLine.contains(\"343429\")||currentLine.contains(\"355892\")||currentLine.contains(\"384766\")||currentLine.contains(\"438713\")||currentLine.contains(\"439846\")||currentLine.contains(\"443109\")||currentLine.contains(\"449105\")||currentLine.contains(\"453202\")||currentLine.contains(\"463431\")||currentLine.contains(\"464947\")";
+        s = s.replaceAll("currentLine", "documentId");
         System.out.println(s);
     }
 
-    public static void Model_Test3_2DocsTest(){
+    public static void Model_Test3_2DocsTest() {
         String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data10";
         String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
+        myModel.start(corpusPath, resultPath);
     }
 
     private static boolean parserTest(Parse parse) throws IOException {
         boolean result = false;
         String filePath = "C:\\Users\\Merav\\Desktop\\testtt";
         BufferedReader reader = null;
-        String query="";
+        String query = "";
         try {
             reader = new BufferedReader(new FileReader(filePath));
             String line = "";
             while ((line = reader.readLine()) != null) {
 
-                query=query+ " "+line;
+                query = query + " " + line;
             }
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ArrayList<String>stringArrayList = parse.parseQuery(query);
+        ArrayList<String> stringArrayList = parse.parseQuery(query);
         for (int i = 0; i < stringArrayList.size(); i++) {
             System.out.println(stringArrayList.get(i));
         }
@@ -93,7 +90,7 @@ public class TestsPart1 {
         pairs.add(newPair);
 
 
-        RetrievalResultView.display("this is a title", pairs,viewModel);
+        RetrievalResultView.display("this is a title", pairs, viewModel);
     }
 
 
@@ -113,8 +110,6 @@ public class TestsPart1 {
     }
 
 
-
-
     private static void ReadFile_separateFileToDocuments_Test2() {
         String filePath = "C:Users\\Desktop\\corpus\\FB396001\\FB396001";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
@@ -123,7 +118,7 @@ public class TestsPart1 {
 
     private static void parseTest(Parse parser) {
         parse_parseQuery_Test1_generateTokenDollar(parser);
-         parse_parseQuery_Test2_generateTokenMonth(parser);
+        parse_parseQuery_Test2_generateTokenMonth(parser);
         parse_parseQuery_Test3_Percentage(parser);
         parse_parseQuery_Test4_Thousand(parser);
         parse_parseQuery_Test5_generateTokenLargeNumbers(parser);
@@ -355,7 +350,7 @@ public class TestsPart1 {
         String filePath = "C:\\Users\\yiftachs\\Data\\ReportFB.txt";
         ArrayList<Document> documentsList = ReadFile.separateFileToDocuments(filePath);
         ArrayList<String> bagOfWords = parser.parseDocument(documentsList.get(0));
-        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords(false,"" , "" , bagOfWords,"");
+        ArrayList<TermDocumentTrio> test = Mapper.processBagOfWords(false, "", "", bagOfWords, "");
         test.sort(new Comparator<TermDocumentTrio>() {
             @Override
             public int compare(TermDocumentTrio o1, TermDocumentTrio o2) {
@@ -365,7 +360,7 @@ public class TestsPart1 {
 
 
         for (TermDocumentTrio trio : test) {
-            System.out.println(trio.getTerm() + " , "+trio.getFrequency());
+            System.out.println(trio.getTerm() + " , " + trio.getFrequency());
         }
         return result;
     }
@@ -454,16 +449,16 @@ public class TestsPart1 {
     }
 */
 
-    public static void Model_Test2_entireCorpus(){
+    public static void Model_Test2_entireCorpus() {
         String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
         String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
 
-        double startTime = System.currentTimeMillis()/1000;
+        double startTime = System.currentTimeMillis() / 1000;
         MyModel myModel = new MyModel();
         myModel.setStemming(false);
         myModel.loadDictionary(resultPath);
-        double endTime = System.currentTimeMillis()/1000;
-        String timePrint ="StartTime: " + startTime +" EndTime: " +endTime + " Total: "+(endTime-startTime);
+        double endTime = System.currentTimeMillis() / 1000;
+        String timePrint = "StartTime: " + startTime + " EndTime: " + endTime + " Total: " + (endTime - startTime);
         System.out.println(timePrint);
 
         countNumberTerms(myModel.getDictionary());
@@ -528,19 +523,19 @@ public class TestsPart1 {
          */
     }
 
-    public static void Model_Test2_100DocsTest(){
+    public static void Model_Test2_100DocsTest() {
         String corpusPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Data";
         String resultPath = "C:\\Users\\Merav\\Desktop\\SemesterE\\אחזור\\Result";
         MyModel myModel = new MyModel();
-        myModel.start(corpusPath,resultPath);
+        myModel.start(corpusPath, resultPath);
     }
 
 
-    private static void countNumberTerms(LinkedList<Pair<String, Integer>> dictionary){
+    private static void countNumberTerms(LinkedList<Pair<String, Integer>> dictionary) {
         LinkedList<String> numbers = new LinkedList<>();
-        for (Pair<String, Integer> pair: dictionary){
+        for (Pair<String, Integer> pair : dictionary) {
             String term = pair.getKey();
-            if (term.matches("[0-9]{1,13}(\\.[0-9]*)?")){
+            if (term.matches("[0-9]{1,13}(\\.[0-9]*)?")) {
                 numbers.add(term);
             }
         }
@@ -548,21 +543,85 @@ public class TestsPart1 {
 
     }
 
-    private static int totalPostingEntries(int numberOfFilesPerThread){
+    private static int totalPostingEntries(int numberOfFilesPerThread) {
         final int totalFilesInCorpus = 1815;
-        int totalPostingEntries = totalFilesInCorpus/numberOfFilesPerThread;
+        int totalPostingEntries = totalFilesInCorpus / numberOfFilesPerThread;
         return totalPostingEntries;
     }
 
 
-    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread){
+    private static double averageTimePerFile(double[] testsTimes, int numberOfFilesPerThread) {
         int totalFilesInTest = testsTimes.length * numberOfFilesPerThread;
         double totalTestTime = 0;
         for (int i = 0; i < testsTimes.length; i++) {
             totalTestTime = totalTestTime + testsTimes[i];
         }
-        double averageTimePerFile = totalTestTime/totalFilesInTest;
+        double averageTimePerFile = totalTestTime / totalFilesInTest;
         return averageTimePerFile;
     }
 
+    private static void optimizeRankerWeights() {
+        MyModel myModel = new MyModel();
+        myModel.loadDictionary("C:\\Users\\dor2\\Output");
+        myModel.loadStopWords("C:\\Users\\dor2\\Data\\Data\\data");
+        myModel.runQueries("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\queries.txt",false);
+
+
+
+        double[] maxRecallWeights = new double[6]; //b k WEIGHT_QUERY_BM25 WEIGHT_QUERYDESC_BM25 WEIGHT_HEADER WEIGHT_ENTITIES
+        int maxRecallValue = 0;
+
+
+        double[] b_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
+        double[] k_Range = new double[]{1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2};
+
+        double[] WEIGHT_QUERY_BM25_Range = new double[]{ 0.5, 0.6, 0.7, 0.8, 0.9, 1,1.1,1.2,1.3,1.4,1.5};
+        double[] WEIGHT_QUERYDESC_BM25_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
+        double[] WEIGHT_HEADER_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4};
+        double[] WEIGHT_ENTITIES_Range = new double[]{0.05, 0.1, 0.2, 0.3, 0.4};
+
+        for (double b : b_Range) {
+            for (double k : k_Range) {
+                for (double QUERY_BM25 : WEIGHT_QUERY_BM25_Range) {
+                    for (double QUERYDESC_BM25 : WEIGHT_QUERYDESC_BM25_Range) {
+                        for (double HEADER : WEIGHT_HEADER_Range) {
+                            for (double ENTITIES : WEIGHT_ENTITIES_Range) {
+                                myModel.weightsSetter(new double[]{b,k,QUERY_BM25,QUERYDESC_BM25,HEADER,ENTITIES});
+
+                                ArrayList<Pair<String, ArrayList<String>>> currRetrieval = myModel.runQueries("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\queries.txt",false);
+                                myModel.saveLatestRetrievalResults("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\output\\results.txt");
+                                int currRecallValue = getRecall();
+                                if(currRecallValue > maxRecallValue){
+                                    maxRecallValue = currRecallValue;
+                                    maxRecallWeights = new double[]{b,k,QUERY_BM25,QUERYDESC_BM25,HEADER,ENTITIES};
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(maxRecallWeights);
+    }
+
+    private static int getRecall() {
+        int recallCount = 0;
+        try {
+            Process process = Runtime.getRuntime().exec("cd C:\\Users\\dor2\\Data\\Data\\08 Trec_eval & treceval.exe qrels.txt output\\results.txt > output\\summary.txt");
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("C:\\Users\\dor2\\Data\\Data\\08 Trec_eval\\output\\summary.txt"));
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null){
+                if(line.contains("Rel_ret")){
+                    line = line.substring(0,line.indexOf(':')+1);
+                    recallCount = Integer.parseInt(line);
+                    break;
+                }
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return recallCount;
+    }
 }

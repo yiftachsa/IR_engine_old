@@ -17,13 +17,13 @@ public class Ranker implements IRanker {
 
 
     //todo: optimize
-    private static final double b = 0.7;
-    private static final double k = 1.81;
+    private static double b = 0.7;
+    private static double k = 1.81;
 
-    private static  double WEIGHT_QUERY_BM25 = 1;
-    private static  double WEIGHT_QUERYDESC_BM25 = 0.7;
-    private static  double WEIGHT_HEADER = 0.05;
-    private static  double WEIGHT_ENTITIES = 0.2;
+    private static double WEIGHT_QUERY_BM25 = 1;
+    private static double WEIGHT_QUERYDESC_BM25 = 0.7;
+    private static double WEIGHT_HEADER = 0.05;
+    private static double WEIGHT_ENTITIES = 0.2;
 
     /**
      * Constructor
@@ -38,6 +38,15 @@ public class Ranker implements IRanker {
         this.indexer = indexer;
     }
 
+    public void weightsSetter(double[] weights){
+        b = weights[0];
+        k = weights[1];
+        WEIGHT_QUERY_BM25 = weights[2];
+        WEIGHT_QUERYDESC_BM25 = weights[3];
+        WEIGHT_HEADER = weights[4];
+        WEIGHT_ENTITIES = weights[5];
+    }
+
     // rank calculators -
     // 1. BM25
     // 2. Jaccard Similarity between the query and documentHeader.
@@ -47,7 +56,7 @@ public class Ranker implements IRanker {
 
         if(query.size()<=2)
         {
-            WEIGHT_QUERYDESC_BM25 = 1.5;
+            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERYDESC_BM25*2;
         }
         double queryBM25Rank;
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
