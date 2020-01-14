@@ -561,6 +561,11 @@ public class TestsPart1 {
     }
 
     private static void optimizeRankerWeights(MyModel model) {
+        MyModel myModel = new MyModel();
+        myModel.loadDictionary("path");
+        myModel.loadStopWords("stopwordsfolder");
+
+
         double[] maxRecallWeights = new double[6]; //b k WEIGHT_QUERY_BM25 WEIGHT_QUERYDESC_BM25 WEIGHT_HEADER WEIGHT_ENTITIES
         int maxRecallValue = 0;
 
