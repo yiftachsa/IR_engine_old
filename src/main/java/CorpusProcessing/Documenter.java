@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 /**
  * Responsible to write to Disk.
@@ -24,6 +25,9 @@ public class Documenter {
     private static ReentrantLock invertedIndexMutex;
 
     private static String filesPath;
+
+
+   // private static Pattern pipelinePattern = Pattern.compile("[\\|]");
 
     /**
      * Initializes the fields and the directories required for the indexing process
@@ -403,7 +407,9 @@ public class Documenter {
             String line = "";
             while ((line = reader.readLine()) != null) {
                 if (term.equals(line.substring(0, line.indexOf('!')))) {
-                    return getTermPairs(line);
+                    String s = line;
+                    reader.close();
+                    return getTermPairs(s);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -417,6 +423,7 @@ public class Documenter {
     private static ArrayList<Pair<String, Integer>> getTermPairs(String line) {
         //$$$$!<LA070590-0214,1>|<LA071290-0249,1>|<LA071990-0172,1>|<LA072690-0193,1>|<LA080990-0168,1>|<LA081690-0198,1>|<LA090690-0183,1>|
         line = line.substring(line.indexOf('!') + 1);
+        //String[] allPairs = pipelinePattern.split(line);
         String[] allPairs = line.split("[|]");
         ArrayList<Pair<String, Integer>> result = new ArrayList<>();
         for (int i = 0; i < allPairs.length; i++) {

@@ -139,13 +139,13 @@ public class Ranker implements IRanker {
         double lengthFactor = k * (1 - b + b * documentLengthRatio);
         for (TermDocumentTrio trio : query) {
             String term = trio.getTerm();
-            int tfQ = trio.getFrequency();
-            int tfD = 0;
+            double tfQ = trio.getFrequency();
+            double tfD = 0;
             if (documentTerms.containsKey(term)) {
                 tfD = documentTerms.get(term);
             }
             double divide = ((k + 1) * tfD) / (tfD + lengthFactor);
-            int dfT = indexer.getDocumentFrequency(term);
+            double dfT = indexer.getDocumentFrequency(term);
             if (dfT <= 0) {
                 continue;
             }
