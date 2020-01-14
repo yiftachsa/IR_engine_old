@@ -1,5 +1,7 @@
 package CorpusProcessing;
 
+import Retrieval.Query;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,8 +17,8 @@ public class ReadFile {
      * Receives a file path and splits it to the documents in the file.
      * Initializes for each document a new Document object and returns a list of all these objects.
      *
-     * @param filePath - String - an absolute path to a file containing documents
-     * @return - ArrayList<Document> - a list of all the documents in the file
+     * @param filePath - String - an absolute path to a file containing documents.
+     * @return - ArrayList<Document> - a list of all the documents in the file.
      */
     public static ArrayList<Document> separateFileToDocuments(String filePath) {
         ArrayList<Document> documents = new ArrayList();
@@ -125,6 +127,13 @@ public class ReadFile {
         return documents;
     }
 
+    /**
+     * Receives a file path and splits it to the queries in the file.
+     * Initializes for each query a new Query object and returns a list of all these objects.
+     *
+     * @param queriesPath - String - an absolute path to a file containing documents.
+     * @return - Query[] - a list of all the queries in the file.
+     */
     public static Query[] separateFileToQueries(String queriesPath) {
         BufferedReader reader = null;
         LinkedList<Query> queries = new LinkedList<>();
@@ -132,23 +141,24 @@ public class ReadFile {
             reader = new BufferedReader((new FileReader(queriesPath)));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                if (line.contains("<num>")){
+                if (line.contains("<num>")) {
                     int queryNumber;
                     String title = "";
                     String description = "";
 
                     String[] splitedline = line.split(" ");
-                    queryNumber =Integer.parseInt(splitedline[splitedline.length-1]); // TODO: Check what happens when the final char is " "
+                    queryNumber = Integer.parseInt(splitedline[splitedline.length - 1]);
 
                     line = reader.readLine();
-                    title = line.substring(line.indexOf(" ")+1);
+                    title = line.substring(line.indexOf(" ") + 1);
 
-                    while (!((line = reader.readLine()).contains("<desc>"))) {}
+                    while (!((line = reader.readLine()).contains("<desc>"))) {
+                    }
                     while (!((line = reader.readLine()).contains("<narr>"))) {
                         description = description + line + " ";
                     }
 
-                    queries.add(new Query(queryNumber,title, description));
+                    queries.add(new Query(queryNumber, title, description));
                 }
             }
         } catch (FileNotFoundException e) {

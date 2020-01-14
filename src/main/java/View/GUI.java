@@ -36,9 +36,9 @@ public class GUI extends Application {
         Parent root = fxmlLoader.load(url.openStream());
 
 
-        Scene scene = new Scene(root, 400, 400);
+        Scene scene = new Scene(root, 400, 500);
         primaryStage.setScene(scene);
-        primaryStage.setMinHeight(400);
+        primaryStage.setMinHeight(500);
         primaryStage.setMinWidth(400);
         controller = fxmlLoader.getController();
         controller.setViewModel(viewModel);

@@ -12,15 +12,31 @@ public class Indexer {
      */
     private Map<String, DictionaryEntryTrio> dictionary;
 
+    /**
+     * Sorted TreeSet of all the entities.
+     */
     private TreeSet<String> entities;
 
-    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;//<DocNum, Map of all the entities in the document and their frequency in the document>
+    /**
+     * Document entities map
+     * entry: documentID --> Map of all the entities in the document and their frequency in the document
+     */
+    private HashMap<String, HashMap<String, Integer>> allDocumentsEntities;
 
+    /**
+     * total documents Count
+     */
     private int documentsCount;
 
+    /**
+     * Document details map
+     * entry: documentID --> document details
+     */
     private HashMap<String, String> documentsDetails;
 
-
+    /**
+     * Inverted index directories count
+     */
     private static final int INVERTEDINDEXDIRECTORIESCOUNT = 27;
 
     /**
@@ -167,42 +183,9 @@ public class Indexer {
     }
 
     /**
-     * Checks if the dictionary is loaded
+     * Receives a partial dictionary and merges it into the dictionary field of this Indexer.
      *
-     * @return - boolean - true if the dictionary is loaded, else false
-     */
-    public boolean getDictionaryStatus() {
-        return dictionary != null;
-    }
-
-    public int getDocumentsCount() {
-        return documentsCount;
-    }
-
-    public void setDocumentsCount(int documentsCount) {
-        this.documentsCount = documentsCount;
-    }
-
-    public void setEntities(TreeSet<String> entities) {
-        this.entities = entities;
-    }
-
-    public boolean doesDictionaryContains(String key) {
-        return dictionary.containsKey(key);
-    }
-
-    public Map<String, DictionaryEntryTrio> getDictionary() {
-        return dictionary;
-    }
-
-    public static int getINVERTEDINDEXDIRECTORIESCOUNT() {
-        return INVERTEDINDEXDIRECTORIESCOUNT;
-    }
-
-    /**
-     * Receives a partial dictionary and merges it into the dictionary field of this Indexer
-     *
-     * @param partialDictionary - Map<String, DictionaryEntryTrio> - dictionary to be merged
+     * @param partialDictionary - Map<String, DictionaryEntryTrio> - dictionary to be merged.
      */
     public void addPartialDictionary(Map<String, DictionaryEntryTrio> partialDictionary) {
         if (this.dictionary.size() == 0) {
@@ -246,7 +229,7 @@ public class Indexer {
     /**
      * Removes all the Strings in the given set from the dictionary field.
      *
-     * @param singleAppearances - HashSet<String> - a set of Strings to be removed
+     * @param singleAppearances - HashSet<String> - a set of Strings to be removed.
      */
     public void removeAllSingleAppearances(HashSet<String> singleAppearances) {
         for (String entity : singleAppearances) {
@@ -258,9 +241,63 @@ public class Indexer {
     }
 
     /**
+     * Checks if the dictionary is loaded.
+     *
+     * @return - boolean - true if the dictionary is loaded, else false.
+     */
+    public boolean getDictionaryStatus() {
+        return dictionary != null;
+    }
+
+    /**
+     * Getter for the documentsCount.
+     *
+     * @return - int - total documents Count.
+     */
+    public int getDocumentsCount() {
+        return documentsCount;
+    }
+
+    /**
+     * Setter for the documentsCount.
+     *
+     * @param documentsCount - int - total documents Count.
+     */
+    public void setDocumentsCount(int documentsCount) {
+        this.documentsCount = documentsCount;
+    }
+
+    /**
+     * Setter for the entities.
+     *
+     * @param entities - TreeSet<String> - Sorted TreeSet of all the entities.
+     */
+    public void setEntities(TreeSet<String> entities) {
+        this.entities = entities;
+    }
+
+    /**
+     * Getter for the dictionary.
+     *
+     * @return - Map<String, DictionaryEntryTrio> - Corpus dictionary.
+     */
+    public Map<String, DictionaryEntryTrio> getDictionary() {
+        return dictionary;
+    }
+
+    /**
+     * Getter for the INVERTEDINDEXDIRECTORIESCOUNT.
+     *
+     * @return - int - Inverted index directories count.
+     */
+    public static int getINVERTEDINDEXDIRECTORIESCOUNT() {
+        return INVERTEDINDEXDIRECTORIESCOUNT;
+    }
+
+    /**
      * Returns the dictionary size.
      *
-     * @return - int - the dictionary size, the number of the unique terms
+     * @return - int - the dictionary size, the number of the unique terms.
      */
     public int getDictionarySize() {
         if (this.dictionary != null) {
@@ -269,20 +306,29 @@ public class Indexer {
         return 0;
     }
 
-
+    /**
+     * Setter for the documentsEntities.
+     *
+     * @param documentsEntities - HashMap<String, HashMap<String, Integer>> - Document entities map.
+     */
     public void setDocumentEntities(HashMap<String, HashMap<String, Integer>> documentsEntities) {
         this.allDocumentsEntities = documentsEntities;
     }
 
+    /**
+     * Setter for the documentsDetails.
+     *
+     * @param documentsDetails - HashMap<String, String> - Document details map.
+     */
     public void setDocumentDetails(HashMap<String, String> documentsDetails) {
         this.documentsDetails = documentsDetails;
     }
 
     /**
-     * Receive term and return df(term)
+     * Receive term and return df(term).
      *
-     * @param term - String - term in the dictionary
-     * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return 0
+     * @param term - String - term in the dictionary.
+     * @return df(term) - int - the document frequency of the term, if the term isn't in the dictionary return 0.
      */
     public int getDocumentFrequency(String term) {
         if (dictionary.containsKey(term)) {
@@ -303,22 +349,27 @@ public class Indexer {
         String[] splitDocumentDetails = documentDetails.split(",");
         int documentLength = Integer.parseInt(splitDocumentDetails[2]);
         return documentLength;
-
     }
 
+
+    /**
+     * Reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs.
+     *
+     * @param term - String - a term to retrieve the line in the inverted index for.
+     * @return - ArrayList<Pair<String, Integer>> - Pair: documentID --> term frequency.
+     */
     public ArrayList<Pair<String, Integer>> getTermPosting(String term) {
-        //todo: reach to the appropriate posting file and pull the relevant posting line - all the documents and dfs pairs
         DictionaryEntryTrio dictionaryEntryTrio = this.dictionary.get(term);
         boolean toLowerCase = false;
 
-        if(dictionaryEntryTrio == null){
+        if (dictionaryEntryTrio == null) {
             dictionaryEntryTrio = this.dictionary.get(term.toLowerCase());
-            if(dictionaryEntryTrio == null){
+            if (dictionaryEntryTrio == null) {
                 return null;
             }
             toLowerCase = true;
         }
-        if(toLowerCase){
+        if (toLowerCase) {
             term = term.toLowerCase();
         }
         ArrayList<Pair<String, Integer>> postingLine = Documenter.retrievePosting(term, dictionaryEntryTrio.getPostingIndex());//check
@@ -338,22 +389,23 @@ public class Indexer {
     /**
      * Returns all the document entities and their frequency for the given documentNumber as a Map of (entity , frequency).
      *
-     * @param documentNumber - String - a valid document number
-     * @return - HashMap<String, Integer> - all the document entities
+     * @param documentNumber - String - a valid document number.
+     * @return - HashMap<String, Integer> - all the document entities.
      */
     public HashMap<String, Integer> getDocumentEntitiesMap(String documentNumber) {
         return allDocumentsEntities.get(documentNumber);
     }
+
     /**
      * Returns all the document entities  for the given documentNumber.
      *
-     * @param documentNumber - String - a valid document number
-     * @return - ArrayList<String> - all the document entities
+     * @param documentNumber - String - a valid document number.
+     * @return - ArrayList<String> - all the document entities.
      */
     public ArrayList<String> getDocumentEntitiesList(String documentNumber) {
         ArrayList<String> result = new ArrayList<>();
         HashMap<String, Integer> documentEntities = allDocumentsEntities.get(documentNumber);
-        for(Map.Entry<String,Integer> entry: documentEntities.entrySet()){
+        for (Map.Entry<String, Integer> entry : documentEntities.entrySet()) {
             result.add(entry.getKey());
         }
         return result;
@@ -362,51 +414,57 @@ public class Indexer {
     /**
      * Returns all the saved document details for the given documentNumber as an array of strings.
      *
-     * @param documentNumber - String - a valid document number
-     * @return - String[] - an array of all the document details
+     * @param documentNumber - String - a valid document number.
+     * @return - String[] - an array of all the document details.
      */
     public String[] getDocumentDetails(String documentNumber) {
-        String details =  this.documentsDetails.get(documentNumber);
+        String details = this.documentsDetails.get(documentNumber);
         //maxTermFrequency + "," + uniqTermsCount + "," + length + "," + documentDate+","+documentHeader
 
-        String maxTermFrequency = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String maxTermFrequency = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String uniqTermsCount = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String uniqTermsCount = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String length = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String length = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
-        String documentDate = details.substring(0,details.indexOf(","));
-        details = details.substring(details.indexOf(",")+1);
+        String documentDate = details.substring(0, details.indexOf(","));
+        details = details.substring(details.indexOf(",") + 1);
 
         String documentHeader = details;
 
         return new String[]{maxTermFrequency, uniqTermsCount, length, documentDate, documentHeader};
     }
 
+    /**
+     * Returns the average document length.
+     *
+     * @return - double - average document length.
+     */
     public double getAverageDocumentLength() {
         int numberOfDocuments = documentsDetails.size();
         int sigmaLength = 0;
 
-        for (Map.Entry<String, String> entry: documentsDetails.entrySet()){
+        for (Map.Entry<String, String> entry : documentsDetails.entrySet()) {
             sigmaLength = sigmaLength + getDocumentLength(entry.getKey());
         }
 
-        double avdl = sigmaLength/numberOfDocuments;
+        double avdl = sigmaLength / numberOfDocuments;
         return avdl;
     }
 
     /**
-     * Receive Document ID and return the Document Header
-     * @param documentID
-     * @return
+     * Receive Document ID and return the Document Header.
+     *
+     * @param documentID - String - DocumentID
+     * @return - String - the document header.
      */
     public String getDocumentHeader(String documentID) {
 
         String[] details = getDocumentDetails(documentID);
-        return details[details.length-1];
+        return details[details.length - 1];
 
     }
 }

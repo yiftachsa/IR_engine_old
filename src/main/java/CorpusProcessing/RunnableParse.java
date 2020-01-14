@@ -1,7 +1,5 @@
 package CorpusProcessing;
 
-import javafx.util.Pair;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,7 +16,7 @@ public class RunnableParse implements Runnable {
     private static final int MERGERSPOOLSIZE = 2;
     private HashSet<String> entities;
     private HashSet<String> singleAppearanceEntities;
-    private HashMap<String,HashMap<String, Integer>> documentsEntities; //<DocNum, Map of all the entities in the document and their frequency in the document>
+    private HashMap<String, HashMap<String, Integer>> documentsEntities; //<DocNum, Map of all the entities in the document and their frequency in the document>
     private File[] filesToParse;
     private Parse parser;
     private Indexer indexer;
@@ -27,7 +25,7 @@ public class RunnableParse implements Runnable {
     /**
      * Constructor
      *
-     * @param useStemmer - boolean - use stemmer
+     * @param useStemmer - boolean - use stemmer.
      */
     public RunnableParse(boolean useStemmer) {
         this.entities = new HashSet<>();
@@ -39,45 +37,45 @@ public class RunnableParse implements Runnable {
     }
 
     /**
-     * Return the entities field
+     * Return the entities field.
      *
-     * @return - HashSet<String> - the entities field
+     * @return - HashSet<String> - the entities field.
      */
     public HashSet<String> getEntities() {
         return entities;
     }
 
     /**
-     * Return the singleAppearanceEntities field
+     * Return the singleAppearanceEntities field.
      *
-     * @return - HashSet<String> - the singleAppearanceEntities field
+     * @return - HashSet<String> - the singleAppearanceEntities field.
      */
     public HashSet<String> getSingleAppearanceEntities() {
         return singleAppearanceEntities;
     }
 
     /**
-     * Return the documentsCount field
+     * Return the documentsCount field.
      *
-     * @return - int - the entities field
+     * @return - int - the entities field.
      */
     public int getDocumentsCount() {
         return documentsCount;
     }
 
     /**
-     * Return the dictionary from the indexer field
+     * Return the dictionary from the indexer field.
      *
-     * @return - Map<String, Pair<Integer, String>> - dictionary
+     * @return - Map<String, Pair<Integer, String>> - dictionary.
      */
     public Map<String, DictionaryEntryTrio> getDictionary() {
         return this.indexer.getDictionary();
     }
 
     /**
-     * Sets the files to parse field
+     * Sets the files to parse field.
      *
-     * @param filesToParse - File[] - files to parse
+     * @param filesToParse - File[] - files to parse.
      */
     public void setFilesToParse(File[] filesToParse) {
         this.filesToParse = filesToParse;
@@ -101,10 +99,10 @@ public class RunnableParse implements Runnable {
 
                 for (Document document : documents) {
                     ArrayList<String> bagOfWords = parser.parseDocument(document);
-                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(false,document.getId(), document.getDate(), bagOfWords , document.getHeader());
+                    ArrayList<TermDocumentTrio> postingsEntries = Mapper.processBagOfWords(false, document.getId(), document.getDate(), bagOfWords, document.getHeader());
                     postingEntriesListsOfFile.add(postingsEntries);
 
-                    this.documentsEntities.put(document.getId(),parser.getLastProcessedDocumentEntities());
+                    this.documentsEntities.put(document.getId(), parser.getLastProcessedDocumentEntities());
 
                     this.documentsCount++;
                 }
@@ -155,6 +153,11 @@ public class RunnableParse implements Runnable {
         this.indexer.buildInvertedIndex(entirePostingEntries.get(0));
     }
 
+    /**
+     * Getter for the documentsEntities.
+     *
+     * @return - HashMap<String, HashMap<String, Integer>> - The documents entities.
+     */
     public HashMap<String, HashMap<String, Integer>> getDocumentsEntities() {
         return documentsEntities;
     }

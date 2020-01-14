@@ -7,12 +7,11 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Responsible to write to Disk.
- * Receive the information about specific document(Doc ID , Max tf , number of uniq words)
+ * Receive the information about specific document(Doc ID , Max tf , number of unique words).
  */
 public class Documenter {
 
@@ -26,9 +25,9 @@ public class Documenter {
     private static String filesPath;
 
     /**
-     * Initializes the fields and the directories required for the indexing process
+     * Initializes the fields and the directories required for the indexing process.
      *
-     * @param path - String - the results path
+     * @param path - String - the results path.
      */
     public static void start(String path) {
         filesPath = path + "";
@@ -46,7 +45,11 @@ public class Documenter {
         new File(filesPath + "\\Dictionary").mkdir();
     }
 
-
+    /**
+     * Getter for the documentsDetails.
+     *
+     * @return - HashMap<String, String> - Document details map.
+     */
     public static HashMap<String, String> getDocumentsDetails() {
         return documentsDetails;
     }
@@ -245,7 +248,7 @@ public class Documenter {
     }
 
     /**
-     * Saves a given dictionary to disk.
+     * Saves a given dictionary to hard drive.
      *
      * @param dictionary - Map<String, DictionaryEntryTrio>
      */
@@ -363,6 +366,11 @@ public class Documenter {
         return clearSuccessful;
     }
 
+    /**
+     * Saves the given DocumentsEntities Map to the hard drive as an object.
+     *
+     * @param allDocumentsEntities - HashMap<String, HashMap<String, Integer>> - a DocumentsEntities map to be saved.
+     */
     public static void saveDocumentEntities(HashMap<String, HashMap<String, Integer>> allDocumentsEntities) {
 
         String filePath = filesPath + "\\Entities\\DocumentsEntities";
@@ -375,6 +383,12 @@ public class Documenter {
         }
     }
 
+    /**
+     * Loads a DocumentsEntities Map from the hard drive and returns it.
+     *
+     * @param path - A path to a directory containing the DocumentEntities Map.
+     * @return - HashMap<String, HashMap<String, Integer>> - A DocumentsEntities map.
+     */
     public static HashMap<String, HashMap<String, Integer>> loadDocumentEntities(String path) {
         String entitiesPath = path + "\\Entities\\DocumentsEntities";
         FileInputStream fileInputStream;
@@ -394,8 +408,14 @@ public class Documenter {
         return allDocumentsEntities;
     }
 
+    /**
+     * Retrieves a single posting line for a given term.
+     *
+     * @param term         - String - A term to retrieve by.
+     * @param postingIndex - string - The name of the posting directory
+     * @return - ArrayList<Pair<String, Integer>> - Pair: documentID --> term frequency.
+     */
     public static ArrayList<Pair<String, Integer>> retrievePosting(String term, String postingIndex) {
-        //todo: maybe we should split the posting file - time complexity
         String postingFilePath = filesPath + "\\PostingFiles\\" + postingIndex + "\\posting";
         BufferedReader reader = null;
         try {
@@ -414,16 +434,19 @@ public class Documenter {
         return null;
     }
 
+    /**
+     * Returns all the (docID, tf) pairs from a given posting line.
+     *
+     * @param line - String - A posting line.
+     * @return - ArrayList<Pair<String, Integer>> - Pair: documentID --> term frequency.
+     */
     private static ArrayList<Pair<String, Integer>> getTermPairs(String line) {
-        //$$$$!<LA070590-0214,1>|<LA071290-0249,1>|<LA071990-0172,1>|<LA072690-0193,1>|<LA080990-0168,1>|<LA081690-0198,1>|<LA090690-0183,1>|
-        //todo: check index
         line = line.substring(line.indexOf('!') + 1);
         String[] allPairs = line.split("[|]");
         ArrayList<Pair<String, Integer>> result = new ArrayList<>();
         for (int i = 0; i < allPairs.length; i++) {
             try {
                 String documentID = allPairs[i].substring(1, allPairs[i].indexOf(','));
-                //todo: check index
                 int termFrequency = Integer.parseInt(allPairs[i].substring(allPairs[i].indexOf(',') + 1, (allPairs[i].length() - 1)));
                 Pair<String, Integer> pair = new Pair<>(documentID, termFrequency);
                 result.add(pair);
@@ -435,13 +458,24 @@ public class Documenter {
         return result;
     }
 
+    /**
+     * Setter for the filePath
+     *
+     * @param path - String - An absolute file path
+     */
     public static void setFilePath(String path) {
         filesPath = path;
     }
 
+    /**
+     * Saves the given query retrieval results list to the hard drive as text.
+     *
+     * @param path              - An absolute path to a file to be written to.
+     * @param latestQueryResult - ArrayList<Pair<String, ArrayList<String>>> - Query results
+     */
     public static void saveRetrievalResults(String path, ArrayList<Pair<String, ArrayList<String>>> latestQueryResult) {
         if (path != null) {
-            //WRITE TO DISK! 
+            //WRITE TO DISK
             BufferedWriter writer = null;
             try {
                 writer = new BufferedWriter(new FileWriter(path));
@@ -453,7 +487,6 @@ public class Documenter {
                         writer.write(outLine);
                         writer.newLine();
                     }
-//                    writer.newLine();
                 }
                 writer.close();
             } catch (IOException e) {

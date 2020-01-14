@@ -71,13 +71,14 @@ public class Parse {
     private HashSet<String> singleAppearanceEntities;
     private boolean useStemmer; // indicate whether to use stemmer. if true stemmer is used.
 
-    private HashMap<String,Integer> lastProcessedDocumentEntities; //HashMap of all entities identified in the last document parsed with their counter
+    private HashMap<String, Integer> lastProcessedDocumentEntities; //HashMap of all entities identified in the last document parsed with their counter
 
     /**
      * Constructor
-     * @param entities - HashSet<String>
+     *
+     * @param entities                 - HashSet<String>
      * @param singleAppearanceEntities - HashSet<String>
-     * @param useStemmer - boolean
+     * @param useStemmer               - boolean
      */
     public Parse(HashSet<String> entities, HashSet<String> singleAppearanceEntities, boolean useStemmer) {
         this.entities = entities;
@@ -87,10 +88,11 @@ public class Parse {
 
     /**
      * Returns true if the stop words are loaded
+     *
      * @return - boolean - true if the stop words are loaded
      */
     public static boolean getStopwordsStatus() {
-        return stopwords!=null;
+        return stopwords != null;
     }
 
     /**
@@ -119,22 +121,29 @@ public class Parse {
         return terms;
     }
 
-    public HashMap<String,Integer> getLastProcessedDocumentEntities(){
+    /**
+     * Getter for the lastProcessedDocumentEntities
+     *
+     * @return - HashMap<String,Integer> - lastProcessedDocumentEntities
+     */
+    public HashMap<String, Integer> getLastProcessedDocumentEntities() {
         return this.lastProcessedDocumentEntities;
     }
 
     /**
      * Updates the lastProcessedDocumentEntities Map with the entity and it's frequency in the document.
+     *
      * @param entity - String - The entity to be added.
      */
-    private void addDocumentEntity(String entity){
-        if(lastProcessedDocumentEntities.containsKey(entity)){
+    private void addDocumentEntity(String entity) {
+        if (lastProcessedDocumentEntities.containsKey(entity)) {
             int counter = lastProcessedDocumentEntities.get(entity) + 1;
-            lastProcessedDocumentEntities.put(entity,counter);
-        }else {
-            lastProcessedDocumentEntities.put(entity,1);
+            lastProcessedDocumentEntities.put(entity, counter);
+        } else {
+            lastProcessedDocumentEntities.put(entity, 1);
         }
     }
+
     /**
      * Receives a document and parses it, removes stop words and applies stemmer if directed to.
      *
@@ -153,7 +162,7 @@ public class Parse {
             Pair<String, Integer> result = new Pair<>("", 0);
 
             //Removing empty token
-            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë")||token.contains("í") ||token.contains("ó") || token.contains("ø") || token.contains(">")) {
+            if (token.isEmpty() || token.matches("\n+") || token.matches("\t+") || token.equals("") || token.equals("--") || token.contains("ã") || token.contains("æ") || token.contains("ë") || token.contains("í") || token.contains("ó") || token.contains("ø") || token.contains(">")) {
                 continue;
             }
 
@@ -322,12 +331,9 @@ public class Parse {
                         if (useStemmer) {
                             String checkLowerUpper = term.toLowerCase();
                             String afterStemming = Stemmer.stem(checkLowerUpper);
-                            if(checkLowerUpper.equals(term))
-                            {
+                            if (checkLowerUpper.equals(term)) {
                                 terms.add(afterStemming);
-                            }
-                            else
-                            {
+                            } else {
                                 terms.add(afterStemming.toUpperCase());
                             }
                         } else {
@@ -339,12 +345,9 @@ public class Parse {
                     if (useStemmer) {
                         String checkLowerUpper = token.toLowerCase();
                         String afterStemming = Stemmer.stem(checkLowerUpper);
-                        if(checkLowerUpper.equals(token))
-                        {
+                        if (checkLowerUpper.equals(token)) {
                             terms.add(afterStemming);
-                        }
-                        else
-                        {
+                        } else {
                             terms.add(afterStemming.toUpperCase());
                         }
                     } else {
@@ -360,12 +363,9 @@ public class Parse {
                         if (useStemmer) {
                             String checkLowerUpper = term.toLowerCase();
                             String afterStemming = Stemmer.stem(checkLowerUpper);
-                            if(checkLowerUpper.equals(term))
-                            {
+                            if (checkLowerUpper.equals(term)) {
                                 terms.add(afterStemming);
-                            }
-                            else
-                            {
+                            } else {
                                 terms.add(afterStemming.toUpperCase());
                             }
                         } else {
@@ -411,23 +411,16 @@ public class Parse {
                             term = term + " " + entity;
                         }
                         /*  add all single string to the dictionary - USE STEMMER CHECK */
-                        if(!isStopWord(entity.toLowerCase()))
-                        {
-                            if(useStemmer)
-                            {
+                        if (!isStopWord(entity.toLowerCase())) {
+                            if (useStemmer) {
                                 String checkLowerUpper = entity.toLowerCase();
                                 String afterStemming = Stemmer.stem(checkLowerUpper);
-                                if(checkLowerUpper.equals(entity))
-                                {
+                                if (checkLowerUpper.equals(entity)) {
                                     terms.add(afterStemming);
-                                }
-                                else
-                                {
+                                } else {
                                     terms.add(afterStemming.toUpperCase());
                                 }
-                            }
-                            else
-                            {
+                            } else {
                                 terms.add(entity.toUpperCase());
                             }
                         }
@@ -437,12 +430,9 @@ public class Parse {
                         if (useStemmer) {
                             String checkLowerUpper = term.toLowerCase();
                             String afterStemming = Stemmer.stem(checkLowerUpper);
-                            if(checkLowerUpper.equals(term))
-                            {
+                            if (checkLowerUpper.equals(term)) {
                                 terms.add(afterStemming);
-                            }
-                            else
-                            {
+                            } else {
                                 terms.add(afterStemming.toUpperCase());
                             }
                         } else {
@@ -466,12 +456,9 @@ public class Parse {
                                 if (useStemmer) {
                                     String checkLowerUpper = string.toLowerCase();
                                     String afterStemming = Stemmer.stem(checkLowerUpper);
-                                    if(checkLowerUpper.equals(string))
-                                    {
+                                    if (checkLowerUpper.equals(string)) {
                                         terms.add(afterStemming);
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         terms.add(afterStemming.toUpperCase());
                                     }
                                 } else {
@@ -544,19 +531,19 @@ public class Parse {
                 continue;
             }
             //Symbols
-            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&'|| character == '#' || character == '\t' || character == '\n' || character == '`' || character == '|' || character == '_'|| character == '+') {
+            else if (character == '!' || character == '?' || character == ';' || character == ':' || character == '"' || character == '*' || character == '\'' || character == '&' || character == '#' || character == '\t' || character == '\n' || character == '`' || character == '|' || character == '_' || character == '+') {
                 continue;
             } else {
                 result = result + character;
             }
         }
         //Removing dot in the end of the token
-        if ( !result.isEmpty() && (result.charAt(0) == '.' ||result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1) ) {
+        if (!result.isEmpty() && (result.charAt(0) == '.' || result.indexOf('-') == result.length() - 1 || result.indexOf('.') == result.length() - 1 || result.indexOf(',') == result.length() - 1 || result.indexOf('!') == result.length() - 1 || result.indexOf('?') == result.length() - 1)) {
             result = result.substring(0, result.length() - 1);
         }
 
-        while( (result.indexOf('-') == 0))
-               result = result.substring(1);
+        while ((result.indexOf('-') == 0))
+            result = result.substring(1);
 
         return result;
     }
@@ -818,28 +805,27 @@ public class Parse {
 
     /**
      * Receives a token containing hyphens and formats it.
+     *
      * @param token - String
      * @return - LinkedList<String>
      */
     private LinkedList<String> generateTokenHyphens(String token) {
         LinkedList<String> resultList = new LinkedList<>();
-        if(token.contains("--"))
-        {
+        if (token.contains("--")) {
             resultList.add(token.substring(0, token.indexOf("-")));
-            resultList.add(token.substring(token.indexOf("-") +2));
-        }
-        else if (token.matches(".*-.*-.*")) {
+            resultList.add(token.substring(token.indexOf("-") + 2));
+        } else if (token.matches(".*-.*-.*")) {
             resultList.add(token);
-            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
-            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")).replaceAll("-",""));
-            resultList.add(token.substring(token.lastIndexOf("-") + 1).replaceAll("-",""));
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-", ""));
+            resultList.add(token.substring(token.indexOf("-") + 1, token.lastIndexOf("-")).replaceAll("-", ""));
+            resultList.add(token.substring(token.lastIndexOf("-") + 1).replaceAll("-", ""));
 
         }
         //Hyphens <<<Word-Word>>> and <<<Number-Word>>> and <<<Word-Number>>>
         else if (token.matches(".*-.*")) {
             resultList.add(token);
-            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-",""));
-            resultList.add(token.substring(token.indexOf("-") + 1).replaceAll("-",""));
+            resultList.add(token.substring(0, token.indexOf("-")).replaceAll("-", ""));
+            resultList.add(token.substring(token.indexOf("-") + 1).replaceAll("-", ""));
         }
         return resultList;
     }
@@ -904,6 +890,7 @@ public class Parse {
 
     /**
      * Sets the useStemmer field
+     *
      * @param useStemmer - boolean
      */
     public void setUseStemmer(boolean useStemmer) {

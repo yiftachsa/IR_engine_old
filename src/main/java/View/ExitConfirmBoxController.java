@@ -16,13 +16,14 @@ public class ExitConfirmBoxController implements EventHandler<ActionEvent> {
     /**
      * sets the answer returned from the window to True
      */
-    public void yesHandle(){
+    public void yesHandle() {
         ExitConfirmBox.setAnswer(true);
     }
+
     /**
      * sets the answer returned from the window to False
      */
-    public void noHandle(){
+    public void noHandle() {
         ExitConfirmBox.setAnswer(false);
     }
 
@@ -37,7 +38,7 @@ public class ExitConfirmBoxController implements EventHandler<ActionEvent> {
         }
 
         Node source = (Node) event.getSource();
-        Stage stage  = (Stage) source.getScene().getWindow();
+        Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
 
