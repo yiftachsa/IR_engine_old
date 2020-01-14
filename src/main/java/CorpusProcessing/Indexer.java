@@ -89,7 +89,7 @@ public class Indexer {
                         int newDocumentFrequency = dictionary.get(term).getDocumentFrequency() + 1;
                         int newCumulativeFrequency = dictionary.get(term).getCumulativeFrequency() + termFrequency;
 
-                        
+
                         //The function put override the previous value;
                         dictionary.put(term, new DictionaryEntryTrio(newDocumentFrequency, newCumulativeFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
                         //dictionary.put(term, new Pair<Integer, String>(newDocumentFrequency, invertedIndexDirectoriesTitles[invertedArrayIndex]));
