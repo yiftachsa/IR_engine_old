@@ -34,9 +34,7 @@ public class RunnableMerge implements Runnable {
         ArrayList<String> stringArrayList = Documenter.loadPostingFile(this.path);
         ArrayList<String> listWithoutEntity = new ArrayList<>();
 
-
         Collections.sort(stringArrayList, String.CASE_INSENSITIVE_ORDER);
-
 
         for (int i = 0; i < stringArrayList.size(); i++) {
             String s = stringArrayList.get(i);

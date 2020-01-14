@@ -1,5 +1,7 @@
 package CorpusProcessing;
 
+import Retrieval.Query;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -145,7 +147,7 @@ public class ReadFile {
                     String description = "";
 
                     String[] splitedline = line.split(" ");
-                    queryNumber = Integer.parseInt(splitedline[splitedline.length - 1]); // TODO: Check what happens when the final char is " "
+                    queryNumber = Integer.parseInt(splitedline[splitedline.length - 1]);
 
                     line = reader.readLine();
                     title = line.substring(line.indexOf(" ") + 1);

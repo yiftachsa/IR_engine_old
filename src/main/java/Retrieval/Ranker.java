@@ -1,5 +1,7 @@
-package CorpusProcessing;
+package Retrieval;
 
+import CorpusProcessing.Indexer;
+import CorpusProcessing.TermDocumentTrio;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -24,6 +26,13 @@ public class Ranker implements IRanker {
     private static  double WEIGHT_HEADER = 0.05;
     private static  double WEIGHT_ENTITIES = 0.2;
 
+    /**
+     * Constructor
+     *
+     * @param corpusSize - int - The corpus size
+     * @param avdl       - double - average document length
+     * @param indexer    - Indexer - indexer
+     */
     public Ranker(int corpusSize, double avdl, Indexer indexer) {
         this.corpusSize = corpusSize;
         this.avdl = avdl;
@@ -53,7 +62,6 @@ public class Ranker implements IRanker {
         double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentID, documentLength, documentTerms);
 
 
-
         List<String> queryTerms = extractTerms(query);
         List<String> documentHeaderTerms = extractTerms(documentHeader);
         double headerJaccardRank = JaccardCalculator(queryTerms, documentHeaderTerms);
@@ -79,7 +87,8 @@ public class Ranker implements IRanker {
     }
 
     /**
-     * Dice coefficient
+     * Computes dice coefficient
+     * https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
      *
      * @param queryTerms
      * @param documentEntities
@@ -117,6 +126,34 @@ public class Ranker implements IRanker {
             return 0;
         }
         return totalInCommon / (total - totalInCommon);
+    }
+
+    /**
+     * Receives two hash maps and merges them.
+     *
+     * @param semanticExpandedTerms - HashMap<String, Integer> - A map to merge.
+     * @param documentTerms         - HashMap<String, Integer> - A map to merge.
+     * @return - HashMap<String, Integer> - A merged map.
+     */
+    private HashMap<String, Integer> mergeQueryAndExpandedQueryDocumentsTerms(HashMap<String, Integer> semanticExpandedTerms, HashMap<String, Integer> documentTerms) {
+        HashMap<String, Integer> mergedDocumentsTerms = new HashMap<>();
+        mergedDocumentsTerms.putAll(semanticExpandedTerms);
+        mergedDocumentsTerms.putAll(documentTerms);
+        return mergedDocumentsTerms;
+    }
+
+    /**
+     * Receives two array lists and merges them.
+     *
+     * @param query         - ArrayList<TermDocumentTrio> - A list to merge.
+     * @param expandedQuery - ArrayList<TermDocumentTrio> - A list to merge.
+     * @return - ArrayList<TermDocumentTrio> - A merged list.
+     */
+    private ArrayList<TermDocumentTrio> mergeQueryAndExpandedQueryTrios(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> expandedQuery) {
+        ArrayList<TermDocumentTrio> mergedQuery = new ArrayList<>();
+        mergedQuery.addAll(query);
+        mergedQuery.addAll(expandedQuery);
+        return mergedQuery;
     }
 
     /**

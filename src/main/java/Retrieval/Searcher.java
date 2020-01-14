@@ -1,5 +1,6 @@
-package CorpusProcessing;
+package Retrieval;
 
+import CorpusProcessing.*;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -188,7 +189,6 @@ public class Searcher {
      * @return - String[] - an sorted array of the entities, based on importance.
      */
     public ArrayList<Pair<String, Double>> rankEntities(HashMap<String, Integer> documentEntities, String documentHeader, Parse parser) {
-
 
         return ranker.rankEntities(documentEntities, parseQuery("document", documentHeader, parser));
     }
