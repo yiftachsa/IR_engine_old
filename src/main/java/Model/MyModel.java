@@ -544,8 +544,6 @@ public class MyModel extends Observable implements IModel {
 
         for (int i = 0; i < queries.length; i++) {
 
-            long startTime = System.currentTimeMillis();
-
             String queryTitle = queries[i].getTitle();
             String queryDescription = queries[i].getDescription();
 
@@ -560,9 +558,6 @@ public class MyModel extends Observable implements IModel {
             ArrayList<String> currentQueryRankedDocuments = searcher.runQuery(queryTitle, queryDescription, semanticExpansion, this.indexer, this.parse);
 
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
-            long stopTime = System.currentTimeMillis();
-            double elapsedTime = stopTime - startTime;
-            System.out.println(elapsedTime / 1000);
         }
 
         setLatestQueryResult(rankedDocuments);
