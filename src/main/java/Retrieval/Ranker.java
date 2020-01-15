@@ -57,8 +57,10 @@ public class Ranker implements IRanker {
         } else {
             queryBM25Rank = BM25calculator(query, documentLength, documentTerms);
         }
-
-        double queryDescriptionBM25Rank = BM25calculator(queryDescription, documentLength, documentTerms);
+        double queryDescriptionBM25Rank = 0;
+        if(queryDescription!=null && !queryDescription.isEmpty()){
+            queryDescriptionBM25Rank = BM25calculator(queryDescription, documentLength, documentTerms);
+        }
 
 
         List<String> queryTerms = extractTerms(query);
