@@ -46,10 +46,9 @@ public class Ranker implements IRanker {
     public double rankDocument(ArrayList<TermDocumentTrio> query, ArrayList<TermDocumentTrio> queryDescription, ArrayList<TermDocumentTrio> expandedQuery, HashMap<String, Integer> semanticExpandedTerms, int documentLength, HashMap<String, Integer> documentTerms, ArrayList<TermDocumentTrio> documentHeader, ArrayList<String> documentEntities) {
 
         boolean shortQuery = false;
-        if(query.size()<=2)
-        {
+        if (query.size() <= 2) {
             shortQuery = true;
-            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERYDESC_BM25*2;
+            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERYDESC_BM25 * 2;
         }
         double queryBM25Rank;
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
@@ -69,9 +68,10 @@ public class Ranker implements IRanker {
         double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
 
         double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
-        if (shortQuery){
-            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERY_BM25/2;
+        if (shortQuery) {
+            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERY_BM25 / 2;
         }
+
         return finalRank;
     }
 
@@ -107,7 +107,6 @@ public class Ranker implements IRanker {
         }
         return sigma;
     }
-
 
 
     /**
