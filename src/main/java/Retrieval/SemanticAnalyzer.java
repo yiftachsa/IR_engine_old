@@ -25,7 +25,7 @@ public class SemanticAnalyzer {
      */
     private SemanticAnalyzer() {
         try {
-            Word2VecModel word2VecModel = Word2VecModel.fromTextFile(new File("src\\main\\resources\\w2vJAR\\word2vec.c.output.model.txt"));
+            Word2VecModel word2VecModel = Word2VecModel.fromTextFile(new File("word2vec.c.output.model.txt"));
             this.word2VecSearcher = word2VecModel.forSearch();
         } catch (IOException e) {
             e.printStackTrace();

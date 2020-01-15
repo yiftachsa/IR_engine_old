@@ -16,7 +16,6 @@ public class Ranker implements IRanker {
     private Indexer indexer;
 
 
-    //todo: optimize
     private static final double b = 0.7;
     private static final double k = 1.81;
 
@@ -69,7 +68,7 @@ public class Ranker implements IRanker {
 
         double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
         if (shortQuery) {
-            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERY_BM25 / 2;
+            WEIGHT_QUERYDESC_BM25 = WEIGHT_QUERYDESC_BM25 / 2;
         }
 
         return finalRank;
