@@ -212,7 +212,7 @@ public class GUIController implements Observer {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
             preConditionsMet = false;
         } else if (!viewModel.getStopWordsStatus()) {
-            if (!viewModel.loadStopWords(corpusText.getText())) {
+            if (!viewModel.loadStopWords(resultText.getText())) {
                 preConditionsMet = false;
                 AlertBox.display("No stop words loaded", "No stop words loaded", "Please enter corpus path\nto load the stop words list.\n\n\n\n\n", "Back to menu", "default background");
             }
@@ -242,7 +242,7 @@ public class GUIController implements Observer {
             AlertBox.display("No indexing files", "No Indexing files", "Please check your inputs and try again.\n\tNo dictionary was loaded to memory\n\n\n\n", "Back to menu", "default background");
             preConditionsMet = false;
         } else if (!viewModel.getStopWordsStatus()) {
-            if (!viewModel.loadStopWords(corpusText.getText())) {
+            if (!viewModel.loadStopWords(resultText.getText())) {
                 AlertBox.display("No stop words loaded", "No stop words loaded", "Please enter corpus path\nto load the stop words list.\n\n\n\n\n", "Back to menu", "default background");
                 preConditionsMet = false;
             }

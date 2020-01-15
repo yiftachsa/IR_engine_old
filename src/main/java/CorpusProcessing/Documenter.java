@@ -382,6 +382,7 @@ public class Documenter {
             FileOutputStream fileOutputStream = new FileOutputStream(filePath);
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
             outputStream.writeObject(allDocumentsEntities);
+            fileOutputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -402,6 +403,7 @@ public class Documenter {
             fileInputStream = new FileInputStream(entitiesPath);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             allDocumentsEntities = (HashMap<String, HashMap<String, Integer>>) objectInputStream.readObject();
+            fileInputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

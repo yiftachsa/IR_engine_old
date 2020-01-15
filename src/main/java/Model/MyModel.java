@@ -58,6 +58,7 @@ public class MyModel extends Observable implements IModel {
 
     @Override
     public void setStemming(boolean selected) {
+
         stemming = selected;
     }
 
@@ -490,12 +491,11 @@ public class MyModel extends Observable implements IModel {
      * Makes sure that the searcher and the parse fields have been initialized an if not initializes them.
      */
     private void preQueryInitialization() {
-        if (searcher == null) {
-            searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(), this.indexer.getAverageDocumentLength());
-        }
-        if (this.parse == null) {
-            this.parse = new Parse(new HashSet<>(), new HashSet<>(), this.stemming);
-        }
+
+        this.searcher = new Searcher(this.indexer, this.indexer.getDocumentsCount(), this.indexer.getAverageDocumentLength());
+
+        this.parse = new Parse(new HashSet<>(), new HashSet<>(), this.stemming);
+
     }
 
     @Override
@@ -511,6 +511,7 @@ public class MyModel extends Observable implements IModel {
         }
 
         //retrieves the relevant documents
+
         ArrayList<String> result = searcher.runQuery(query, "", semanticExpansion, this.indexer, this.parse);
 
         ArrayList<Pair<String, ArrayList<String>>> rankedDocumentsNumbers = new ArrayList<>();
@@ -542,6 +543,9 @@ public class MyModel extends Observable implements IModel {
         Query[] queries = ReadFile.separateFileToQueries(queriesPath);
 
         for (int i = 0; i < queries.length; i++) {
+
+            long startTime = System.currentTimeMillis();
+
             String queryTitle = queries[i].getTitle();
             String queryDescription = queries[i].getDescription();
 
@@ -556,6 +560,9 @@ public class MyModel extends Observable implements IModel {
             ArrayList<String> currentQueryRankedDocuments = searcher.runQuery(queryTitle, queryDescription, semanticExpansion, this.indexer, this.parse);
 
             rankedDocuments.add(new Pair<>(queries[i].getNumber() + "", currentQueryRankedDocuments));
+            long stopTime = System.currentTimeMillis();
+            double elapsedTime = stopTime - startTime;
+            System.out.println(elapsedTime / 1000);
         }
 
         setLatestQueryResult(rankedDocuments);

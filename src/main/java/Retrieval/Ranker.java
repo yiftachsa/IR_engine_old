@@ -21,7 +21,7 @@ public class Ranker implements IRanker {
     private static final double k = 1.81;
 
     private static double WEIGHT_QUERY_BM25 = 1;
-    private static double WEIGHT_QUERYDESC_BM25 = 0.7;
+    private static double WEIGHT_QUERYDESC_BM25 = 1.5;
     private static double WEIGHT_HEADER = 0.05;
     private static double WEIGHT_ENTITIES = 0.2;
 
@@ -47,7 +47,7 @@ public class Ranker implements IRanker {
 
         if(query.size()<=2)
         {
-            WEIGHT_QUERYDESC_BM25 = 1.5;
+            WEIGHT_QUERYDESC_BM25 = 3;
         }
         double queryBM25Rank;
         if (semanticExpandedTerms != null && semanticExpandedTerms != null) { //use semantics
@@ -67,6 +67,7 @@ public class Ranker implements IRanker {
         double entitiesDSCRank = DSCCalculator(queryTerms, documentEntities);
 
         double finalRank = ((WEIGHT_QUERY_BM25 * queryBM25Rank) + (WEIGHT_QUERYDESC_BM25 * queryDescriptionBM25Rank) + (WEIGHT_HEADER * headerJaccardRank) + (WEIGHT_ENTITIES * entitiesDSCRank));
+        WEIGHT_QUERYDESC_BM25 = 1.5;
         return finalRank;
     }
 
